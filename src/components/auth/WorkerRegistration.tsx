@@ -264,7 +264,6 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
         phone: phone,
         role: 'worker'
       });
-      switchRole('worker');
       setRole('worker');
 
       addToast({

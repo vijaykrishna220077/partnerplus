@@ -155,7 +155,12 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
       }
 
       // Automatically authenticate customer and enter portal
-      await loginWithCredentials(email, password, 'customer');
+      await loginWithCredentials(email, password, 'customer', {
+        name: fullName,
+        email: email,
+        phone: phone,
+        role: 'customer'
+      });
 
       addToast({
         type: 'success',

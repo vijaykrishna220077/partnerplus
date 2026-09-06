@@ -335,11 +335,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const matchedDemo = DEMO_ACCOUNTS.find(d => d.role === role) || DEMO_ACCOUNTS[0];
     const customUser: AuthUser = {
       ...matchedDemo.user,
-      ...customUserData,
-      name: customUserData?.name || (user?.name && user.role === role ? user.name : matchedDemo.user.name),
+      id: customUserData?.id || `usr-${Date.now()}`,
+      name: customUserData?.name || (identifier.includes('@') ? identifier.split('@')[0] : 'Registered User'),
       email: customUserData?.email || (identifier.includes('@') ? identifier : `${identifier.replace(/\D/g, '')}@partnerplus.org`),
-      phone: customUserData?.phone || (identifier.includes('@') ? matchedDemo.user.phone : identifier),
-      role
+      phone: customUserData?.phone || identifier,
+      role: role,
+      ...customUserData
     };
     setUser(customUser);
     try {
@@ -401,14 +402,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const switchRole = (newRole: UserRole) => {
     if (user) {
-      const demoForRole = DEMO_ACCOUNTS.find(d => d.role === newRole);
-      setUser({
-        ...user,
-        ...(demoForRole ? demoForRole.user : {}),
-        id: user.id || demoForRole?.user.id || 'user-active',
-        name: user.name || demoForRole?.user.name || 'User',
-        phone: user.phone || demoForRole?.user.phone || '9876543210',
-        role: newRole
+      setUser(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          role: newRole
+        };
       });
     } else {
       loginWithDemo(newRole);
