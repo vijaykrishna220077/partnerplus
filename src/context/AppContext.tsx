@@ -3,6 +3,7 @@ import { LanguageCode, UserRole, Worker, ServiceItem, Booking, DemandForecastIte
 import { translations } from '../i18n/translations';
 import { mockServices, mockWorkers, mockBookings, mockDemandForecast } from '../data/mockData';
 import { apiService, initDatabase } from '../services/apiService';
+import { soundAndSpeech } from '../utils/soundAndSpeech';
 import confetti from 'canvas-confetti';
 
 interface ToastNotification {
@@ -94,7 +95,16 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [lang, setLang] = useState<LanguageCode>('en');
+  const [lang, setLangState] = useState<LanguageCode>('en');
+
+  const setLang = (newLang: LanguageCode) => {
+    setLangState(newLang);
+    soundAndSpeech.setLanguage(newLang, true);
+  };
+
+  useEffect(() => {
+    soundAndSpeech.setLanguage(lang, false);
+  }, []);
   const [role, setRole] = useState<UserRole>('customer');
   const [currentLocation, setCurrentLocation] = useState<string>('Anna Nagar, Chennai');
   const [city, setCity] = useState<string>('Chennai');

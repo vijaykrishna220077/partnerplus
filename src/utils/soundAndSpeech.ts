@@ -1,8 +1,47 @@
-// Sound and Web Speech synthesis utility for low-literacy / rural worker accessibility
+import { LanguageCode } from '../types';
+
+export type SpeechEventListener = (isSpeaking: boolean, text?: string) => void;
 
 class SoundAndSpeechService {
   private audioCtx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private currentLanguage: LanguageCode = 'en';
+  private currentlySpeakingText: string | null = null;
+  private voices: SpeechSynthesisVoice[] = [];
+  private listeners: SpeechEventListener[] = [];
+
+  constructor() {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      this.loadVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => this.loadVoices();
+      }
+    }
+  }
+
+  private loadVoices(): void {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      this.voices = window.speechSynthesis.getVoices();
+    }
+  }
+
+  public subscribe(listener: SpeechEventListener): () => void {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter(l => l !== listener);
+    };
+  }
+
+  private notifyListeners(isSpeaking: boolean, text?: string): void {
+    this.currentlySpeakingText = isSpeaking && text ? text : null;
+    this.listeners.forEach(cb => {
+      try {
+        cb(isSpeaking, text);
+      } catch (e) {
+        console.error('Error notifying speech listener:', e);
+      }
+    });
+  }
 
   private getAudioContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
@@ -18,7 +57,9 @@ class SoundAndSpeechService {
     return this.audioCtx;
   }
 
-  // Play synthetic pleasant audio chime using Web Audio API (no external MP3 needed)
+  /**
+   * Play synthetic pleasant audio chime using Web Audio API
+   */
   public playChime(type: 'alert' | 'accept' | 'complete' | 'click' | 'toggle'): void {
     if (this.isMuted) return;
     try {
@@ -28,13 +69,12 @@ class SoundAndSpeechService {
       const now = ctx.currentTime;
 
       if (type === 'alert') {
-        // Double ding for incoming job alert
         [0, 0.2].forEach((offset) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(880, now + offset); // A5
-          osc.frequency.exponentialRampToValueAtTime(1320, now + offset + 0.15); // E6
+          osc.frequency.setValueAtTime(880, now + offset);
+          osc.frequency.exponentialRampToValueAtTime(1320, now + offset + 0.15);
           gain.gain.setValueAtTime(0.3, now + offset);
           gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.25);
           osc.connect(gain);
@@ -43,7 +83,6 @@ class SoundAndSpeechService {
           osc.stop(now + offset + 0.25);
         });
       } else if (type === 'accept') {
-        // Rising cheerful 3-note arpeggio (C5 - E5 - G5)
         [
           { freq: 523.25, time: 0 },
           { freq: 659.25, time: 0.1 },
@@ -61,7 +100,6 @@ class SoundAndSpeechService {
           osc.stop(now + note.time + 0.25);
         });
       } else if (type === 'complete') {
-        // Cash celebration chime (C5 - G5 - C6)
         [
           { freq: 523.25, time: 0 },
           { freq: 783.99, time: 0.12 },
@@ -91,7 +129,6 @@ class SoundAndSpeechService {
         osc.start(now);
         osc.stop(now + 0.15);
       } else {
-        // Simple click
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
@@ -108,49 +145,149 @@ class SoundAndSpeechService {
     }
   }
 
-  // Web Speech API text-to-speech
-  public speak(text: string, lang: string = 'hi-IN'): void {
+  /**
+   * Find the highest quality voice for a given BCP 47 language code
+   */
+  public getBestVoiceForLanguage(langCode: string): SpeechSynthesisVoice | null {
+    if (this.voices.length === 0) {
+      this.loadVoices();
+    }
+
+    const target = langCode.toLowerCase();
+    const primary = target.split('-')[0];
+
+    let bestVoice: SpeechSynthesisVoice | null = null;
+    let maxScore = -1;
+
+    for (const voice of this.voices) {
+      const voiceLang = voice.lang.toLowerCase();
+      const voiceName = voice.name.toLowerCase();
+      let score = 0;
+
+      // Match level
+      if (voiceLang === target) {
+        score += 100;
+      } else if (voiceLang.startsWith(primary)) {
+        score += 60;
+      }
+
+      if (score === 0) continue;
+
+      // Quality bonuses for premium voice engines
+      if (voiceName.includes('google')) score += 30;
+      if (voiceName.includes('natural') || voiceName.includes('neural') || voiceName.includes('premium')) score += 25;
+      if (voiceName.includes('veena') || voiceName.includes('lekha') || voiceName.includes('valluvar') || voiceName.includes('rishi') || voiceName.includes('samantha')) score += 20;
+      if (voice.localService) score += 10;
+
+      if (score > maxScore) {
+        maxScore = score;
+        bestVoice = voice;
+      }
+    }
+
+    return bestVoice;
+  }
+
+  /**
+   * Map App LanguageCode to BCP 47 Locale Code
+   */
+  public getBCP47LangCode(lang: LanguageCode | string): string {
+    const l = lang.toLowerCase();
+    if (l.startsWith('ta')) return 'ta-IN';
+    if (l.startsWith('hi')) return 'hi-IN';
+    if (l.startsWith('kn')) return 'kn-IN';
+    if (l.startsWith('te')) return 'te-IN';
+    if (l.startsWith('bn')) return 'bn-IN';
+    if (l.startsWith('mr')) return 'mr-IN';
+    return 'en-IN';
+  }
+
+  /**
+   * Primary Speak method: Synthesizes voice in the requested language
+   */
+  public speak(text: string, lang?: LanguageCode | string): void {
     if (this.isMuted) return;
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      console.warn('Speech synthesis not supported');
+      console.warn('Speech synthesis not supported on this device');
       return;
     }
 
+    const effectiveLang = lang || this.currentLanguage;
+    const bcp47 = this.getBCP47LangCode(effectiveLang);
+
     try {
-      window.speechSynthesis.cancel(); // Stop any pending speech
+      window.speechSynthesis.cancel(); // Cancel any active speech utterance
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95; // Slightly slower for low-literacy listeners
+      utterance.rate = 0.95; // Friendly, clear speech speed
       utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      utterance.lang = bcp47;
 
-      // Map language code
-      let targetLang = 'hi-IN';
-      if (lang.startsWith('ta')) targetLang = 'ta-IN';
-      else if (lang.startsWith('te')) targetLang = 'te-IN';
-      else if (lang.startsWith('bn')) targetLang = 'bn-IN';
-      else if (lang.startsWith('kn')) targetLang = 'kn-IN';
-      else if (lang.startsWith('mr')) targetLang = 'mr-IN';
-      else if (lang.startsWith('en')) targetLang = 'en-US';
-
-      utterance.lang = targetLang;
-
-      // Try finding matching voice
-      const voices = window.speechSynthesis.getVoices();
-      const matchedVoice = voices.find((v) => v.lang.toLowerCase().includes(targetLang.toLowerCase().slice(0, 2)));
-      if (matchedVoice) {
-        utterance.voice = matchedVoice;
+      const voice = this.getBestVoiceForLanguage(bcp47);
+      if (voice) {
+        utterance.voice = voice;
       }
+
+      utterance.onstart = () => {
+        this.notifyListeners(true, text);
+      };
+
+      utterance.onend = () => {
+        this.notifyListeners(false);
+      };
+
+      utterance.onerror = (e) => {
+        console.warn('SpeechSynthesis error:', e);
+        this.notifyListeners(false);
+      };
 
       window.speechSynthesis.speak(utterance);
     } catch (err) {
-      console.warn('Speech error:', err);
+      console.warn('Speech synthesis execution failure:', err);
+      this.notifyListeners(false);
     }
+  }
+
+  /**
+   * Update current language and automatically announce the language switch in the new language!
+   */
+  public setLanguage(newLang: LanguageCode, announce: boolean = true): void {
+    this.currentLanguage = newLang;
+
+    if (!announce || this.isMuted) return;
+
+    const announcements: Record<LanguageCode, string> = {
+      ta: 'பார்ட்னர் பிளஸ் தமிழ் குரல் உதவி தயார்.',
+      hi: 'पार्टनरप्लस हिंदी वॉयस असिस्टेंट सक्रिय है।',
+      kn: 'ಪಾರ್ಟ್ನರ್ ಪ್ಲಸ್ ಕನ್ನಡ ಧ್ವನಿ ಸಹಾಯಕ ಸಕ್ರಿಯವಾಗಿದೆ.',
+      te: 'పార్ట్నర్ ప్లస్ తెలుగు వాయిస్ అసిస్టెంట్ సక్రియంగా ఉంది.',
+      bn: 'পার্টনারপ্লাস বাংলা ভয়েস সহায়তা সক্রিয়।',
+      mr: 'पार्टनरप्लस मराठी व्हॉइस सहाय्यक सक्रिय आहे.',
+      en: 'PartnerPlus voice assistance active in English.'
+    };
+
+    const textToSpeak = announcements[newLang] || announcements.en;
+    this.speak(textToSpeak, newLang);
+  }
+
+  public getActiveLanguage(): LanguageCode {
+    return this.currentLanguage;
+  }
+
+  public isCurrentlySpeaking(): boolean {
+    return this.currentlySpeakingText !== null;
+  }
+
+  public getCurrentlySpeakingText(): string | null {
+    return this.currentlySpeakingText;
   }
 
   public stopSpeaking(): void {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
+    this.notifyListeners(false);
   }
 
   public setMuted(muted: boolean): void {

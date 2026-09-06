@@ -11,6 +11,7 @@ import { OrganizationPortal } from './portals/OrganizationPortal';
 import { CooperativeLoginGateway } from './components/cooperative/auth/CooperativeLoginGateway';
 import { CooperativePendingApprovalView } from './components/cooperative/auth/CooperativePendingApprovalView';
 import { locationService } from './services/locationService';
+import { VoiceAssistantBanner } from './components/common/VoiceAssistantBanner';
 import { UserRole } from './types';
 
 const MainPlatformRouter: React.FC = () => {
@@ -184,6 +185,7 @@ export default function App() {
     <AppProvider>
       <AuthProvider>
         <MainPlatformRouter />
+        <VoiceAssistantBanner />
       </AuthProvider>
     </AppProvider>
   );
