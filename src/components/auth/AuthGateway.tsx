@@ -42,8 +42,8 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
   initialRole = 'customer',
   onBackToWelcome
 }) => {
-  const { loginWithCredentials, signup, loginOrganization, signupOrganization } = useAuth();
-  const { lang, setLang } = useApp();
+  const { loginWithCredentials, signup, loginOrganization, signupOrganization, switchRole } = useAuth();
+  const { lang, setLang, setRole } = useApp();
 
   // Mode: Sign In vs Create Account / Join Pro
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
@@ -343,10 +343,11 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
             <WorkerRegistration
               onBack={() => setSignupSubView('selector')}
               onSuccess={() => {
-                setAuthMode('login');
-                setSignupSubView('selector');
-                setSelectedRole('worker');
-                setInfoMessage('Artisan registration submitted! Your local cooperative society will verify your credentials.');
+                switchRole('worker');
+                setRole('worker');
+                if (onBackToWelcome) {
+                  onBackToWelcome();
+                }
               }}
             />
           )}

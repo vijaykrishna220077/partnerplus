@@ -394,7 +394,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const switchRole = (newRole: UserRole) => {
-    loginWithDemo(newRole);
+    if (user) {
+      const demoForRole = DEMO_ACCOUNTS.find(d => d.role === newRole);
+      setUser({
+        ...user,
+        ...(demoForRole ? demoForRole.user : {}),
+        id: user.id || demoForRole?.user.id || 'user-active',
+        name: user.name || demoForRole?.user.name || 'User',
+        phone: user.phone || demoForRole?.user.phone || '9876543210',
+        role: newRole
+      });
+    } else {
+      loginWithDemo(newRole);
+    }
   };
 
   return (

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { 
   X, 
   ShieldCheck, 
@@ -20,6 +21,7 @@ import { apiService } from '../services/apiService';
 import { mockCooperatives } from '../data/mockData';
 
 export const WorkerRegistrationModal: React.FC = () => {
+  const { switchRole } = useAuth();
   const { 
     isWorkerRegisterOpen, 
     closeWorkerRegister, 
@@ -347,10 +349,20 @@ export const WorkerRegistrationModal: React.FC = () => {
                   Verify Now in Co-op Admin Panel →
                 </button>
                 <button
-                  onClick={closeWorkerRegister}
-                  className="px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50"
+                  onClick={() => {
+                    closeWorkerRegister();
+                    switchRole('worker');
+                    setRole('worker');
+                    setActiveTab('worker_dashboard');
+                    addToast({
+                      type: 'success',
+                      title: 'Welcome to Worker Portal',
+                      message: 'Your application has been enrolled. Welcome to your Worker Dashboard!'
+                    });
+                  }}
+                  className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md cursor-pointer"
                 >
-                  Done
+                  Go to Worker Dashboard →
                 </button>
               </div>
             </div>

@@ -16,7 +16,7 @@ import { UserRole } from './types';
 
 const MainPlatformRouter: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  const { setCurrentLocation, setCity, addToast } = useApp();
+  const { setCurrentLocation, setCity, addToast, setRole } = useApp();
   const detectedUserRef = useRef<string | null>(null);
 
   // Unauthenticated landing vs auth gateway state
@@ -68,6 +68,12 @@ const MainPlatformRouter: React.FC = () => {
       detectedUserRef.current = null;
     }
   }, [isAuthenticated, user?.id, user?.name, setCurrentLocation, setCity, addToast]);
+
+  useEffect(() => {
+    if (user?.role) {
+      setRole(user.role);
+    }
+  }, [user?.role, setRole]);
 
   useEffect(() => {
     const handlePopState = () => {

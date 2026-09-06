@@ -57,8 +57,8 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
   onBack,
   onSuccess
 }) => {
-  const { loginWithCredentials } = useAuth();
-  const { addToast } = useApp();
+  const { loginWithCredentials, switchRole } = useAuth();
+  const { addToast, setRole } = useApp();
 
   const [step, setStep] = useState<number>(1);
   const totalSteps = 6;
@@ -257,8 +257,10 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
       setSubmissionComplete(true);
       setLoading(false);
 
-      // Also authenticate worker
+      // Also authenticate worker & set active role
       await loginWithCredentials(phone, 'worker123', 'worker');
+      switchRole('worker');
+      setRole('worker');
 
       addToast({
         type: 'success',
@@ -318,7 +320,11 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
 
         <button
           type="button"
-          onClick={onSuccess}
+          onClick={() => {
+            switchRole('worker');
+            setRole('worker');
+            onSuccess();
+          }}
           className="w-full py-3.5 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition cursor-pointer"
         >
           <span>Enter Worker Portal</span>
