@@ -180,7 +180,7 @@ interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
   loginWithDemo: (role: UserRole, specificAccountIndex?: number) => void;
-  loginWithCredentials: (identifier: string, passwordOrOtp: string, role: UserRole) => Promise<{ success: boolean; message?: string }>;
+  loginWithCredentials: (identifier: string, passwordOrOtp: string, role: UserRole, customUserData?: Partial<AuthUser>) => Promise<{ success: boolean; message?: string }>;
   loginCooperative: (
     identifier: string,
     passwordOrOtp: string,
@@ -314,7 +314,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithCredentials = async (
     identifier: string,
     _passwordOrOtp: string,
-    role: UserRole
+    role: UserRole,
+    customUserData?: Partial<AuthUser>
   ): Promise<{ success: boolean; message?: string }> => {
     await new Promise(r => setTimeout(r, 400));
 
@@ -334,11 +335,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const matchedDemo = DEMO_ACCOUNTS.find(d => d.role === role) || DEMO_ACCOUNTS[0];
     const customUser: AuthUser = {
       ...matchedDemo.user,
-      email: identifier.includes('@') ? identifier : `${identifier.replace(/\D/g, '')}@partnerplus.org`,
-      phone: identifier.includes('@') ? matchedDemo.user.phone : identifier,
+      ...customUserData,
+      name: customUserData?.name || (user?.name && user.role === role ? user.name : matchedDemo.user.name),
+      email: customUserData?.email || (identifier.includes('@') ? identifier : `${identifier.replace(/\D/g, '')}@partnerplus.org`),
+      phone: customUserData?.phone || (identifier.includes('@') ? matchedDemo.user.phone : identifier),
       role
     };
     setUser(customUser);
+    try {
+      localStorage.setItem('partnerplus_user_name', customUser.name);
+    } catch {}
     return { success: true };
   };
 

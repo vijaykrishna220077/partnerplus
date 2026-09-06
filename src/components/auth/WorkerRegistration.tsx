@@ -257,8 +257,13 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
       setSubmissionComplete(true);
       setLoading(false);
 
-      // Also authenticate worker & set active role
-      await loginWithCredentials(phone, 'worker123', 'worker');
+      // Also authenticate worker & set active role with actual registered name
+      await loginWithCredentials(phone, 'worker123', 'worker', {
+        name: fullName,
+        email: email,
+        phone: phone,
+        role: 'worker'
+      });
       switchRole('worker');
       setRole('worker');
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { LanguageCode, Booking } from '../types';
 import { soundAndSpeech } from '../utils/soundAndSpeech';
 import { 
@@ -59,8 +60,21 @@ export const RuralWorkerPortal: React.FC<RuralWorkerPortalProps> = ({ onSwitchTo
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [isEmergencyReady, setIsEmergencyReady] = useState<boolean>(true);
 
+  const { user, updateUserProfile } = useAuth();
+
   // Cooperative Worker Persona State (Structured profile with skill registry)
   const [activeWorker, setActiveWorker] = useState<StructuredWorkerProfile>(STRUCTURED_WORKER_PROFILES[0]);
+
+  // Synchronize activeWorker profile with authenticated user state
+  useEffect(() => {
+    if (user && user.role === 'worker' && user.name) {
+      setActiveWorker((prev) => ({
+        ...prev,
+        name: user.name,
+        phone: user.phone || prev.phone
+      }));
+    }
+  }, [user?.name, user?.phone, user?.role]);
 
   // Data states
   const [jobs, setJobs] = useState<WorkerJobOpening[]>(INITIAL_WORKER_JOBS);
@@ -138,6 +152,9 @@ export const RuralWorkerPortal: React.FC<RuralWorkerPortalProps> = ({ onSwitchTo
   // Switch Worker Persona
   const handleSwitchWorker = (workerProfile: StructuredWorkerProfile) => {
     setActiveWorker(workerProfile);
+    if (updateUserProfile) {
+      updateUserProfile({ name: workerProfile.name, phone: workerProfile.phone });
+    }
     setIsEmergencyReady(workerProfile.emergency_available);
     soundAndSpeech.playChime('toggle');
     speakText(`${workerProfile.name} profile active. ${workerProfile.primary_skill_label}.`);

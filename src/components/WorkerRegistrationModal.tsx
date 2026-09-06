@@ -21,7 +21,7 @@ import { apiService } from '../services/apiService';
 import { mockCooperatives } from '../data/mockData';
 
 export const WorkerRegistrationModal: React.FC = () => {
-  const { switchRole } = useAuth();
+  const { switchRole, loginWithCredentials } = useAuth();
   const { 
     isWorkerRegisterOpen, 
     closeWorkerRegister, 
@@ -74,6 +74,13 @@ export const WorkerRegistrationModal: React.FC = () => {
           }
         ],
         startingPrice: 349
+      });
+
+      await loginWithCredentials(phone, 'worker123', 'worker', {
+        name: fullName,
+        email: email,
+        phone: phone,
+        role: 'worker'
       });
 
       await refreshData();
