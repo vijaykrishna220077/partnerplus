@@ -76,8 +76,9 @@ export const InvoiceModal: React.FC = () => {
           {/* Top Organization Details */}
           <div className="flex items-start justify-between border-b border-slate-200 pb-5">
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xl font-extrabold text-slate-900 font-serif">PartnerPlus</span>
+              <div className="flex items-center gap-2">
+                <img src="/partnerplus-logo.png" alt="PartnerPlus Logo" className="h-7 w-auto object-contain" />
+                <span className="text-xl font-black text-slate-900 font-sans tracking-tight">PartnerPlus</span>
                 <span className="text-[10px] uppercase font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
                   Co-op Federation
                 </span>

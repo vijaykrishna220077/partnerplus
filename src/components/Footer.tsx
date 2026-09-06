@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import { PartnerPlusLogo } from './PartnerPlusLogo';
 import { 
   ShieldCheck, 
   Heart, 
@@ -56,12 +57,7 @@ export const Footer: React.FC = () => {
           {/* Col 1: Brand & Mission */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-                P
-              </div>
-              <span className="text-xl font-extrabold text-white font-sans tracking-tight">
-                {t.appName.toUpperCase()}
-              </span>
+              <PartnerPlusLogo isLight={true} />
             </div>
             <p className="text-xs sm:text-sm text-gray-400 leading-relaxed pr-6 font-light">
               A democratically governed public-interest platform uniting unorganized household service professionals 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { PartnerPlusLogo } from '../components/PartnerPlusLogo';
 import { 
   Home as HomeIcon, 
   Calendar, 
@@ -119,17 +120,7 @@ export const CustomerPortal: React.FC = () => {
                 onClick={() => setActiveCustomerTab('services')}
                 className="flex items-center gap-2.5 text-left cursor-pointer group"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-md font-black text-xl group-hover:scale-105 transition-transform">
-                  🤝
-                </div>
-                <div>
-                  <div className="text-lg font-black tracking-tight text-gray-950 font-display">
-                    PARTNER<span className="text-blue-600">PLUS</span>
-                  </div>
-                  <div className="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
-                    Customer Portal • Citizen Services
-                  </div>
-                </div>
+                <PartnerPlusLogo />
               </button>
 
               {/* Location indicator button */}

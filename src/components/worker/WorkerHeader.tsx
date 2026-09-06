@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { LanguageCode } from '../../types';
 import { useApp } from '../../context/AppContext';
+import { PartnerPlusLogo } from '../PartnerPlusLogo';
 
 interface WorkerHeaderProps {
   workerName: string;
@@ -73,25 +74,11 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
             </button>
 
             <div className="flex items-center gap-2 select-none">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-extrabold text-base sm:text-lg shadow-sm">
-                P
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-base sm:text-lg font-black tracking-tight text-gray-900 font-sans">
-                    PARTNERPLUS
-                  </span>
-                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Worker App</span>
-                  </span>
-                </div>
-                <div className="text-[10px] text-gray-500 font-semibold hidden sm:flex items-center gap-1">
-                  <span>Cooperative Labour Portal</span>
-                  <span>•</span>
-                  <span className="text-emerald-700 font-bold">100% Direct Member Earnings</span>
-                </div>
-              </div>
+              <PartnerPlusLogo />
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Worker Portal</span>
+              </span>
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { PartnerPlusLogo } from './PartnerPlusLogo';
 import { 
   Users, 
   MapPin, 
@@ -133,22 +134,7 @@ export const Navbar: React.FC = () => {
             onClick={() => handleNavClick('home')}
             className="flex items-center gap-2.5 cursor-pointer group select-none shrink-0"
           >
-            <div className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-extrabold text-lg shadow-sm group-hover:scale-105 transition-transform">
-              S
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg sm:text-xl font-extrabold tracking-tight text-[#121212] font-sans">
-                  {t.appName.toUpperCase()}
-                </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                  Co-op
-                </span>
-              </div>
-              <p className="text-[11px] text-gray-500 font-medium leading-none hidden sm:block">
-                {t.appTagline}
-              </p>
-            </div>
+            <PartnerPlusLogo />
           </div>
         </div>
 

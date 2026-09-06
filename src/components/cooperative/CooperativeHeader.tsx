@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Cooperative } from '../../types';
+import { PartnerPlusLogo } from '../PartnerPlusLogo';
 import { 
   Building2, 
   Bell, 
@@ -69,23 +70,18 @@ export const CooperativeHeader: React.FC<CooperativeHeaderProps> = ({
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Official Cooperative Seal / Emblem */}
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md font-black text-xl shrink-0 border border-purple-400/20">
-              🏛️
-            </div>
-
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm sm:text-base font-black tracking-tight text-white font-mono uppercase">
-                  PARTNERPLUS <span className="text-purple-400 hidden sm:inline">• OPERATIONS PORTAL</span>
-                </span>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0">
-                  Reg: {activeCooperative.registrationNumber}
-                </span>
+            <div className="flex items-center gap-3">
+              <PartnerPlusLogo isLight={true} />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0">
+                    Reg: {activeCooperative.registrationNumber}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 truncate mt-0.5 font-light">
+                  {activeCooperative.name} • {activeCooperative.city}, {activeCooperative.state}
+                </p>
               </div>
-              <p className="text-xs text-slate-400 truncate mt-0.5 font-light">
-                {activeCooperative.name} • {activeCooperative.city}, {activeCooperative.state}
-              </p>
             </div>
           </div>
 
