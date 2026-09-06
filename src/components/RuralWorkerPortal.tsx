@@ -152,9 +152,6 @@ export const RuralWorkerPortal: React.FC<RuralWorkerPortalProps> = ({ onSwitchTo
   // Switch Worker Persona
   const handleSwitchWorker = (workerProfile: StructuredWorkerProfile) => {
     setActiveWorker(workerProfile);
-    if (updateUserProfile) {
-      updateUserProfile({ name: workerProfile.name, phone: workerProfile.phone });
-    }
     setIsEmergencyReady(workerProfile.emergency_available);
     soundAndSpeech.playChime('toggle');
     speakText(`${workerProfile.name} profile active. ${workerProfile.primary_skill_label}.`);

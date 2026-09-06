@@ -122,15 +122,25 @@ export const WorkerProfileTab: React.FC<WorkerProfileTabProps> = ({
               value={currentWorker.id}
               onChange={(e) => {
                 const found = STRUCTURED_WORKER_PROFILES.find((p) => p.id === e.target.value);
-                if (found) onSwitchWorker(found);
+                if (found) {
+                  if (found.id === 'wrk-ramesh-elec' && (currentWorker.name || workerName)) {
+                    onSwitchWorker({ ...found, name: currentWorker.name || workerName });
+                  } else {
+                    onSwitchWorker(found);
+                  }
+                }
               }}
               className="w-full sm:w-auto text-xs font-bold bg-white text-gray-900 rounded-xl px-3 py-2 border border-blue-300 cursor-pointer shadow-xs focus:ring-2 focus:ring-blue-400"
             >
-              {STRUCTURED_WORKER_PROFILES.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} — {p.worker_type === 'skilled' ? 'Skilled' : p.worker_type === 'semi_skilled' ? 'Semi-Skilled' : 'General'} ({p.primary_skill_label})
-                </option>
-              ))}
+              {STRUCTURED_WORKER_PROFILES.map((p) => {
+                const isCurrentActive = p.id === currentWorker.id || (p.id === 'wrk-ramesh-elec' && (currentWorker.name || workerName));
+                const displayName = isCurrentActive ? (currentWorker.name || workerName) : p.name;
+                return (
+                  <option key={p.id} value={p.id}>
+                    {displayName} — {p.worker_type === 'skilled' ? 'Skilled' : p.worker_type === 'semi_skilled' ? 'Semi-Skilled' : 'General'} ({p.primary_skill_label})
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>

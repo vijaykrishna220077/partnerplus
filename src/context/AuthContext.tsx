@@ -221,7 +221,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const saved = localStorage.getItem(AUTH_STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        const storedCustomName = localStorage.getItem('partnerplus_user_name');
+        if (storedCustomName && parsed) {
+          parsed.name = storedCustomName;
+        }
+        return parsed;
       }
     } catch {
       // Fallback

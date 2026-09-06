@@ -73,12 +73,17 @@ export const WorkerDemoDrawer: React.FC<WorkerDemoDrawerProps> = ({
             </p>
             <div className="grid grid-cols-1 gap-1.5 pt-1">
               {STRUCTURED_WORKER_PROFILES.map((p) => {
-                const isActive = activeWorker?.id === p.id;
+                const isActive = activeWorker?.id === p.id || (p.id === 'wrk-ramesh-elec' && activeWorker?.name);
+                const displayName = isActive ? (activeWorker?.name || p.name) : p.name;
                 return (
                   <button
                     key={p.id}
                     onClick={() => {
-                      onSwitchWorker(p);
+                      if (p.id === 'wrk-ramesh-elec' && activeWorker?.name) {
+                        onSwitchWorker?.({ ...p, name: activeWorker.name });
+                      } else {
+                        onSwitchWorker?.(p);
+                      }
                       onClose();
                     }}
                     className={`p-2 rounded-xl text-xs font-bold text-left transition cursor-pointer border flex items-center justify-between ${
@@ -88,7 +93,7 @@ export const WorkerDemoDrawer: React.FC<WorkerDemoDrawerProps> = ({
                     }`}
                   >
                     <div>
-                      <span className="font-black">{p.name}</span>
+                      <span className="font-black">{displayName}</span>
                       <span className="text-[10px] opacity-80 ml-1.5">
                         ({p.worker_type === 'skilled' ? 'Skilled' : p.worker_type === 'semi_skilled' ? 'Semi-Skilled' : 'General'} • {p.primary_skill_label})
                       </span>
