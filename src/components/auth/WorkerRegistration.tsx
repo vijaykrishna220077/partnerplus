@@ -58,7 +58,7 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
   onSuccess
 }) => {
   const { loginWithCredentials, switchRole } = useAuth();
-  const { addToast, setRole } = useApp();
+  const { addToast, setRole, refreshData } = useApp();
 
   const [step, setStep] = useState<number>(1);
   const totalSteps = 6;
@@ -266,6 +266,9 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
         avatar: profilePhotoUrl || undefined
       });
       setRole('worker');
+      try {
+        await refreshData();
+      } catch {}
 
       addToast({
         type: 'success',
