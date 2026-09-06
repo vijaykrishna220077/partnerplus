@@ -23,6 +23,7 @@ import {
 import { db, initializeDatabase } from './db';
 import { matchingService } from './matchingService';
 import { bookingService } from './bookingService';
+import { supabase } from './supabaseClient';
 
 export function initDatabase() {
   initializeDatabase();
@@ -32,7 +33,31 @@ export const apiService = {
   // GET /api/services
   async getServices(): Promise<ServiceItem[]> {
     initializeDatabase();
-    return db.getWorkers().length ? mockServices : mockServices;
+    try {
+      const { data, error } = await supabase.from('services').select('*').eq('active', true);
+      if (data && data.length > 0 && !error) {
+        return data.map((s: any) => ({
+          id: s.id,
+          category: s.category as ServiceCategory,
+          name: s.service_name,
+          nameTa: s.name_ta || s.service_name,
+          nameHi: s.name_hi || s.service_name,
+          icon: s.icon || 'Wrench',
+          description: s.description || '',
+          descriptionTa: s.description || '',
+          descriptionHi: s.description || '',
+          startingPrice: Number(s.starting_price) || 299,
+          unit: s.unit || 'per issue',
+          estimatedDuration: s.estimated_duration || '30-45 mins',
+          popularProblems: ['General repair', 'Maintenance'],
+          cooperativeRateGuideline: 'Standard fair wage fixed rate',
+          isEmergencyEligible: s.is_emergency_eligible ?? true
+        }));
+      }
+    } catch (e) {
+      console.warn('Supabase fetch error, fallback to local storage', e);
+    }
+    return mockServices;
   },
 
   // GET /api/workers/nearby
@@ -123,6 +148,38 @@ export const apiService = {
     };
 
     db.insertBooking(newBooking);
+
+    try {
+      await supabase.from('bookings').insert([{
+        booking_number: randomCode,
+        customer_name: newBooking.customerName,
+        customer_phone: newBooking.customerPhone,
+        service_category: newBooking.serviceCategory,
+        service_name: newBooking.serviceName,
+        worker_name: newBooking.workerName,
+        worker_phone: newBooking.workerPhone,
+        cooperative_name: newBooking.cooperativeName,
+        scheduled_date: newBooking.scheduledDate || new Date().toISOString().split('T')[0],
+        start_time: newBooking.scheduledTimeSlot || '10:00 AM',
+        problem_description: newBooking.problemDescription,
+        street_address: newBooking.address.street,
+        area: newBooking.address.area,
+        city: newBooking.address.city || 'Chennai',
+        pincode: newBooking.address.pincode,
+        is_emergency: newBooking.isEmergency,
+        status: 'REQUESTED',
+        service_charge: newBooking.pricing.serviceCharge,
+        worker_expected_earning: newBooking.pricing.workerEarnings,
+        cooperative_welfare_fund: newBooking.pricing.cooperativeWelfareFund,
+        tax_gst: newBooking.pricing.taxGST,
+        total_amount: newBooking.pricing.totalAmount,
+        payment_method: newBooking.payment.method,
+        payment_status: newBooking.payment.status
+      }]);
+    } catch (e) {
+      console.warn('Supabase booking insert warning:', e);
+    }
+
     return newBooking;
   },
 
