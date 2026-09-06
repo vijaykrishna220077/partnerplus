@@ -112,7 +112,7 @@ export const CustomerProfilePage: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-blue-200 mt-1 flex items-center gap-2">
-                <span>{user?.email || 'customer@sahakariseva.org'}</span>
+                <span>{user?.email || 'customer@partnerplus.org'}</span>
                 <span>•</span>
                 <span>{user?.phone || '+91 98400 00000'}</span>
               </p>

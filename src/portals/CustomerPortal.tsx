@@ -124,7 +124,7 @@ export const CustomerPortal: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-lg font-black tracking-tight text-gray-950 font-display">
-                    SAHAKARI <span className="text-blue-600">SEVA</span>
+                    PARTNER<span className="text-blue-600">PLUS</span>
                   </div>
                   <div className="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
                     Customer Portal • Citizen Services

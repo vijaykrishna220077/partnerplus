@@ -145,7 +145,7 @@ export function initializeDatabase() {
         id: 'notif-1',
         recipientId: 'cust-demo-1',
         recipientType: 'customer',
-        title: 'Welcome to Sahakari Seva',
+        title: 'Welcome to PartnerPlus',
         message: '100% Transparent Cooperative Gig Platform with ₹0 corporate commissions.',
         type: 'booking',
         isRead: false,

@@ -74,12 +74,12 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
 
             <div className="flex items-center gap-2 select-none">
               <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-extrabold text-base sm:text-lg shadow-sm">
-                S
+                P
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-base sm:text-lg font-black tracking-tight text-gray-900 font-sans">
-                    SAHAKARI SEVA
+                    PARTNERPLUS
                   </span>
                   <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>

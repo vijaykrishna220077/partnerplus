@@ -160,7 +160,7 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
       addToast({
         type: 'success',
         title: 'Customer Account Created',
-        message: 'Welcome to Sahakari Seva! Verified trade artisans are ready for dispatch.'
+        message: 'Welcome to PartnerPlus! Verified trade artisans are ready for dispatch.'
       });
 
       setLoading(false);
@@ -571,7 +571,7 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
                 className="rounded text-blue-600 mt-1 shrink-0"
               />
               <span className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                I agree to the <strong className="text-slate-900 dark:text-white">Sahakari Seva Customer Terms</strong>, transparent cooperative pricing policies, and privacy protection protocols.
+                I agree to the <strong className="text-slate-900 dark:text-white">PartnerPlus Customer Terms</strong>, transparent cooperative pricing policies, and privacy protection protocols.
               </span>
             </label>
           </div>

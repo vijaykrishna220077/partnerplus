@@ -193,13 +193,13 @@ export const BookingPage: React.FC<BookingPageProps> = ({
 
   // Customer Details
   const [customerName, setCustomerName] = useState<string>(() => {
-    return localStorage.getItem('sahakari_user_name') || 'Ramesh Kumar';
+    return localStorage.getItem('partnerplus_user_name') || localStorage.getItem('sahakari_user_name') || 'Ramesh Kumar';
   });
   const [customerPhone, setCustomerPhone] = useState<string>(() => {
-    return localStorage.getItem('sahakari_user_phone') || '98765 43210';
+    return localStorage.getItem('partnerplus_user_phone') || localStorage.getItem('sahakari_user_phone') || '98765 43210';
   });
   const [customerAddress, setCustomerAddress] = useState<string>(() => {
-    return localStorage.getItem('sahakari_user_address') || 'Flat 302, Green Park Apartments, 2nd Avenue, Anna Nagar';
+    return localStorage.getItem('partnerplus_user_address') || localStorage.getItem('sahakari_user_address') || 'Flat 302, Green Park Apartments, 2nd Avenue, Anna Nagar';
   });
   const [addressTag, setAddressTag] = useState<'home' | 'work' | 'other'>('home');
   const [selectedSlot, setSelectedSlot] = useState<'immediate' | 'evening' | 'tomorrow'>('immediate');
@@ -320,9 +320,9 @@ export const BookingPage: React.FC<BookingPageProps> = ({
     setIsSubmitting(true);
 
     try {
-      localStorage.setItem('sahakari_user_name', customerName.trim());
-      localStorage.setItem('sahakari_user_phone', customerPhone.trim());
-      localStorage.setItem('sahakari_user_address', customerAddress.trim());
+      localStorage.setItem('partnerplus_user_name', customerName.trim());
+      localStorage.setItem('partnerplus_user_phone', customerPhone.trim());
+      localStorage.setItem('partnerplus_user_address', customerAddress.trim());
 
       let primaryTaskId = activeTaskFallback.id;
       let primaryTaskName = activeTaskFallback.name;

@@ -57,7 +57,7 @@ export const Footer: React.FC = () => {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-                S
+                P
               </div>
               <span className="text-xl font-extrabold text-white font-sans tracking-tight">
                 {t.appName.toUpperCase()}
@@ -70,11 +70,11 @@ export const Footer: React.FC = () => {
             <div className="space-y-2 pt-2 text-xs text-gray-400 font-light">
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-blue-400" />
-                <span>Toll-Free Worker & Citizen Helpline: <strong className="text-white font-semibold">1800-425-SEVA (7382)</strong></span>
+                <span>Toll-Free Worker & Citizen Helpline: <strong className="text-white font-semibold">1800-425-PLUS (7587)</strong></span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-blue-400" />
-                <span>support@sahakariseva.gov.in / federation@coopgig.org</span>
+                <span>support@partnerplus.org / federation@coopgig.org</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-blue-400" />
@@ -140,7 +140,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom copyright & attribution */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-light">
-          <p>© 2026 Sahakari Seva. Built for Smart India Hackathon (SIH 26089).</p>
+          <p>© 2026 PartnerPlus. Built for Smart India Hackathon (SIH 26089).</p>
           <div className="flex items-center gap-4">
             <button onClick={() => setActiveTab('about')} className="hover:text-gray-300">Cooperative Bye-laws</button>
             <span>•</span>

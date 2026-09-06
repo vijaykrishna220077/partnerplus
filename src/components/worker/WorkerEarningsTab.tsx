@@ -147,7 +147,7 @@ export const WorkerEarningsTab: React.FC<WorkerEarningsTabProps> = ({
         </div>
 
         <p className="text-[11px] text-gray-600 leading-relaxed">
-          *In Sahakari Seva, there are <strong>zero middleman commissions</strong>. Small cooperative contributions are pooled into the Tamil Nadu Labour Welfare Board & PMSBY policy for free medical care, tools subsidy, and family emergency relief.
+          *In PartnerPlus, there are <strong>zero middleman commissions</strong>. Small cooperative contributions are pooled into the Tamil Nadu Labour Welfare Board & PMSBY policy for free medical care, tools subsidy, and family emergency relief.
         </p>
       </div>
 

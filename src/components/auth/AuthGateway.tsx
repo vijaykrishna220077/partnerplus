@@ -911,7 +911,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
             <span className="text-gray-300">|</span>
             <span>Dallas-Fort Worth &amp; Metro Hubs</span>
             <span className="text-gray-300">|</span>
-            <span>© 2026 Sahakari Seva Co-op</span>
+            <span>© 2026 PartnerPlus Co-op</span>
           </div>
         </div>
       </footer>

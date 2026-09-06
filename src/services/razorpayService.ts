@@ -85,7 +85,7 @@ const simulateRazorpayModal = (
           <span style="width: 6px; height: 6px; background: #38bdf8; border-radius: 50%;"></span>
           Razorpay Standard Checkout
         </div>
-        <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #ffffff;">Sahakari Seva Federation</h4>
+        <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #ffffff;">PartnerPlus Federation</h4>
         <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8;">${booking.serviceName} (#${booking.bookingCode})</p>
         <div style="margin-top: 14px; background: rgba(255,255,255,0.06); padding: 10px; border-radius: 14px; border: 1px border: 1px solid rgba(255,255,255,0.1);">
           <span style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Amount Payable</span>
@@ -214,7 +214,7 @@ export const initializeRazorpayPayment = async ({
         key: envKey,
         amount: Math.round(booking.pricing.totalAmount * 100),
         currency: 'INR',
-        name: 'Sahakari Seva Federation',
+        name: 'PartnerPlus Federation',
         description: `${booking.serviceName} (#${booking.bookingCode})`,
         image: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
         handler: function (response: RazorpaySuccessPayload) {
@@ -222,7 +222,7 @@ export const initializeRazorpayPayment = async ({
         },
         prefill: {
           name: booking.customerName || 'Customer',
-          email: 'customer@sahakariseva.org',
+          email: 'customer@partnerplus.org',
           contact: booking.customerPhone || '9845012345'
         },
         theme: { color: '#059669' },

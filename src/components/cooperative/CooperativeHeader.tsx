@@ -77,7 +77,7 @@ export const CooperativeHeader: React.FC<CooperativeHeaderProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm sm:text-base font-black tracking-tight text-white font-mono uppercase">
-                  SAHAKARI SEVA <span className="text-purple-400 hidden sm:inline">• OPERATIONS PORTAL</span>
+                  PARTNERPLUS <span className="text-purple-400 hidden sm:inline">• OPERATIONS PORTAL</span>
                 </span>
                 <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0">
                   Reg: {activeCooperative.registrationNumber}

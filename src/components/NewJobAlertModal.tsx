@@ -278,7 +278,7 @@ export const NewJobAlertModal: React.FC<NewJobAlertModalProps> = ({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
             </span>
-            <span>सहकारी सेवा • SAHAKARI SEVA GIG ALERT</span>
+            <span>PARTNERPLUS GIG ALERT</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -636,7 +636,7 @@ export const NewJobAlertModal: React.FC<NewJobAlertModalProps> = ({
               className="py-1.5 px-4 text-xs font-bold text-slate-400 hover:text-red-400 active:text-red-500 transition-colors cursor-pointer rounded-lg inline-flex items-center gap-1.5 hover:bg-slate-800/60"
             >
               <X className="w-3.5 h-3.5" />
-              <span>Pass this order (यह काम छोड़ें) • No penalty on Sahakari Seva</span>
+              <span>Pass this order (यह काम छोड़ें) • No penalty on PartnerPlus</span>
             </button>
           </div>
 

@@ -79,10 +79,10 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-950/60 border border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-300 text-xs font-mono font-bold tracking-wide">
           <ShieldCheck className="w-3.5 h-3.5" />
-          <span>SAHAKARI SEVA ONBOARDING</span>
+          <span>PARTNERPLUS ONBOARDING</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-          How will you use Sahakari Seva?
+          How will you use PartnerPlus?
         </h1>
         <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
           Choose the account profile that matches your role. Each portal is customized with specialized tools, verification workflows, and security standards.
@@ -143,7 +143,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
       {/* Switch back to login */}
       <div className="pt-4 text-center border-t border-slate-200 dark:border-slate-800">
         <p className="text-xs text-slate-600 dark:text-slate-400">
-          Already registered on Sahakari Seva?{' '}
+          Already registered on PartnerPlus?{' '}
           <button
             type="button"
             onClick={onBackToLogin}

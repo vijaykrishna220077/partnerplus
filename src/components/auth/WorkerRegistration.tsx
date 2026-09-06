@@ -66,7 +66,7 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
   // Step 1: Personal Details
   const [fullName, setFullName] = useState<string>('Murugan Shanmugam');
   const [phone, setPhone] = useState<string>('+91 98412 34567');
-  const [email, setEmail] = useState<string>('murugan.artisan@sahakariseva.org');
+  const [email, setEmail] = useState<string>('murugan.artisan@partnerplus.org');
   const [dob, setDob] = useState<string>('1988-06-15');
   const [gender, setGender] = useState<string>('Male');
   const [address, setAddress] = useState<string>('12, Bharathiyar Street, Guindy Industrial Estate');
@@ -221,7 +221,7 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
             title: certTitle,
             issuedBy: certIssuer || 'Govt Licensing Authority',
             year: certYear || '2023',
-            documentUrl: 'https://sahakariseva.gov.in/certs/verified-trade.pdf'
+            documentUrl: 'https://partnerplus.org/certs/verified-trade.pdf'
           }
         ] : [],
         documents: [
@@ -441,7 +441,7 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. murugan.artisan@sahakariseva.org"
+                  placeholder="e.g. murugan.artisan@partnerplus.org"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -1078,7 +1078,7 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
             </div>
 
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Sahakari Seva uses your device location to dispatch nearby emergency service requests and minimize your daily travel distances.
+              PartnerPlus uses your device location to dispatch nearby emergency service requests and minimize your daily travel distances.
             </p>
 
             {locationWarning ? (

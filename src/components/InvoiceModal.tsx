@@ -43,7 +43,7 @@ export const InvoiceModal: React.FC = () => {
 
   const handleShareInvoice = () => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(`Sahakari Seva Official Invoice: ${invoiceNo} | Service: ${booking.serviceName} | Amount: ₹${totalAmount}`);
+      navigator.clipboard.writeText(`PartnerPlus Official Invoice: ${invoiceNo} | Service: ${booking.serviceName} | Amount: ₹${totalAmount}`);
     }
     addToast({
       type: 'success',
@@ -77,7 +77,7 @@ export const InvoiceModal: React.FC = () => {
           <div className="flex items-start justify-between border-b border-slate-200 pb-5">
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xl font-extrabold text-slate-900 font-serif">Sahakari Seva</span>
+                <span className="text-xl font-extrabold text-slate-900 font-serif">PartnerPlus</span>
                 <span className="text-[10px] uppercase font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
                   Co-op Federation
                 </span>

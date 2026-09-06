@@ -152,7 +152,7 @@ export const CooperativeLoginGateway: React.FC<CooperativeLoginGatewayProps> = (
             🏛️
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white font-mono uppercase">
-            SAHAKARI SEVA
+            PARTNERPLUS
           </h1>
           <p className="text-xs text-purple-400 font-mono font-bold uppercase tracking-wider">
             Official Cooperative Operations Portal

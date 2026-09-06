@@ -20,7 +20,7 @@ export const ReportsTab: React.FC = () => {
     setDownloading(true);
     setTimeout(() => {
       setDownloading(false);
-      alert(`Sahakari Seva Official Monthly Performance Report (${format.toUpperCase()}) downloaded successfully.`);
+      alert(`PartnerPlus Official Monthly Performance Report (${format.toUpperCase()}) downloaded successfully.`);
     }, 600);
   };
 

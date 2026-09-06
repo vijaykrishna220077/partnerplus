@@ -46,7 +46,7 @@ const INITIAL_USERS: UserAccount[] = [
   {
     id: 'user-w1',
     auth_user_id: 'auth-w1',
-    email: 'murugan.artisan@sahakariseva.org',
+    email: 'murugan.artisan@partnerplus.org',
     phone: '+91 98412 34567',
     role: 'WORKER',
     account_status: 'ACTIVE',
@@ -310,7 +310,7 @@ class OnboardingService {
     const newUser: UserAccount = {
       id: userId,
       auth_user_id: authUserId,
-      email: params.email?.trim().toLowerCase() || `${params.phone.replace(/\D/g, '')}@sahakariseva.org`,
+      email: params.email?.trim().toLowerCase() || `${params.phone.replace(/\D/g, '')}@partnerplus.org`,
       phone: params.phone.trim(),
       role: 'WORKER',
       account_status: 'PENDING_VERIFICATION',

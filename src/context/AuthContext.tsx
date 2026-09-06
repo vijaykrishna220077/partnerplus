@@ -46,7 +46,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     user: {
       id: 'w1',
       name: 'Murugan Thangaraj',
-      email: 'murugan.artisan@sahakariseva.org',
+      email: 'murugan.artisan@partnerplus.org',
       phone: '+91 98412 34567',
       role: 'worker',
       avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
@@ -274,7 +274,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const matchedAccount = DEMO_ACCOUNTS.find(d => d.user.staffRole === staffRole) || DEMO_ACCOUNTS[2];
     const userCoop: AuthUser = {
       ...matchedAccount.user,
-      email: identifier.includes('@') ? identifier : `${identifier.toLowerCase()}@sahakariseva.org`,
+      email: identifier.includes('@') ? identifier : `${identifier.toLowerCase()}@partnerplus.org`,
       role: staffRole === 'COOPERATIVE_ADMIN' ? 'cooperative_admin' : 'cooperative_staff',
       staffRole,
       cooperativeId: cooperativeId || matchedAccount.user.cooperativeId,
@@ -334,7 +334,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const matchedDemo = DEMO_ACCOUNTS.find(d => d.role === role) || DEMO_ACCOUNTS[0];
     const customUser: AuthUser = {
       ...matchedDemo.user,
-      email: identifier.includes('@') ? identifier : `${identifier.replace(/\D/g, '')}@sahakariseva.org`,
+      email: identifier.includes('@') ? identifier : `${identifier.replace(/\D/g, '')}@partnerplus.org`,
       phone: identifier.includes('@') ? matchedDemo.user.phone : identifier,
       role
     };

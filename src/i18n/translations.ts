@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    appName: "Sahakari Seva",
+    appName: "PartnerPlus",
     appTagline: "Cooperative Gig Services Platform",
     navHome: "Home",
     navServices: "Services",

@@ -219,7 +219,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({
             {/* Platform Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 text-blue-900 text-xs font-mono font-bold tracking-wide shadow-2xs animate-in fade-in slide-in-from-top-4 duration-300">
               <ShieldCheck className="w-4 h-4 text-[#1D68ED]" />
-              <span>🇮🇳 SAHAKARI SEVA • COOPERATIVE GIG SERVICES PLATFORM</span>
+              <span>🇮🇳 PARTNERPLUS • COOPERATIVE GIG SERVICES PLATFORM</span>
             </div>
 
             {/* Main Headline */}
@@ -472,7 +472,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({
               Seamless Workflow
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display">
-              How Sahakari Seva Operates
+              How PartnerPlus Operates
             </h2>
             <p className="text-sm text-slate-600 max-w-xl mx-auto font-medium">
               Transparent, automated, and fair end-to-end service execution cycle.
@@ -548,7 +548,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({
               </h2>
 
               <p className="text-sm text-slate-300 font-medium leading-relaxed">
-                Unlike commercial gig aggregators that take up to 30% commission cuts, Sahakari Seva is built on cooperative principles. Workers retain 95% of their service fee while 5% feeds into a transparent welfare &amp; accident insurance reserve.
+                Unlike commercial gig aggregators that take up to 30% commission cuts, PartnerPlus is built on cooperative principles. Workers retain 95% of their service fee while 5% feeds into a transparent welfare &amp; accident insurance reserve.
               </p>
 
               <div className="grid grid-cols-2 gap-4 text-xs font-bold pt-2">
@@ -635,7 +635,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-slate-500">
-            <p>© 2026 Sahakari Seva Platform. PartnerPlus Exterior &amp; Cooperative Gig Services. All rights reserved.</p>
+            <p>© 2026 PartnerPlus Platform. Cooperative Gig Services. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <span>Helpline: 1800-425-7242</span>
               <span>•</span>

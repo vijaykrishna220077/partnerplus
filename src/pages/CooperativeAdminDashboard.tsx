@@ -55,7 +55,7 @@ export const CooperativeAdminDashboard: React.FC = () => {
       addToast({
         type: 'success',
         title: 'Worker Verified!',
-        message: `${workerName} has been officially certified and is now active on the public Sahakari Seva network.`
+        message: `${workerName} has been officially certified and is now active on the public PartnerPlus network.`
       });
     } catch (err) {
       console.error(err);

@@ -483,7 +483,7 @@ export const WorkerDashboard: React.FC = () => {
           addToast({
             type: 'info',
             title: 'Order Passed (काम छोड़ा)',
-            message: 'No penalty on Sahakari Seva. Waiting for next nearby request.'
+            message: 'No penalty on PartnerPlus. Waiting for next nearby request.'
           });
         }}
       />
