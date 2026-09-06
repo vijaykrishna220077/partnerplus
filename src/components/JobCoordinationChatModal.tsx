@@ -1,0 +1,626 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  X, 
+  Send, 
+  Phone, 
+  MapPin, 
+  Volume2, 
+  VolumeX, 
+  Mic, 
+  MicOff, 
+  Check, 
+  CheckCheck, 
+  Sparkles, 
+  User, 
+  Wrench, 
+  ShieldCheck, 
+  Info, 
+  Clock, 
+  RefreshCw,
+  ExternalLink
+} from 'lucide-react';
+import { Booking, ChatMessage, Worker } from '../types';
+import { apiService } from '../services/apiService';
+import { realtimeHub } from '../services/db';
+import { soundAndSpeech } from '../utils/soundAndSpeech';
+import { useApp } from '../context/AppContext';
+
+interface JobCoordinationChatModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  booking: Booking | null;
+  initialRole?: 'customer' | 'worker';
+}
+
+export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> = ({
+  isOpen,
+  onClose,
+  booking,
+  initialRole = 'customer'
+}) => {
+  const { lang, workers } = useApp();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputText, setInputText] = useState('');
+  const initialTarget = initialRole === 'worker' ? 'customer' : 'worker';
+  const [targetContact, setTargetContact] = useState<'customer' | 'worker'>(initialTarget);
+  const [isListeningSpeech, setIsListeningSpeech] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isSpeakingMessageId, setIsSpeakingMessageId] = useState<string | null>(null);
+  const [showQuickChips, setShowQuickChips] = useState(true);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // Synchronize initial target contact when modal opens with a specified role
+  useEffect(() => {
+    setTargetContact(initialRole === 'worker' ? 'customer' : 'worker');
+  }, [initialRole, isOpen]);
+
+  const activeRole = targetContact === 'worker' ? 'customer' : 'worker';
+
+  // Find worker details for this booking
+  const assignedWorker: Worker | undefined = workers.find(
+    (w) => w.id === booking?.workerId || w.name === booking?.workerName
+  );
+
+  const customerName = booking?.customerName || 'Customer';
+  const workerName = assignedWorker?.name || booking?.workerName || 'Cooperative Worker';
+  const workerPhone = assignedWorker?.phone || '+91 98450 12345';
+  const customerPhone = booking?.customerPhone || '+91 94432 67890';
+
+  // Load messages for this booking
+  const loadMessages = async () => {
+    if (!booking) return;
+    try {
+      const chatList = await apiService.getMessages(booking.id);
+      setMessages(chatList);
+      await apiService.markMessagesAsRead(booking.id, activeRole);
+    } catch (err) {
+      console.error('Error loading chat messages:', err);
+    }
+  };
+
+  // Initial load and subscriptions
+  useEffect(() => {
+    if (!isOpen || !booking) return;
+
+    loadMessages();
+
+    // Subscribe to in-memory real-time hub
+    const unsubscribeMessage = realtimeHub.subscribe('sahakari:message_sent', (newMsg: ChatMessage) => {
+      if (newMsg.bookingId === booking.id) {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === newMsg.id)) return prev;
+          return [...prev, newMsg];
+        });
+        // Play gentle incoming sound if sent by the other party
+        if (newMsg.senderRole !== activeRole) {
+          soundAndSpeech.playChime('alert');
+        }
+        apiService.markMessagesAsRead(booking.id, activeRole);
+      }
+    });
+
+    const unsubscribeRead = realtimeHub.subscribe('sahakari:messages_read', (data: { bookingId: string }) => {
+      if (data.bookingId === booking.id) {
+        setMessages((prev) => prev.map((m) => ({ ...m, read: true })));
+      }
+    });
+
+    // Cross-tab broadcast channel listener
+    let broadcastChannel: BroadcastChannel | null = null;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        broadcastChannel = new BroadcastChannel('sahakari_chat_channel');
+        broadcastChannel.onmessage = (event) => {
+          if (event.data?.type === 'NEW_MESSAGE' && event.data.payload?.bookingId === booking.id) {
+            const incoming = event.data.payload as ChatMessage;
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === incoming.id)) return prev;
+              return [...prev, incoming];
+            });
+          }
+        };
+      }
+    } catch {
+      // Broadcast fallback
+    }
+
+    return () => {
+      unsubscribeMessage();
+      unsubscribeRead();
+      if (broadcastChannel) {
+        broadcastChannel.close();
+      }
+    };
+  }, [isOpen, booking?.id, activeRole]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTyping]);
+
+  // Quick Action Chips
+  const customerQuickChips = [
+    { label: '📍 Flat & Gate Details', text: 'Please take the elevator to 2nd floor, Apt 2B. Ring 2B bell.' },
+    { label: '⏱️ What is your ETA?', text: 'Hi! Could you share your estimated arrival time?' },
+    { label: '🚗 Visitor Parking', text: 'You can park your bike inside the visitor parking lot near tower entrance.' },
+    { label: '📞 Call at Security Gate', text: 'Security needs your name at main gate, please call when you reach.' },
+    { label: '🛠️ Spare Parts / Tools', text: 'Do you need any additional ladders, water, or specific materials?' }
+  ];
+
+  const workerQuickChips = [
+    { label: '🚗 On My Way (10 mins)', text: 'I am on the way! Estimated arrival time is 10 to 15 minutes.' },
+    { label: '📍 Arrived at Site', text: 'Vanakkam! I have arrived at your building main entrance gate.' },
+    { label: '🔍 Inspecting Issue', text: 'I have started diagnosing the repair and inspecting the wiring.' },
+    { label: '📦 Buying Spare Part', text: 'Need a replacement switch/valve. Purchasing genuine part from nearby hardware store.' },
+    { label: '✅ Work Completed', text: 'The repair work is complete and tested. Ready for your inspection!' }
+  ];
+
+  const handleSendMessage = async (textToSend?: string, quickType?: any) => {
+    const text = (textToSend || inputText).trim();
+    if (!text || !booking) return;
+
+    const senderRole = activeRole;
+    const senderName = activeRole === 'customer' ? customerName : workerName;
+    const senderId = activeRole === 'customer' ? (booking.customerId || 'cust-demo-1') : (assignedWorker?.id || 'worker-1');
+
+    setInputText('');
+
+    try {
+      soundAndSpeech.playChime('click');
+      await apiService.sendMessage({
+        bookingId: booking.id,
+        senderId,
+        senderName,
+        senderRole,
+        text,
+        quickReplyType: quickType || 'general'
+      });
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
+  };
+
+  // Simulate automated friendly response from the other party
+  const handleSimulateReply = () => {
+    if (!booking) return;
+    setIsTyping(true);
+    setTimeout(async () => {
+      setIsTyping(false);
+      const isReplyingAsWorker = activeRole === 'customer';
+      const senderRole = isReplyingAsWorker ? 'worker' : 'customer';
+      const senderName = isReplyingAsWorker ? workerName : customerName;
+      const senderId = isReplyingAsWorker ? (assignedWorker?.id || 'worker-1') : (booking.customerId || 'cust-demo-1');
+
+      const sampleWorkerReplies = [
+        'Vanakkam! Received your instructions. I am just 2 minutes away from your street.',
+        'Noted! I have the required safety tools and cooperative ID badge with me.',
+        'Everything is checked and working smoothly now! Please inspect the repair.'
+      ];
+
+      const sampleCustomerReplies = [
+        'Thank you! The front door is open, please come right in.',
+        'Great, thanks for the update. Let me know if you need an extension cord.',
+        'Awesome! The repair looks very clean. Thank you for the quick work.'
+      ];
+
+      const replies = isReplyingAsWorker ? sampleWorkerReplies : sampleCustomerReplies;
+      const randomText = replies[Math.floor(Math.random() * replies.length)];
+
+      await apiService.sendMessage({
+        bookingId: booking.id,
+        senderId,
+        senderName,
+        senderRole,
+        text: randomText,
+        quickReplyType: 'general'
+      });
+    }, 1200);
+  };
+
+  // Speech Recognition (Dictate)
+  const toggleSpeechRecognition = () => {
+    if (isListeningSpeech) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListeningSpeech(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition is not supported in this browser. Please type your message.');
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = lang === 'ta' ? 'ta-IN' : lang === 'hi' ? 'hi-IN' : 'en-IN';
+
+      recognition.onstart = () => {
+        setIsListeningSpeech(true);
+        soundAndSpeech.playChime('toggle');
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        setIsListeningSpeech(false);
+      };
+
+      recognition.onerror = () => {
+        setIsListeningSpeech(false);
+      };
+
+      recognition.onend = () => {
+        setIsListeningSpeech(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      setIsListeningSpeech(false);
+    }
+  };
+
+  // Read message aloud via Web Speech
+  const handleSpeakMessage = (msg: ChatMessage) => {
+    if (isSpeakingMessageId === msg.id) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      setIsSpeakingMessageId(null);
+      return;
+    }
+
+    setIsSpeakingMessageId(msg.id);
+    soundAndSpeech.speak(msg.text, lang || 'en');
+    setTimeout(() => {
+      setIsSpeakingMessageId(null);
+    }, Math.min(msg.text.length * 100, 6000));
+  };
+
+  if (!isOpen || !booking) return null;
+
+  const currentChips = activeRole === 'customer' ? customerQuickChips : workerQuickChips;
+  const otherPartyName = activeRole === 'customer' ? workerName : customerName;
+  const otherPartyPhone = activeRole === 'customer' ? workerPhone : customerPhone;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-2 sm:p-4 animate-in fade-in duration-200">
+      <div 
+        className="bg-white w-full max-w-2xl h-[92vh] max-h-[780px] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* MODAL HEADER */}
+        <div className="bg-slate-900 text-white px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col gap-2.5 border-b border-slate-800">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {activeRole === 'customer' && assignedWorker?.photoUrl ? (
+                <img 
+                  src={assignedWorker.photoUrl} 
+                  alt={workerName} 
+                  className="w-11 h-11 rounded-2xl object-cover border-2 border-emerald-400"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-base shadow-sm ${
+                  activeRole === 'customer' ? 'bg-emerald-500 text-slate-950' : 'bg-blue-500 text-white'
+                }`}>
+                  {activeRole === 'customer' ? <Wrench className="w-6 h-6" /> : <User className="w-6 h-6" />}
+                </div>
+              )}
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-extrabold text-base sm:text-lg text-white leading-tight">
+                    {otherPartyName}
+                  </h3>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Live Direct
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+                  <span>{booking.serviceName}</span>
+                  <span>•</span>
+                  <span className="text-slate-300 font-mono">#{booking.bookingReference || booking.id.slice(0, 8)}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Call Shortcut */}
+              <a
+                href={`tel:${otherPartyPhone}`}
+                className="p-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-bold border border-slate-700 active:scale-95"
+                title={`Call ${otherPartyName}`}
+              >
+                <Phone className="w-4 h-4" />
+                <span className="hidden sm:inline">Call</span>
+              </a>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition cursor-pointer"
+                aria-label="Close chat"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* ACTIVE ROLE SWITCHER & LOCATION BAR */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80 text-xs">
+            <div className="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1 rounded-xl text-slate-300">
+              <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span className="truncate max-w-[200px] sm:max-w-[320px]">
+                {booking.address || 'Customer site location'}
+              </span>
+            </div>
+
+            {/* Contact Target Toggle */}
+            <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-[11px]">
+              <span className="text-slate-400 pl-1 font-medium hidden sm:inline">Talk to:</span>
+              <button
+                type="button"
+                onClick={() => setTargetContact('worker')}
+                className={`px-2.5 py-0.5 rounded-lg font-bold transition cursor-pointer ${
+                  targetContact === 'worker'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Worker 👷
+              </button>
+              <button
+                type="button"
+                onClick={() => setTargetContact('customer')}
+                className={`px-2.5 py-0.5 rounded-lg font-bold transition cursor-pointer ${
+                  targetContact === 'customer'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Customer 👤
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* SECURITY & PROTOCOL NOTICE */}
+        <div className="bg-blue-50/70 border-b border-blue-100 px-4 py-1.5 flex items-center justify-between text-[11px] text-blue-900">
+          <div className="flex items-center gap-1.5 font-medium">
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+            <span>Cooperative Safe Channel: All coordination is logged for fair wage & escrow security.</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleSimulateReply}
+            className="text-blue-700 hover:text-blue-900 font-bold underline flex items-center gap-1 cursor-pointer shrink-0 ml-2"
+            title="Simulate a reply from the other party for demo"
+          >
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            <span className="hidden sm:inline">Simulate Reply</span>
+          </button>
+        </div>
+
+        {/* MESSAGES SCROLL AREA */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 bg-slate-50">
+          <div className="text-center my-1">
+            <span className="px-3 py-1 bg-slate-200 text-slate-600 text-[10px] font-bold rounded-full uppercase tracking-wider">
+              Today • Job Coordination
+            </span>
+          </div>
+
+          {messages.length === 0 ? (
+            <div className="text-center py-12 px-4 space-y-2">
+              <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-3">
+                <Info className="w-6 h-6" />
+              </div>
+              <p className="text-sm font-bold text-slate-700">No messages yet for this service</p>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Send arrival updates, gate security entry instructions, or clarify spare part requirements below.
+              </p>
+            </div>
+          ) : (
+            messages.map((msg) => {
+              const isMe = msg.senderRole === activeRole;
+              const isSpeaking = isSpeakingMessageId === msg.id;
+
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1 animate-in fade-in duration-200`}
+                >
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 px-1 font-semibold">
+                    <span>{msg.senderName}</span>
+                    <span className="text-[10px] text-slate-400">
+                      ({msg.senderRole === 'customer' ? 'Customer' : 'Worker'})
+                    </span>
+                  </div>
+
+                  <div className="flex items-end gap-1.5 max-w-[85%] sm:max-w-[75%]">
+                    {/* Listen Audio Button for incoming messages */}
+                    {!isMe && (
+                      <button
+                        type="button"
+                        onClick={() => handleSpeakMessage(msg)}
+                        className={`p-1.5 rounded-full border transition cursor-pointer mb-1 ${
+                          isSpeaking 
+                            ? 'bg-blue-600 text-white border-blue-600 animate-pulse' 
+                            : 'bg-white hover:bg-slate-100 text-slate-600 border-slate-300'
+                        }`}
+                        title="Listen to message (Text to Speech)"
+                      >
+                        {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                      </button>
+                    )}
+
+                    <div
+                      className={`px-4 py-2.5 rounded-2xl shadow-xs text-sm leading-relaxed ${
+                        isMe
+                          ? activeRole === 'customer'
+                            ? 'bg-blue-600 text-white rounded-br-xs'
+                            : 'bg-emerald-600 text-white rounded-br-xs'
+                          : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs'
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap wrap-break-word font-normal">{msg.text}</p>
+                      
+                      <div className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${
+                        isMe ? 'text-white/80' : 'text-slate-400'
+                      }`}>
+                        <span>
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        {isMe && (
+                          <span>
+                            {msg.read ? (
+                              <CheckCheck className="w-3 h-3 text-emerald-300 inline" />
+                            ) : (
+                              <Check className="w-3 h-3 inline" />
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Listen Audio Button for own messages */}
+                    {isMe && (
+                      <button
+                        type="button"
+                        onClick={() => handleSpeakMessage(msg)}
+                        className={`p-1.5 rounded-full border transition cursor-pointer mb-1 ${
+                          isSpeaking 
+                            ? 'bg-blue-600 text-white border-blue-600 animate-pulse' 
+                            : 'bg-white hover:bg-slate-100 text-slate-500 border-slate-200'
+                        }`}
+                        title="Listen to message (Text to Speech)"
+                      >
+                        {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+
+          {/* Typing Indicator */}
+          {isTyping && (
+            <div className="flex items-center gap-2 text-slate-500 text-xs py-1 animate-in fade-in">
+              <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[10px]">
+                {activeRole === 'customer' ? '👷' : '👤'}
+              </div>
+              <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-full flex items-center gap-1 shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.4s]"></span>
+                <span className="text-[11px] text-slate-500 ml-1.5">
+                  {otherPartyName} is typing...
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* QUICK COORDINATION CHIPS TRAY */}
+        <div className="bg-white border-t border-slate-200 px-3 py-2">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-500" />
+              1-Tap Quick Coordination ({activeRole === 'customer' ? 'Customer phrases' : 'Worker phrases'}):
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowQuickChips(!showQuickChips)}
+              className="text-[10px] text-blue-600 font-bold hover:underline cursor-pointer"
+            >
+              {showQuickChips ? 'Hide' : 'Show All'}
+            </button>
+          </div>
+
+          {showQuickChips && (
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {currentChips.map((chip, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSendMessage(chip.text, 'general')}
+                  className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer active:scale-95 border border-slate-200/80 hover:border-slate-300 flex items-center gap-1"
+                >
+                  <span>{chip.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* MESSAGE INPUT BAR */}
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSendMessage();
+          }}
+          className="bg-white border-t border-slate-200 px-3 py-3 sm:px-4 flex items-center gap-2"
+        >
+          {/* Voice Dictate Button */}
+          <button
+            type="button"
+            onClick={toggleSpeechRecognition}
+            className={`p-2.5 rounded-xl transition cursor-pointer border ${
+              isListeningSpeech 
+                ? 'bg-red-500 text-white border-red-600 animate-pulse ring-2 ring-red-200' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+            }`}
+            title={isListeningSpeech ? 'Listening... click to stop' : 'Click to dictate message by voice'}
+          >
+            {isListeningSpeech ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          </button>
+
+          {/* Text Input */}
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder={
+              isListeningSpeech 
+                ? 'Listening to your voice...' 
+                : activeRole === 'customer' 
+                  ? 'Ask worker about ETA, gate access, parking...' 
+                  : 'Update customer on arrival, spare parts...'
+            }
+            className="flex-1 bg-slate-100 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-hidden transition"
+          />
+
+          {/* Send Button */}
+          <button
+            type="submit"
+            disabled={!inputText.trim()}
+            className={`px-4 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 ${
+              inputText.trim()
+                ? activeRole === 'customer'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            }`}
+          >
+            <span className="hidden sm:inline">Send</span>
+            <Send className="w-4 h-4" />
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};

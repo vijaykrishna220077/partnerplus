@@ -1,0 +1,7 @@
+{
+  "name": "Sahakari Seva - Cooperative Gig Services Platform",
+  "description": "On-demand cooperative platform for all jobs: skilled trades (electricians, plumbers, carpenters), daily wage helpers, cleaners, and painters with accessible voice-guided interfaces for rural and uneducated laborers.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
