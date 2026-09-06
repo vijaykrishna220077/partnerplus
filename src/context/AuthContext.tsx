@@ -223,8 +223,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (saved) {
         const parsed = JSON.parse(saved);
         const storedCustomName = localStorage.getItem('partnerplus_user_name');
+        const storedCustomAvatar = localStorage.getItem('partnerplus_user_avatar');
         if (storedCustomName && parsed) {
           parsed.name = storedCustomName;
+        }
+        if (storedCustomAvatar && parsed) {
+          parsed.avatar = storedCustomAvatar;
         }
         return parsed;
       }
@@ -350,6 +354,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(customUser);
     try {
       localStorage.setItem('partnerplus_user_name', customUser.name);
+      if (customUser.avatar) {
+        localStorage.setItem('partnerplus_user_avatar', customUser.avatar);
+      }
     } catch {}
     return { success: true };
   };

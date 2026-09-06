@@ -71,10 +71,11 @@ export const RuralWorkerPortal: React.FC<RuralWorkerPortalProps> = ({ onSwitchTo
       setActiveWorker((prev) => ({
         ...prev,
         name: user.name,
-        phone: user.phone || prev.phone
+        phone: user.phone || prev.phone,
+        avatar: user.avatar || prev.avatar
       }));
     }
-  }, [user?.name, user?.phone, user?.role]);
+  }, [user?.name, user?.phone, user?.avatar, user?.role]);
 
   // Data states
   const [jobs, setJobs] = useState<WorkerJobOpening[]>(INITIAL_WORKER_JOBS);

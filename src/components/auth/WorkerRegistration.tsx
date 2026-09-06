@@ -257,12 +257,13 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
       setSubmissionComplete(true);
       setLoading(false);
 
-      // Also authenticate worker & set active role with actual registered name
+      // Also authenticate worker & set active role with actual registered name and uploaded photo
       await loginWithCredentials(phone, 'worker123', 'worker', {
         name: fullName,
         email: email,
         phone: phone,
-        role: 'worker'
+        role: 'worker',
+        avatar: profilePhotoUrl || undefined
       });
       setRole('worker');
 

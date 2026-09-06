@@ -14,12 +14,15 @@ import {
   Plus,
   ArrowRight,
   Award,
-  MapPin
+  MapPin,
+  Camera
 } from 'lucide-react';
 import { LanguageCode } from '../../types';
 import { StructuredWorkerProfile, WorkerSkillRecord } from '../../types/workerSkillRegistry';
 import { STRUCTURED_WORKER_PROFILES } from '../../data/structuredWorkersData';
 import { cooperativeSkillRegistry } from '../../services/cooperativeSkillRegistry';
+import { ProfilePhotoUploader } from '../common/ProfilePhotoUploader';
+import { useAuth } from '../../context/AuthContext';
 
 interface WorkerProfileTabProps {
   workerName: string;
@@ -64,11 +67,14 @@ export const WorkerProfileTab: React.FC<WorkerProfileTabProps> = ({
   ]);
 
   const [isAddingSkill, setIsAddingSkill] = useState(false);
+  const [isEditingPhoto, setIsEditingPhoto] = useState(false);
   const [selectedNewSkillId, setSelectedNewSkillId] = useState('');
   const [selectedNewLevel, setSelectedNewLevel] = useState<1 | 2 | 3 | 4>(2);
   const [selectedNewExp, setSelectedNewExp] = useState<number>(2);
 
+  const { updateUserProfile, user } = useAuth();
   const currentWorker = worker || STRUCTURED_WORKER_PROFILES[0];
+  const activePhotoUrl = currentWorker.avatar || user?.avatar;
   const allRegistrySkills = cooperativeSkillRegistry.getAllSkills();
 
   const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -148,9 +154,41 @@ export const WorkerProfileTab: React.FC<WorkerProfileTabProps> = ({
 
       {/* 1. Worker Profile Header */}
       <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div className="w-18 h-18 rounded-3xl bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-4xl shrink-0">
-          {currentWorker.worker_type === 'skilled' ? '⚡' : currentWorker.worker_type === 'semi_skilled' ? '🔧' : '📦'}
+        <div className="relative group shrink-0">
+          <div className="w-20 h-20 rounded-3xl bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-4xl shrink-0 overflow-hidden shadow-sm">
+            {activePhotoUrl ? (
+              <img src={activePhotoUrl} alt={currentWorker.name} className="w-full h-full object-cover" />
+            ) : (
+              currentWorker.worker_type === 'skilled' ? '⚡' : currentWorker.worker_type === 'semi_skilled' ? '🔧' : '📦'
+            )}
+          </div>
+          <button
+            onClick={() => setIsEditingPhoto(!isEditingPhoto)}
+            className="absolute -bottom-1 -right-1 bg-emerald-600 hover:bg-emerald-700 text-white p-1.5 rounded-full border-2 border-white shadow-md transition active:scale-95 cursor-pointer"
+            title="Upload / Update Profile Photo"
+          >
+            <Camera className="w-3.5 h-3.5" />
+          </button>
         </div>
+
+        {isEditingPhoto && (
+          <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-2">
+            <ProfilePhotoUploader
+              currentPhotoUrl={activePhotoUrl}
+              onPhotoSelected={(newUrl) => {
+                updateUserProfile({ avatar: newUrl });
+                setIsEditingPhoto(false);
+              }}
+              label="Update Worker Profile Photograph"
+            />
+            <button
+              onClick={() => setIsEditingPhoto(false)}
+              className="mt-2 text-xs font-bold text-slate-500 hover:text-slate-700 underline"
+            >
+              Cancel Photo Change
+            </button>
+          </div>
+        )}
         <div className="space-y-1 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-xl sm:text-2xl font-black text-gray-900">{currentWorker.name}</h2>
