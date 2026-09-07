@@ -4,7 +4,6 @@ import {
   Power, 
   Zap, 
   ArrowRight, 
-  PanelLeft, 
   Volume2, 
   VolumeX, 
   Sparkles,
@@ -62,17 +61,8 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
       {/* Top Branding & Main Controls Bar */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="h-16 sm:h-18 flex items-center justify-between gap-2 sm:gap-4">
-          {/* Left: Sidebar Menu + Logo */}
+          {/* Left: Logo & Portal Badge */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <button
-              onClick={onToggleSidebar}
-              className="p-2 sm:px-3 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-1.5 cursor-pointer border border-gray-200/80 active:scale-95"
-              title="Open Navigation Menu"
-            >
-              <PanelLeft className="w-4 h-4 text-blue-600" />
-              <span className="hidden md:inline">Menu</span>
-            </button>
-
             <div className="flex items-center gap-2 select-none">
               <PartnerPlusLogo />
               <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
