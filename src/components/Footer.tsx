@@ -136,7 +136,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom copyright & attribution */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 font-light">
-          <p>© 2026 PartnerPlus. Built for Smart India Hackathon (SIH 26089).</p>
+          <p>{t("common.copyright")}</p>
           <div className="flex items-center gap-4">
             <button onClick={() => setActiveTab('about')} className="hover:text-gray-300">Cooperative Bye-laws</button>
             <span>•</span>

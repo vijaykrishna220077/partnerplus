@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { LanguageCode, UserRole, Worker, ServiceItem, Booking, DemandForecastItem, ServiceCategory } from '../types';
-import { translations } from '../i18n/translations';
+import { translations, getTranslatedText, formatDate, formatNumber, formatCurrency } from '../i18n/translations';
 import { mockServices, mockWorkers, mockBookings, mockDemandForecast } from '../data/mockData';
 import { apiService, initDatabase } from '../services/apiService';
 import { soundAndSpeech } from '../utils/soundAndSpeech';
 import confetti from 'canvas-confetti';
+
+export type TranslateFunction = {
+  (pathOrKey: string, params?: Record<string, any>): string;
+} & typeof translations['en'];
 
 interface ToastNotification {
   id: string;
@@ -16,7 +20,7 @@ interface ToastNotification {
 interface AppContextType {
   lang: LanguageCode;
   setLang: (lang: LanguageCode) => void;
-  t: typeof translations['en'];
+  t: TranslateFunction;
   role: UserRole;
   setRole: (role: UserRole) => void;
   currentLocation: string;
@@ -95,10 +99,14 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [lang, setLangState] = useState<LanguageCode>('en');
+  const [lang, setLangState] = useState<LanguageCode>(() => {
+    const saved = localStorage.getItem('sahakari_lang') as LanguageCode;
+    return saved || 'en';
+  });
 
   const setLang = (newLang: LanguageCode) => {
     setLangState(newLang);
+    localStorage.setItem('sahakari_lang', newLang);
     soundAndSpeech.setLanguage(newLang, true);
   };
 
@@ -138,7 +146,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
 
-  const t = translations[lang] || translations.en;
+  const translateFn = (pathOrKey: string, params?: Record<string, any>) => {
+    return getTranslatedText(lang, pathOrKey, params);
+  };
+  const langDict = translations[lang] || translations.en;
+  const t = Object.assign(translateFn, langDict) as TranslateFunction;
 
   const refreshData = async () => {
     try {
@@ -360,4 +372,16 @@ export const useApp = () => {
     throw new Error('useApp must be used within an AppProvider');
   }
   return context;
+};
+
+export const useLanguage = () => {
+  const { lang, setLang, t } = useApp();
+  return {
+    lang,
+    setLang,
+    t,
+    formatDate: (date: Date | string) => formatDate(date, lang),
+    formatNumber,
+    formatCurrency,
+  };
 };

@@ -55,7 +55,7 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
   onOpenChat,
   unreadChatCount
 }) => {
-  const { currentLocation, openLocationPicker } = useApp();
+  const { currentLocation, openLocationPicker, t } = useApp();
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-xs">
@@ -77,7 +77,7 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
               <PartnerPlusLogo />
               <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Worker Portal</span>
+                <span>{t("worker.workerPortalTitle")}</span>
               </span>
             </div>
           </div>
@@ -120,7 +120,7 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
                 title="Open Real-time Job Chat with Customer"
               >
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="hidden sm:inline">Job Chat</span>
+                <span className="hidden sm:inline">{t("chat.chat")}</span>
                 {unreadChatCount !== undefined && unreadChatCount > 0 && (
                   <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center -ml-0.5 animate-pulse">
                     {unreadChatCount}
@@ -129,7 +129,7 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
               </button>
             )}
 
-            {/* SIH Demo Drawer Pill (Clean & Non-Intrusive) */}
+            {/* SIH Demo Drawer Pill */}
             <button
               onClick={onOpenDemoDrawer}
               className="px-2.5 py-1.5 bg-slate-900 hover:bg-black text-white text-[11px] font-bold rounded-xl border border-slate-700 transition flex items-center gap-1 cursor-pointer active:scale-95"
@@ -147,7 +147,7 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
               title="Switch to Customer Mode"
             >
               <Users className="w-3.5 h-3.5 text-blue-600" />
-              <span className="hidden sm:inline">Customer Mode</span>
+              <span className="hidden sm:inline">{t("customer.customerPortalTitle")}</span>
               <ArrowRight className="w-3.5 h-3.5 text-gray-400" />
             </button>
           </div>
@@ -179,7 +179,7 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
                 <span>{coopId}</span>
                 <span>•</span>
                 <span className={isOnline ? 'text-emerald-600 font-bold' : 'text-gray-500'}>
-                  {isOnline ? 'Receiving Nearby Jobs' : 'Job Offers Paused'}
+                  {isOnline ? t("worker.online") : t("worker.offline")}
                 </span>
                 <span>•</span>
                 {/* Worker Location Option Button */}
@@ -206,7 +206,7 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
                   ? 'bg-red-50 text-red-700 border-red-300 ring-2 ring-red-200' 
                   : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
               }`}
-              title="Ready for urgent 15-minute emergency jobs near you"
+              title="Ready for urgent emergency jobs near you"
             >
               <Zap className={`w-3.5 h-3.5 ${isEmergencyReady ? 'text-red-600 fill-red-600 animate-pulse' : 'text-gray-400'}`} />
               <span>{isEmergencyReady ? 'Emergency: ON' : 'Emergency: OFF'}</span>
@@ -222,7 +222,7 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
               }`}
             >
               <Power className="w-4 h-4" />
-              <span>{isOnline ? 'AVAILABLE FOR WORK' : 'NOT AVAILABLE'}</span>
+              <span>{isOnline ? t("worker.available") : t("worker.offline")}</span>
             </button>
           </div>
         </div>

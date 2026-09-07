@@ -27,6 +27,18 @@ export const PartnerPlusNavbar: React.FC<PartnerPlusNavbarProps> = ({
 }) => {
   const { lang, setLang, t } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+
+  const languages: { code: LanguageCode; label: string; native: string }[] = [
+    { code: 'en', label: 'English', native: 'English' },
+    { code: 'ta', label: 'Tamil', native: 'தமிழ்' },
+    { code: 'hi', label: 'Hindi', native: 'हिन्दी' },
+    { code: 'te', label: 'Telugu', native: 'తెలుగు' },
+    { code: 'kn', label: 'Kannada', native: 'ಕನ್ನಡ' },
+    { code: 'ml', label: 'Malayalam', native: 'മലയാളം' },
+    { code: 'bn', label: 'Bengali', native: 'বাংলা' },
+    { code: 'mr', label: 'Marathi', native: 'मराठी' },
+  ];
 
   const navLabels = {
     en: { about: "About Cooperative", trades: "Trades (Electric/Plumbing)", dailyLabor: "Daily Wage Helpers", cleaning: "Deep Cleaning", pricing: "Check Prices", serviceArea: "Service Area", proLogin: "Worker Login", joinPro: "Join as Worker", workerMode: "Worker Mode (कामगार)" },
@@ -105,6 +117,38 @@ export const PartnerPlusNavbar: React.FC<PartnerPlusNavbarProps> = ({
 
           {/* Right Action Controls matching Screenshot 1 */}
           <div className="hidden sm:flex items-center gap-3">
+            {/* Language Selector Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                aria-label="Change Language"
+              >
+                <Globe className="w-3.5 h-3.5 text-[#1D68ED]" />
+                <span className="font-bold">{languages.find(l => l.code === lang)?.native}</span>
+              </button>
+
+              {langDropdownOpen && (
+                <div 
+                  className="absolute right-0 mt-2 w-36 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  onClick={() => setLangDropdownOpen(false)}
+                >
+                  {languages.map(item => (
+                    <button
+                      key={item.code}
+                      onClick={() => { setLang(item.code); }}
+                      className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-gray-50 cursor-pointer ${
+                        lang === item.code ? 'font-bold text-[#1D68ED] bg-blue-50/60' : 'text-gray-700'
+                      }`}
+                    >
+                      <span>{item.native}</span>
+                      <span className="text-[10px] text-gray-400 font-mono uppercase">{item.code}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {onSwitchToWorker && (
               <button
                 onClick={onSwitchToWorker}

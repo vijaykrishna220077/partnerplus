@@ -1,4 +1,4 @@
-export type LanguageCode = 'en' | 'ta' | 'hi' | 'te' | 'bn' | 'kn' | 'mr';
+export type LanguageCode = 'en' | 'ta' | 'hi' | 'te' | 'kn' | 'ml' | 'bn' | 'mr';
 
 export type UserRole = 
   | 'customer' 

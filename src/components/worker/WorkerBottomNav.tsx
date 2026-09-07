@@ -1,5 +1,6 @@
 import React from 'react';
 import { Home, ClipboardList, Wallet, Heart, User } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 export type WorkerNavTab = 'home' | 'my_jobs' | 'earnings' | 'welfare' | 'profile';
 
@@ -16,41 +17,38 @@ export const WorkerBottomNav: React.FC<WorkerBottomNavProps> = ({
   hasActiveJob,
   openJobsCount
 }) => {
+  const { t } = useApp();
+
   const tabs = [
     {
       id: 'home' as WorkerNavTab,
-      label: 'Home',
-      sublabel: 'घर',
+      label: t("worker.home"),
       icon: Home,
       badge: openJobsCount > 0 ? openJobsCount : null,
       badgeColor: 'bg-blue-600'
     },
     {
       id: 'my_jobs' as WorkerNavTab,
-      label: 'My Jobs',
-      sublabel: 'काम',
+      label: t("worker.myJobs"),
       icon: ClipboardList,
       badge: hasActiveJob ? '1' : null,
       badgeColor: 'bg-emerald-600 animate-pulse'
     },
     {
       id: 'earnings' as WorkerNavTab,
-      label: 'Earnings',
-      sublabel: 'कमाई',
+      label: t("worker.earnings"),
       icon: Wallet,
       badge: null
     },
     {
       id: 'welfare' as WorkerNavTab,
-      label: 'Welfare',
-      sublabel: 'कल्याण',
+      label: t("worker.welfare"),
       icon: Heart,
       badge: null
     },
     {
       id: 'profile' as WorkerNavTab,
-      label: 'Profile',
-      sublabel: 'प्रोफाइल',
+      label: t("worker.profile"),
       icon: User,
       badge: null
     }

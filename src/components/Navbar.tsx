@@ -51,13 +51,14 @@ export const Navbar: React.FC = () => {
   };
 
   const languages: { code: LanguageCode; label: string; native: string }[] = [
-    { code: 'hi', label: 'Hindi', native: 'हिन्दी' },
-    { code: 'ta', label: 'Tamil', native: 'தமிழ்' },
-    { code: 'te', label: 'Telugu', native: 'తెలుగు' },
-    { code: 'bn', label: 'Bengali', native: 'বাংলা' },
-    { code: 'kn', label: 'Kannada', native: 'ಕನ್ನಡ' },
-    { code: 'mr', label: 'Marathi', native: 'मराठी' },
     { code: 'en', label: 'English', native: 'English' },
+    { code: 'ta', label: 'Tamil', native: 'தமிழ்' },
+    { code: 'hi', label: 'Hindi', native: 'हिन्दी' },
+    { code: 'te', label: 'Telugu', native: 'తెలుగు' },
+    { code: 'kn', label: 'Kannada', native: 'ಕನ್ನಡ' },
+    { code: 'ml', label: 'Malayalam', native: 'മലയാളം' },
+    { code: 'bn', label: 'Bengali', native: 'বাংলা' },
+    { code: 'mr', label: 'Marathi', native: 'मराठी' },
   ];
 
   return (

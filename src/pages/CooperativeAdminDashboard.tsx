@@ -35,7 +35,8 @@ export const CooperativeAdminDashboard: React.FC = () => {
     openWorkerProfile, 
     addToast, 
     triggerCelebration,
-    refreshData 
+    refreshData,
+    t
   } = useApp();
 
   const [activeAdminTab, setActiveAdminTab] = useState<'verifications' | 'roster' | 'ai_demand' | 'financials'>('verifications');
@@ -89,7 +90,7 @@ export const CooperativeAdminDashboard: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] uppercase font-bold tracking-widest text-blue-400 bg-blue-950/80 px-2.5 py-0.5 rounded-full border border-blue-700/50">
-                Labour Cooperative Society Administration
+                {t("cooperative.cooperativePortalTitle")}
               </span>
               <span className="text-xs font-mono text-gray-400">
                 Reg: {activeCooperative.registrationNumber}
@@ -124,19 +125,19 @@ export const CooperativeAdminDashboard: React.FC = () => {
       {/* KPI Overview Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
         <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-2xs">
-          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">Active Workers</span>
+          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">{t("cooperative.workersOnline")}</span>
           <div className="text-2xl sm:text-3xl font-black text-[#121212] font-serif mt-1">{verifiedWorkers.length} Active</div>
           <span className="text-[11px] text-blue-600 font-semibold mt-1 block">100% Police & NSDC Verified</span>
         </div>
 
         <div className="bg-amber-50 rounded-3xl p-6 border border-amber-200 shadow-2xs">
-          <span className="text-[10px] uppercase font-bold text-amber-800 tracking-wider block">Pending KYC Queue</span>
+          <span className="text-[10px] uppercase font-bold text-amber-800 tracking-wider block">{t("cooperative.pendingVerification")}</span>
           <div className="text-2xl sm:text-3xl font-black text-amber-950 font-serif mt-1">{pendingWorkers.length} Applicants</div>
           <span className="text-[11px] text-amber-800 font-semibold mt-1 block">Awaiting Scrutiny</span>
         </div>
 
         <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-2xs">
-          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">Society Bookings</span>
+          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">{t("cooperative.activeJobs")}</span>
           <div className="text-2xl sm:text-3xl font-black text-[#121212] font-serif mt-1">{bookings.length * 142 + 24} Jobs</div>
           <span className="text-[11px] text-gray-500 mt-1 block font-light">Zero intermediary cuts</span>
         </div>
@@ -144,7 +145,7 @@ export const CooperativeAdminDashboard: React.FC = () => {
         <div className="bg-[#121212] text-white rounded-3xl p-6 border border-neutral-800 shadow-xl">
           <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider block flex items-center gap-1">
             <HeartHandshake className="w-3.5 h-3.5 text-blue-400" />
-            Member Welfare Pool
+            {t("cooperative.welfareFund")}
           </span>
           <div className="text-2xl sm:text-3xl font-black text-white font-serif mt-1">₹8,42,500</div>
           <span className="text-[11px] text-gray-400 mt-1 block font-light">Accident + pension reserve fund</span>
