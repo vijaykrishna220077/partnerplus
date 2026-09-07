@@ -263,48 +263,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({
               </button>
             </div>
 
-            {/* Key Value Pill Highlights */}
-            <div className="pt-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-left">
-              <div className="p-3.5 rounded-2xl bg-white/80 backdrop-blur-xs border border-sky-100 shadow-xs flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold text-sm">
-                  95%
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-900">Direct Earnings</h4>
-                  <p className="text-[11px] text-slate-500">5% Welfare &amp; Reserve</p>
-                </div>
-              </div>
 
-              <div className="p-3.5 rounded-2xl bg-white/80 backdrop-blur-xs border border-sky-100 shadow-xs flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-bold text-sm">
-                  📍
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-900">Live GPS Route</h4>
-                  <p className="text-[11px] text-slate-500">Zomato-Style ETA Map</p>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-white/80 backdrop-blur-xs border border-sky-100 shadow-xs flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center shrink-0 font-bold text-sm">
-                  🛡️
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-900">Escrow Security</h4>
-                  <p className="text-[11px] text-slate-500">Instant Razorpay Settlement</p>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-white/80 backdrop-blur-xs border border-sky-100 shadow-xs flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 font-bold text-sm">
-                  🧾
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-900">5% GST Billing</h4>
-                  <p className="text-[11px] text-slate-500">Official Tax Invoice</p>
-                </div>
-              </div>
-            </div>
 
           </div>
         </div>
