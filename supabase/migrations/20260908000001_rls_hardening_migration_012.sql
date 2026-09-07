@@ -166,18 +166,22 @@ CREATE POLICY "Conversation participants insert self" ON public.conversation_par
 DROP POLICY IF EXISTS "Messages select participant or admin" ON public.messages;
 CREATE POLICY "Messages select participant or admin" ON public.messages FOR SELECT
   USING (
-    sender_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid())
-    OR recipient_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid())
+    sender_user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid())
     OR conversation_id IN (
       SELECT conversation_id FROM public.conversation_participants
       WHERE user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid())
+    )
+    OR booking_id IN (
+      SELECT id FROM public.bookings
+      WHERE customer_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid())
+         OR worker_id IN (SELECT id FROM public.worker_profiles WHERE user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()))
     )
     OR public.is_admin_or_staff()
   );
 
 DROP POLICY IF EXISTS "Messages insert sender" ON public.messages;
 CREATE POLICY "Messages insert sender" ON public.messages FOR INSERT
-  WITH CHECK (sender_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()));
+  WITH CHECK (sender_user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()));
 
 -- ----------------------------------------------------------------------------
 -- 7. JOB OPENINGS / ASSIGNMENTS
