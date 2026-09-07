@@ -84,11 +84,14 @@ export const realtimeHub = {
   }
 };
 
+import { logger } from '../utils/logger';
+
 function readTable<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : fallback;
-  } catch {
+  } catch (err) {
+    logger.warn('[DB Service] Error reading table key:', key, err);
     return fallback;
   }
 }

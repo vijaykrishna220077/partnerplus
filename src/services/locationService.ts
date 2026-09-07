@@ -1,5 +1,6 @@
 import { GeoPoint, LocationPermissionState, WorkerLocationRecord, CustomerLocationRecord } from '../types';
 import { realtimeHub } from './db';
+import { logger } from '../utils/logger';
 
 // Known landmark coordinates across Tamil Nadu (Coimbatore, Chennai, Madurai, Salem)
 export const KNOWN_AREAS_COORDINATES = [
@@ -37,7 +38,8 @@ class LocationService {
           this.permissionStatus = status.state as any;
           realtimeHub.emit('location:permission_changed', this.getPermissionState());
         };
-      } catch {
+      } catch (err) {
+        logger.warn('[LocationService] Geolocation permissions query notice:', err);
         this.permissionStatus = 'prompt';
       }
     }

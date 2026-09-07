@@ -1,5 +1,12 @@
 import { supabase } from './supabaseClient';
 
+export function generateHighEntropyPassword(length: number = 20): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => chars[byte % chars.length]).join('');
+}
+
 export interface CustomerSignUpParams {
   fullName: string;
   phone: string;
@@ -79,7 +86,7 @@ class AuthService {
   }> {
     try {
       const email = params.email.trim().toLowerCase();
-      const password = params.password || `PartnerPlus#${Math.floor(100000 + Math.random() * 900000)}`;
+      const password = params.password || generateHighEntropyPassword(20);
 
       // 1. Supabase Auth Sign Up
       let authUserId: string | null = null;
@@ -221,7 +228,7 @@ class AuthService {
   }> {
     try {
       const email = params.email?.trim().toLowerCase() || `${params.phone.replace(/\D/g, '')}@partnerplus.org`;
-      const password = params.password || `PartnerPlus#${Math.floor(100000 + Math.random() * 900000)}`;
+      const password = params.password || generateHighEntropyPassword(20);
 
       // 1. Supabase Auth Sign Up
       let authUserId: string | null = null;
@@ -361,7 +368,7 @@ class AuthService {
   }> {
     try {
       const email = params.email.trim().toLowerCase();
-      const password = params.password || `PartnerPlus#${Math.floor(100000 + Math.random() * 900000)}`;
+      const password = params.password || generateHighEntropyPassword(20);
 
       let authUserId: string | null = null;
       let authUser: any = null;
@@ -485,7 +492,7 @@ class AuthService {
   }> {
     try {
       const email = params.officialEmail.trim().toLowerCase();
-      const password = params.password || `PartnerPlus#${Math.floor(100000 + Math.random() * 900000)}`;
+      const password = params.password || generateHighEntropyPassword(20);
 
       let authUserId: string | null = null;
       let authUser: any = null;

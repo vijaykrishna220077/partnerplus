@@ -27,11 +27,14 @@ const ONBOARDING_STORAGE_KEYS = {
   AUDIT_LOGS: 'sahakari_audit_logs_v2'
 };
 
+import { logger } from '../utils/logger';
+
 function readTable<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : fallback;
-  } catch {
+  } catch (err) {
+    logger.warn('[OnboardingService] Error reading table key:', key, err);
     return fallback;
   }
 }

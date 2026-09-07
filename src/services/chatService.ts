@@ -77,6 +77,8 @@ const INITIAL_SEED_MESSAGES: Record<string, ChatMessage[]> = {
   ]
 };
 
+import { logger } from '../utils/logger';
+
 function getAllMessages(): Record<string, ChatMessage[]> {
   try {
     const raw = localStorage.getItem(CHAT_STORAGE_KEY);
@@ -85,7 +87,8 @@ function getAllMessages(): Record<string, ChatMessage[]> {
       return INITIAL_SEED_MESSAGES;
     }
     return JSON.parse(raw);
-  } catch {
+  } catch (err) {
+    logger.warn('[ChatService] Error reading messages storage:', err);
     return INITIAL_SEED_MESSAGES;
   }
 }

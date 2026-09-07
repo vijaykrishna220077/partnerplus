@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserRole, CooperativeStaffRole, OrganizationType, OrganizationVerificationStatus } from '../types';
+import { supabase } from '../services/supabaseClient';
 
 export interface AuthUser {
   id: string;
@@ -214,7 +215,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = 'sahakari_seva_auth_session';
+const AUTH_STORAGE_KEY = 'partnerplus_session_public';
+
+function sanitizeUserSession(u: AuthUser): Partial<AuthUser> {
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    phone: u.phone,
+    role: u.role,
+    staffRole: u.staffRole,
+    organizationRole: u.organizationRole,
+    avatar: u.avatar,
+    cooperativeId: u.cooperativeId,
+    cooperativeName: u.cooperativeName,
+    organizationId: u.organizationId,
+    organizationName: u.organizationName,
+    city: u.city,
+    joinedDate: u.joinedDate
+  };
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(() => {
@@ -230,7 +250,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (storedCustomAvatar && parsed) {
           parsed.avatar = storedCustomAvatar;
         }
-        // Clean up legacy demo photo for custom users who didn't explicitly upload one
         if (parsed && parsed.name !== 'Ananya Sharma' && parsed.avatar?.includes('photo-1544005313')) {
           delete parsed.avatar;
           localStorage.removeItem('partnerplus_user_avatar');
@@ -246,14 +265,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     try {
       if (user) {
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sanitizeUserSession(user)));
       } else {
         localStorage.removeItem(AUTH_STORAGE_KEY);
+        localStorage.removeItem('sahakari_seva_auth_session');
       }
     } catch {
       // Storage error fallback
     }
   }, [user]);
+
+  // Subscribe to Supabase auth session changes
+  useEffect(() => {
+    if (!supabase) return;
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const meta = session.user.user_metadata || {};
+        setUser(prev => {
+          if (prev && prev.email === session.user.email) return prev;
+          return {
+            id: session.user.id,
+            name: meta.full_name || session.user.email?.split('@')[0] || 'User',
+            email: session.user.email || '',
+            phone: meta.phone || '',
+            role: (meta.role?.toLowerCase() as UserRole) || 'customer',
+            joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+          };
+        });
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const updateUserProfile = (updatedFields: Partial<AuthUser>) => {
     setUser(prev => prev ? { ...prev, ...updatedFields } : null);

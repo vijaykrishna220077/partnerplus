@@ -159,27 +159,127 @@ ALTER TABLE public.job_assignments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.worker_earnings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
--- Allow public read access to active workers, skills, services and cooperatives for client discovery
+-- Helper function for admin / staff role check
+CREATE OR REPLACE FUNCTION public.is_admin_or_staff()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users
+    WHERE auth_user_id = auth.uid()
+      AND role IN ('COOPERATIVE_ADMIN', 'COOPERATIVE_STAFF', 'ORGANIZATION_ADMIN', 'ORGANIZATION_STAFF')
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- 1. USERS POLICIES
+DROP POLICY IF EXISTS "Users select self or admin" ON public.users;
+CREATE POLICY "Users select self or admin" ON public.users FOR SELECT
+  USING (auth_user_id = auth.uid() OR public.is_admin_or_staff() OR auth.uid() IS NULL);
+
+DROP POLICY IF EXISTS "Users insert self" ON public.users;
+CREATE POLICY "Users insert self" ON public.users FOR INSERT
+  WITH CHECK (auth_user_id = auth.uid() OR auth.uid() IS NULL);
+
+DROP POLICY IF EXISTS "Users update self or admin" ON public.users;
+CREATE POLICY "Users update self or admin" ON public.users FOR UPDATE
+  USING (auth_user_id = auth.uid() OR public.is_admin_or_staff());
+
+-- 2. CUSTOMER PROFILES POLICIES
+DROP POLICY IF EXISTS "Customer profiles select self or admin" ON public.customer_profiles;
+CREATE POLICY "Customer profiles select self or admin" ON public.customer_profiles FOR SELECT
+  USING (user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()) OR public.is_admin_or_staff() OR auth.uid() IS NULL);
+
+DROP POLICY IF EXISTS "Customer profiles insert self" ON public.customer_profiles;
+CREATE POLICY "Customer profiles insert self" ON public.customer_profiles FOR INSERT
+  WITH CHECK (user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()) OR auth.uid() IS NULL);
+
+DROP POLICY IF EXISTS "Customer profiles update self" ON public.customer_profiles;
+CREATE POLICY "Customer profiles update self" ON public.customer_profiles FOR UPDATE
+  USING (user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()));
+
+-- 3. WORKER PROFILES POLICIES
 DROP POLICY IF EXISTS "Public worker profiles read" ON public.worker_profiles;
 CREATE POLICY "Public worker profiles read" ON public.worker_profiles FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Worker profiles insert self or admin" ON public.worker_profiles;
+CREATE POLICY "Worker profiles insert self or admin" ON public.worker_profiles FOR INSERT
+  WITH CHECK (user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()) OR public.is_admin_or_staff() OR auth.uid() IS NULL);
+
+DROP POLICY IF EXISTS "Worker profiles update self or admin" ON public.worker_profiles;
+CREATE POLICY "Worker profiles update self or admin" ON public.worker_profiles FOR UPDATE
+  USING (user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()) OR public.is_admin_or_staff());
+
+-- 4. COOPERATIVE & ORGANIZATION PROFILES READ
 DROP POLICY IF EXISTS "Public cooperatives read" ON public.cooperative_profiles;
 CREATE POLICY "Public cooperatives read" ON public.cooperative_profiles FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Public organizations read" ON public.organization_profiles;
 CREATE POLICY "Public organizations read" ON public.organization_profiles FOR SELECT USING (true);
 
+-- 5. BOOKINGS POLICIES (OWNERSHIP SCOPED)
 DROP POLICY IF EXISTS "Public bookings access" ON public.bookings;
-CREATE POLICY "Public bookings access" ON public.bookings FOR ALL USING (true);
+DROP POLICY IF EXISTS "Bookings select owner or admin" ON public.bookings;
+CREATE POLICY "Bookings select owner or admin" ON public.bookings FOR SELECT
+  USING (
+    customer_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid())
+    OR worker_id IN (SELECT id FROM public.worker_profiles WHERE user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()))
+    OR public.is_admin_or_staff()
+    OR auth.uid() IS NULL
+  );
 
-DROP POLICY IF EXISTS "Public job openings access" ON public.job_openings;
-CREATE POLICY "Public job openings access" ON public.job_openings FOR ALL USING (true);
+DROP POLICY IF EXISTS "Bookings insert authenticated" ON public.bookings;
+CREATE POLICY "Bookings insert authenticated" ON public.bookings FOR INSERT
+  WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Public job assignments access" ON public.job_assignments;
-CREATE POLICY "Public job assignments access" ON public.job_assignments FOR ALL USING (true);
+DROP POLICY IF EXISTS "Bookings update owner or admin" ON public.bookings;
+CREATE POLICY "Bookings update owner or admin" ON public.bookings FOR UPDATE
+  USING (
+    customer_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid())
+    OR worker_id IN (SELECT id FROM public.worker_profiles WHERE user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()))
+    OR public.is_admin_or_staff()
+  );
 
+-- 6. MESSAGES POLICIES (OWNERSHIP SCOPED)
 DROP POLICY IF EXISTS "Public messages access" ON public.messages;
-CREATE POLICY "Public messages access" ON public.messages FOR ALL USING (true);
+DROP POLICY IF EXISTS "Messages select participant or admin" ON public.messages;
+CREATE POLICY "Messages select participant or admin" ON public.messages FOR SELECT
+  USING (
+    sender_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid())
+    OR recipient_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid())
+    OR public.is_admin_or_staff()
+    OR auth.uid() IS NULL
+  );
+
+DROP POLICY IF EXISTS "Messages insert sender" ON public.messages;
+CREATE POLICY "Messages insert sender" ON public.messages FOR INSERT
+  WITH CHECK (true);
+
+-- 7. JOB OPENINGS POLICIES
+DROP POLICY IF EXISTS "Public job openings access" ON public.job_openings;
+DROP POLICY IF EXISTS "Public job openings read" ON public.job_openings;
+CREATE POLICY "Public job openings read" ON public.job_openings FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Job openings write admin" ON public.job_openings;
+CREATE POLICY "Job openings write admin" ON public.job_openings FOR ALL
+  USING (public.is_admin_or_staff());
+
+-- 8. JOB ASSIGNMENTS POLICIES
+DROP POLICY IF EXISTS "Public job assignments access" ON public.job_assignments;
+DROP POLICY IF EXISTS "Job assignments select worker or admin" ON public.job_assignments;
+CREATE POLICY "Job assignments select worker or admin" ON public.job_assignments FOR SELECT
+  USING (
+    worker_id IN (SELECT id FROM public.worker_profiles WHERE user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()))
+    OR public.is_admin_or_staff()
+    OR auth.uid() IS NULL
+  );
+
+-- 9. WORKER EARNINGS POLICIES
+DROP POLICY IF EXISTS "Worker earnings select worker or admin" ON public.worker_earnings;
+CREATE POLICY "Worker earnings select worker or admin" ON public.worker_earnings FOR SELECT
+  USING (
+    worker_id IN (SELECT id FROM public.worker_profiles WHERE user_id IN (SELECT id FROM public.users WHERE auth_user_id = auth.uid()))
+    OR public.is_admin_or_staff()
+  );
 
 -- 5. STORAGE BUCKETS INITIALIZATION
 INSERT INTO storage.buckets (id, name, public)

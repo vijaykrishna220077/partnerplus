@@ -41,11 +41,14 @@ export interface WhatsAppMessageRecord {
 
 const STORAGE_KEY = 'partnerplus_whatsapp_messages_v1';
 
+import { logger } from '../utils/logger';
+
 function getStoredLogs(): WhatsAppMessageRecord[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
-  } catch {
+  } catch (err) {
+    logger.warn('[WhatsAppService] Error reading logs:', err);
     return [];
   }
 }
