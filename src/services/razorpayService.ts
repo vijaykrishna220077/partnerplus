@@ -198,14 +198,13 @@ export const initializeRazorpayPayment = async ({
   onSuccess,
   onFailure
 }: InitializeRazorpayOptions): Promise<void> => {
-  const envKey = (keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID || '').trim();
+  const envKey = (keyId || (import.meta as any).env?.VITE_RAZORPAY_KEY_ID || 'rzp_test_TZ130e5aCmXEzW').trim();
 
   // Check if key is a valid registered key (and not a placeholder like rzp_test_YOUR_KEY_HERE)
   const isPlaceholderKey = !envKey || 
     envKey.includes('YOUR_KEY') || 
     envKey.includes('MY_RAZORPAY_KEY') || 
-    envKey.includes('YOUR_ACTUAL_TEST_KEY') ||
-    envKey === 'rzp_test_sahakari2026';
+    envKey.includes('YOUR_ACTUAL_TEST_KEY');
 
   if (!isPlaceholderKey && envKey.startsWith('rzp_')) {
     const isLoaded = await loadRazorpayScript();
