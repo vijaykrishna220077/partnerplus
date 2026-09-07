@@ -22,16 +22,32 @@ interface OrgLiveMapTabProps {
   workRequests: OrganizationWorkRequest[];
 }
 
-// Map Tile Styles
-const TILE_SERVERS = {
+type MapStyleOption = 'dark' | 'street' | 'googleRoads' | 'googleSatellite';
+
+// Map Tile Styles (OpenStreetMap, CartoDB Dark, Google Maps & Satellite)
+const TILE_SERVERS: Record<MapStyleOption, { label: string; url: string; attribution: string; subdomains: string }> = {
   dark: {
+    label: 'Dark Tactical',
     url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
     subdomains: 'abcd'
   },
   street: {
+    label: 'OpenStreetMap',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution: '&copy; OpenStreetMap contributors',
+    subdomains: 'abc'
+  },
+  googleRoads: {
+    label: 'Google Maps (Street)',
+    url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps',
+    subdomains: 'abc'
+  },
+  googleSatellite: {
+    label: 'Google Maps (Satellite)',
+    url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps',
     subdomains: 'abc'
   }
 };
@@ -61,7 +77,7 @@ export const OrgLiveMapTab: React.FC<OrgLiveMapTabProps> = ({
 }) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string>(projects[0]?.id || 'ALL');
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
-  const [mapStyle, setMapStyle] = useState<'dark' | 'street'>('dark');
+  const [mapStyle, setMapStyle] = useState<MapStyleOption>('dark');
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
 
@@ -356,15 +372,20 @@ export const OrgLiveMapTab: React.FC<OrgLiveMapTabProps> = ({
             </div>
 
             <div className="flex items-center gap-2 pointer-events-auto">
-              {/* Map Layer Switcher */}
-              <button
-                type="button"
-                onClick={() => setMapStyle(prev => prev === 'dark' ? 'street' : 'dark')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-xs font-bold text-slate-200 hover:text-amber-400 hover:border-amber-400/50 backdrop-blur-md shadow-md transition cursor-pointer"
-              >
-                <Layers className="w-3.5 h-3.5 text-amber-400" />
-                <span>{mapStyle === 'dark' ? 'Dark Tactical' : 'OpenStreetMap'}</span>
-              </button>
+              {/* Map Layer Dropdown Switcher */}
+              <div className="relative flex items-center">
+                <select
+                  value={mapStyle}
+                  onChange={(e) => setMapStyle(e.target.value as MapStyleOption)}
+                  className="px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-xs font-bold text-slate-200 hover:text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 backdrop-blur-md shadow-md cursor-pointer transition"
+                >
+                  {Object.entries(TILE_SERVERS).map(([key, cfg]) => (
+                    <option key={key} value={key} className="bg-slate-900 text-slate-200">
+                      🗺️ {cfg.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {/* Fit All Markers */}
               <button
