@@ -458,19 +458,19 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
                 </div>
               </div>
 
-              {/* Client Testimonial */}
-              <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-white/10 text-xs text-slate-300">
-                <div className="flex items-center gap-1 text-amber-400 mb-1.5">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              {/* Client Testimonial (Matches uploaded image media_1788801512820.png) */}
+              <div className="mt-8 p-6 sm:p-7 rounded-2xl bg-[#162544] border border-[#263a63] text-slate-200 shadow-md">
+                <div className="flex items-center gap-1.5 text-amber-400 mb-4">
+                  <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                  <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                  <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                  <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                  <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
                 </div>
-                <p className="italic text-slate-200 leading-relaxed text-[11px]">
-                  &ldquo;PartnerPlus handles all parking garage pressure washing and window cleaning for our corporate campuses. Seamless billing and outstanding quality.&rdquo;
+                <p className="italic text-slate-100 leading-relaxed text-sm sm:text-base font-normal">
+                  “PartnerPlus handles all parking garage pressure washing and window cleaning for our corporate campuses. Seamless billing and outstanding quality.”
                 </p>
-                <span className="block mt-2 font-bold text-white text-[11px]">
+                <span className="block mt-4 font-bold text-white text-sm sm:text-base">
                   — Facilities Management, Highpoint Corporate Towers
                 </span>
               </div>
