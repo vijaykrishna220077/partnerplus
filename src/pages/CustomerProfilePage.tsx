@@ -26,7 +26,7 @@ import {
 
 export const CustomerProfilePage: React.FC = () => {
   const { user, updateUserProfile, logout, switchRole } = useAuth();
-  const { currentLocation, city, openLocationPicker, addToast, bookings, lang, setLang } = useApp();
+  const { currentLocation, city, openLocationPicker, addToast, bookings, lang, setLang, t } = useApp();
 
   const [isEditing, setIsEditing] = useState(false);
   const [showPhotoUploader, setShowPhotoUploader] = useState(false);
@@ -55,7 +55,7 @@ export const CustomerProfilePage: React.FC = () => {
     if (!formData.name.trim() || !formData.phone.trim()) {
       addToast({
         type: 'warning',
-        title: 'Validation Error',
+        title: t("common.warning") || 'Validation Error',
         message: 'Name and Phone Number cannot be empty.'
       });
       return;
@@ -71,7 +71,7 @@ export const CustomerProfilePage: React.FC = () => {
       });
       addToast({
         type: 'success',
-        title: 'Profile Updated',
+        title: t("common.success") || 'Profile Updated',
         message: 'Your customer profile details have been saved successfully.'
       });
       setIsEditing(false);
@@ -96,19 +96,24 @@ export const CustomerProfilePage: React.FC = () => {
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-3xl border-4 border-white/20 shadow-lg font-serif">
-                  {user?.name ? user.name.substring(0, 2).toUpperCase() : 'CU'}
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-800 text-white flex flex-col items-center justify-center border-4 border-white/20 shadow-lg relative group select-none">
+                  <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white mb-0.5 backdrop-blur-xs">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-[10px] font-black tracking-wider text-blue-100 uppercase">
+                    {user?.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2) : 'CU'}
+                  </span>
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => setShowPhotoUploader(!showPhotoUploader)}
                 className="absolute -top-1 -right-1 bg-blue-600 hover:bg-blue-500 text-white p-1.5 rounded-full border-2 border-slate-900 shadow transition cursor-pointer"
-                title="Change or take profile picture"
+                title={t("profile.updateCustomerPhoto") || "Change or take profile picture"}
               >
                 <Camera className="w-3.5 h-3.5" />
               </button>
-              <span className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full border-2 border-slate-900" title="Verified Customer">
+              <span className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full border-2 border-slate-900" title={t("profile.verifiedMember") || "Verified Customer"}>
                 <ShieldCheck className="w-4 h-4" />
               </span>
             </div>
@@ -116,11 +121,11 @@ export const CustomerProfilePage: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl sm:text-3xl font-black font-display tracking-tight text-white">
-                  {user?.name || 'Valued Customer'}
+                  {user?.name || t("profile.valuedCustomer") || 'Valued Customer'}
                 </h1>
                 <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
                   <UserCheck className="w-3 h-3 text-emerald-400" />
-                  Verified Household Member
+                  {t("profile.verifiedMember") || "Verified Household Member"}
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-blue-200 mt-1 flex items-center gap-2">
@@ -130,10 +135,10 @@ export const CustomerProfilePage: React.FC = () => {
               </p>
               <div className="text-[11px] text-blue-300/80 mt-1 flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Member since: {user?.joinedDate || '2025'}</span>
+                <span>{t("profile.memberSince") || "Member since"}: {user?.joinedDate || '2025'}</span>
                 <span className="mx-1">•</span>
                 <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Primary City: <strong className="text-white">{city || 'Chennai'}</strong></span>
+                <span>{t("profile.primaryCity") || "Primary City"}: <strong className="text-white">{city || 'Chennai'}</strong></span>
               </div>
             </div>
           </div>
@@ -146,17 +151,17 @@ export const CustomerProfilePage: React.FC = () => {
               className="flex-1 md:flex-none px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-xs backdrop-blur-xs border border-white/20 transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Edit3 className="w-4 h-4" />
-              <span>{isEditing ? 'Cancel Edit' : 'Edit Profile'}</span>
+              <span>{isEditing ? (t("profile.cancelEdit") || 'Cancel Edit') : (t("profile.editProfile") || 'Edit Profile')}</span>
             </button>
 
             <button
               type="button"
               onClick={logout}
               className="px-4 py-2.5 bg-red-600/80 hover:bg-red-600 text-white rounded-xl font-bold text-xs backdrop-blur-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
-              title="Logout from Account"
+              title={t("profile.logout") || "Logout"}
             >
               <LogOut className="w-4 h-4" />
-              <span>Logout</span>
+              <span>{t("profile.logout") || "Logout"}</span>
             </button>
           </div>
         </div>
@@ -167,7 +172,7 @@ export const CustomerProfilePage: React.FC = () => {
           <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2">
               <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Update Customer Profile Picture</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">{t("profile.updateCustomerPhoto") || "Update Customer Profile Picture"}</h3>
             </div>
             <button
               type="button"
@@ -184,7 +189,7 @@ export const CustomerProfilePage: React.FC = () => {
               updateUserProfile({ avatar: newUrl });
               addToast({
                 type: 'success',
-                title: 'Profile Picture Updated!',
+                title: t("common.success") || 'Profile Picture Updated!',
                 message: 'Your new profile photo is saved and updated across PartnerPlus.'
               });
               setShowPhotoUploader(false);
@@ -200,37 +205,37 @@ export const CustomerProfilePage: React.FC = () => {
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-1">
           <div className="text-slate-400 text-xs font-semibold flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-blue-600" />
-            <span>Total Bookings</span>
+            <span>{t("profile.totalBookings") || "Total Bookings"}</span>
           </div>
           <div className="text-2xl font-black text-slate-900">{bookings.length}</div>
-          <div className="text-[11px] text-slate-500 font-medium">{completedBookings.length} completed</div>
+          <div className="text-[11px] text-slate-500 font-medium">{completedBookings.length} {t("profile.completed") || "completed"}</div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-1">
           <div className="text-slate-400 text-xs font-semibold flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>Active Service Requests</span>
+            <span>{t("profile.activeServiceRequests") || "Active Service Requests"}</span>
           </div>
           <div className="text-2xl font-black text-amber-600">{activeBookings.length}</div>
-          <div className="text-[11px] text-slate-500 font-medium">In dispatch &amp; execution</div>
+          <div className="text-[11px] text-slate-500 font-medium">{t("profile.inDispatchExecution") || "In dispatch & execution"}</div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-1">
           <div className="text-slate-400 text-xs font-semibold flex items-center gap-1.5">
             <CreditCard className="w-4 h-4 text-emerald-600" />
-            <span>Total Expenditure</span>
+            <span>{t("profile.totalExpenditure") || "Total Expenditure"}</span>
           </div>
           <div className="text-2xl font-black text-emerald-600">₹{totalSpent.toLocaleString()}</div>
-          <div className="text-[11px] text-slate-500 font-medium">0% corporate commission markup</div>
+          <div className="text-[11px] text-slate-500 font-medium">{t("profile.zeroCommissionMarkup") || "0% corporate commission markup"}</div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-emerald-200 bg-emerald-50/40 shadow-xs space-y-1">
           <div className="text-emerald-800 text-xs font-semibold flex items-center gap-1.5">
             <HeartHandshake className="w-4 h-4 text-emerald-600" />
-            <span>Artisan Welfare Impact</span>
+            <span>{t("profile.artisanWelfareImpact") || "Artisan Welfare Impact"}</span>
           </div>
           <div className="text-2xl font-black text-emerald-700">₹{totalWelfareFund.toLocaleString()}</div>
-          <div className="text-[11px] text-emerald-800 font-medium">5% directly allocated to member pension</div>
+          <div className="text-[11px] text-emerald-800 font-medium">{t("profile.allocatedToPension") || "5% directly allocated to member pension"}</div>
         </div>
       </div>
 
@@ -241,8 +246,8 @@ export const CustomerProfilePage: React.FC = () => {
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h2 className="text-lg font-black text-slate-900 font-display">Personal &amp; Contact Details</h2>
-                <p className="text-xs text-slate-500">Manage your profile information and default service address</p>
+                <h2 className="text-lg font-black text-slate-900 font-display">{t("profile.personalDetails") || "Personal & Contact Details"}</h2>
+                <p className="text-xs text-slate-500">{t("profile.manageProfileInfo") || "Manage your profile information and default service address"}</p>
               </div>
               {!isEditing && (
                 <button
@@ -251,7 +256,7 @@ export const CustomerProfilePage: React.FC = () => {
                   className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  <span>Edit</span>
+                  <span>{t("common.edit") || "Edit"}</span>
                 </button>
               )}
             </div>
@@ -260,7 +265,7 @@ export const CustomerProfilePage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Full Name
+                    {t("profile.fullName") || "Full Name"}
                   </label>
                   <div className="relative">
                     <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -276,7 +281,7 @@ export const CustomerProfilePage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Phone Number
+                    {t("profile.phoneNumber") || "Phone Number"}
                   </label>
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -292,7 +297,7 @@ export const CustomerProfilePage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Email Address
+                    {t("profile.emailAddress") || "Email Address"}
                   </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -308,7 +313,7 @@ export const CustomerProfilePage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    City / Metro Region
+                    {t("profile.cityMetroRegion") || "City / Metro Region"}
                   </label>
                   <div className="relative">
                     <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -325,7 +330,7 @@ export const CustomerProfilePage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Default Delivery / Service Address
+                  {t("profile.defaultAddress") || "Default Delivery / Service Address"}
                 </label>
                 <textarea
                   rows={2}
@@ -344,14 +349,14 @@ export const CustomerProfilePage: React.FC = () => {
                     onClick={() => setIsEditing(false)}
                     className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
                   >
-                    Cancel
+                    {t("common.cancel") || "Cancel"}
                   </button>
                   <button
                     type="submit"
                     className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
-                    <span>Save Changes</span>
+                    <span>{t("profile.saveChanges") || "Save Changes"}</span>
                   </button>
                 </div>
               )}
@@ -362,8 +367,8 @@ export const CustomerProfilePage: React.FC = () => {
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-black text-slate-900 font-display">Active Service Location</h3>
-                <p className="text-xs text-slate-500">Selected location used for artisan matching and distance calculations</p>
+                <h3 className="text-base font-black text-slate-900 font-display">{t("profile.activeServiceLocation") || "Active Service Location"}</h3>
+                <p className="text-xs text-slate-500">{t("profile.selectedLocationSub") || "Selected location used for artisan matching and distance calculations"}</p>
               </div>
               <button
                 type="button"
@@ -371,7 +376,7 @@ export const CustomerProfilePage: React.FC = () => {
                 className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
               >
                 <MapPin className="w-3.5 h-3.5" />
-                <span>Change Location</span>
+                <span>{t("profile.changeLocation") || "Change Location"}</span>
               </button>
             </div>
 
@@ -386,7 +391,7 @@ export const CustomerProfilePage: React.FC = () => {
                 </div>
               </div>
               <span className="text-[10px] uppercase font-bold bg-emerald-100 text-emerald-800 px-2 py-1 rounded-md">
-                Active Zone
+                {t("profile.activeZone") || "Active Zone"}
               </span>
             </div>
           </div>
@@ -398,7 +403,7 @@ export const CustomerProfilePage: React.FC = () => {
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
             <h3 className="text-base font-black text-slate-900 font-display flex items-center gap-2">
               <Globe className="w-4 h-4 text-blue-600" />
-              <span>Language Preference</span>
+              <span>{t("profile.languagePreference") || "Language Preference"}</span>
             </h3>
 
             <div className="grid grid-cols-2 gap-2">
@@ -430,12 +435,12 @@ export const CustomerProfilePage: React.FC = () => {
 
             <h3 className="text-base font-black text-slate-900 font-display flex items-center gap-2">
               <Bell className="w-4 h-4 text-blue-600" />
-              <span>Notifications</span>
+              <span>{t("profile.notifications") || "Notifications"}</span>
             </h3>
 
             <div className="space-y-3">
               <label className="flex items-center justify-between text-xs font-bold text-slate-700 cursor-pointer">
-                <span>SMS Dispatch Updates</span>
+                <span>{t("profile.smsDispatchUpdates") || "SMS Dispatch Updates"}</span>
                 <input
                   type="checkbox"
                   checked={notifications.sms}
@@ -445,7 +450,7 @@ export const CustomerProfilePage: React.FC = () => {
               </label>
 
               <label className="flex items-center justify-between text-xs font-bold text-slate-700 cursor-pointer">
-                <span>WhatsApp Job Status</span>
+                <span>{t("profile.whatsAppJobStatus") || "WhatsApp Job Status"}</span>
                 <input
                   type="checkbox"
                   checked={notifications.whatsapp}
@@ -455,7 +460,7 @@ export const CustomerProfilePage: React.FC = () => {
               </label>
 
               <label className="flex items-center justify-between text-xs font-bold text-slate-700 cursor-pointer">
-                <span>In-App Real-time Chat Alerts</span>
+                <span>{t("profile.inAppAlerts") || "In-App Real-time Chat Alerts"}</span>
                 <input
                   type="checkbox"
                   checked={notifications.inApp}
@@ -470,11 +475,11 @@ export const CustomerProfilePage: React.FC = () => {
           <div className="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 rounded-3xl shadow-md space-y-4">
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-wider bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-md">
-                Role Switcher
+                {t("profile.roleSwitcher") || "Role Switcher"}
               </span>
-              <h3 className="text-base font-black text-white mt-2 font-display">Switch Platform Portal</h3>
+              <h3 className="text-base font-black text-white mt-2 font-display">{t("profile.switchPlatformPortal") || "Switch Platform Portal"}</h3>
               <p className="text-xs text-slate-300 mt-1">
-                Explore the platform as an artisan, cooperative admin, or facility manager.
+                {t("profile.exploreAsArtisan") || "Explore the platform as an artisan, cooperative admin, or facility manager."}
               </p>
             </div>
 
@@ -484,7 +489,7 @@ export const CustomerProfilePage: React.FC = () => {
                 onClick={() => switchRole('worker')}
                 className="w-full p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center justify-between cursor-pointer border border-white/10"
               >
-                <span>Worker / Artisan Portal</span>
+                <span>{t("profile.workerPortal") || "Worker / Artisan Portal"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -493,7 +498,7 @@ export const CustomerProfilePage: React.FC = () => {
                 onClick={() => switchRole('cooperative_admin')}
                 className="w-full p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center justify-between cursor-pointer border border-white/10"
               >
-                <span>Cooperative Admin Portal</span>
+                <span>{t("profile.cooperativeAdminPortal") || "Cooperative Admin Portal"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -502,7 +507,7 @@ export const CustomerProfilePage: React.FC = () => {
                 onClick={() => switchRole('organization_admin')}
                 className="w-full p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center justify-between cursor-pointer border border-white/10"
               >
-                <span>Organization / Bulk Hiring Portal</span>
+                <span>{t("profile.organizationPortal") || "Organization / Bulk Hiring Portal"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

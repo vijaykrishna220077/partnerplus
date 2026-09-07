@@ -230,6 +230,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (storedCustomAvatar && parsed) {
           parsed.avatar = storedCustomAvatar;
         }
+        // Clean up legacy demo photo for custom users who didn't explicitly upload one
+        if (parsed && parsed.name !== 'Ananya Sharma' && parsed.avatar?.includes('photo-1544005313')) {
+          delete parsed.avatar;
+          localStorage.removeItem('partnerplus_user_avatar');
+        }
         return parsed;
       }
     } catch {
@@ -357,6 +362,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: customUserData?.email || (identifier.includes('@') ? identifier : `${identifier.replace(/\D/g, '')}@partnerplus.org`),
       phone: customUserData?.phone || identifier,
       role: role,
+      avatar: customUserData?.avatar ? customUserData.avatar : undefined,
       ...customUserData
     };
     setUser(customUser);
@@ -364,6 +370,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('partnerplus_user_name', customUser.name);
       if (customUser.avatar) {
         localStorage.setItem('partnerplus_user_avatar', customUser.avatar);
+      } else {
+        localStorage.removeItem('partnerplus_user_avatar');
       }
     } catch {}
     return { success: true };

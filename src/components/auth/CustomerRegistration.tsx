@@ -39,11 +39,11 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
 
   // Step 1: Basic Info
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('');
-  const [fullName, setFullName] = useState<string>('Ananya Sharma');
-  const [phone, setPhone] = useState<string>('+91 94440 12345');
-  const [email, setEmail] = useState<string>('ananya.sharma@gmail.com');
-  const [password, setPassword] = useState<string>('Customer2026#');
-  const [confirmPassword, setConfirmPassword] = useState<string>('Customer2026#');
+  const [fullName, setFullName] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   // Step 2: Location

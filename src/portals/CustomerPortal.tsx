@@ -220,14 +220,14 @@ export const CustomerPortal: React.FC = () => {
                     ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                     : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200'
                 }`}
-                title="View & Edit Customer Profile"
+                title={t("customer.profileSettings") || "View & Edit Customer Profile"}
               >
                 {user?.avatar ? (
                   <img src={user.avatar} alt={user.name} className="w-5 h-5 rounded-full object-cover shrink-0 border border-slate-200" />
                 ) : (
                   <User className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 )}
-                <span className="truncate max-w-[85px]">{user?.name?.split(' ')[0] || 'Profile'}</span>
+                <span className="truncate max-w-[85px]">{user?.name?.split(' ')[0] || t("customer.profileSettings") || 'Profile'}</span>
               </button>
 
               {bookings.length > 0 && (
