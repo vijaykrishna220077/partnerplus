@@ -27,7 +27,9 @@ export interface CreateBookingFromCalculatorParams {
   customerArea?: string;
   customerLat?: number;
   customerLng?: number;
-  selectedSlot: 'immediate' | 'evening' | 'tomorrow';
+  selectedSlot: 'immediate' | 'evening' | 'tomorrow' | 'custom';
+  customDate?: string;
+  customTime?: string;
   paymentMode: 'cash' | 'upi';
   problemDescription?: string;
 }
@@ -84,6 +86,11 @@ export const bookingService = {
       tomorrow.setDate(tomorrow.getDate() + 1);
       scheduledDateStr = tomorrow.toISOString().split('T')[0];
       scheduledSlotLabel = 'Tomorrow Morning (9:00 AM - 11:00 AM)';
+    } else if (params.selectedSlot === 'custom' && params.customDate) {
+      scheduledDateStr = params.customDate;
+      scheduledSlotLabel = params.customTime 
+        ? `${params.customDate} at ${params.customTime}` 
+        : `Scheduled: ${params.customDate}`;
     }
 
     const bookingId = `bk-${Date.now().toString().slice(-6)}`;

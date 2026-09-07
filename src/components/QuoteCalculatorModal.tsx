@@ -413,7 +413,9 @@ export const QuoteCalculatorModal: React.FC<QuoteCalculatorModalProps> = ({
     return localStorage.getItem('sahakari_user_address') || 'Sri Krishna College of Engineering and Technology (SKCET), Kuniamuthur, Coimbatore';
   });
   const [addressTag, setAddressTag] = useState<'home' | 'work' | 'other'>('home');
-  const [selectedSlot, setSelectedSlot] = useState<'immediate' | 'evening' | 'tomorrow'>('immediate');
+  const [selectedSlot, setSelectedSlot] = useState<'immediate' | 'evening' | 'tomorrow' | 'custom'>('immediate');
+  const [customSlotDate, setCustomSlotDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [customSlotTime, setCustomSlotTime] = useState<string>('10:00 AM');
   const [paymentMode, setPaymentMode] = useState<'cash' | 'upi'>('cash');
 
   // Submission & Workflow State
@@ -562,6 +564,8 @@ export const QuoteCalculatorModal: React.FC<QuoteCalculatorModalProps> = ({
         customerPhone: customerPhone.trim(),
         customerAddress: `${customerAddress} [Tag: ${addressTag.toUpperCase()}]`,
         selectedSlot,
+        customDate: customSlotDate,
+        customTime: customSlotTime,
         paymentMode,
         problemDescription: [
           deliveryInstructions.join(', '),
@@ -953,6 +957,10 @@ export const QuoteCalculatorModal: React.FC<QuoteCalculatorModalProps> = ({
                 isLocating={isLocating}
                 selectedSlot={selectedSlot}
                 setSelectedSlot={setSelectedSlot}
+                customSlotDate={customSlotDate}
+                setCustomSlotDate={setCustomSlotDate}
+                customSlotTime={customSlotTime}
+                setCustomSlotTime={setCustomSlotTime}
                 workerTip={workerTip}
                 setWorkerTip={setWorkerTip}
                 paymentMode={paymentMode}

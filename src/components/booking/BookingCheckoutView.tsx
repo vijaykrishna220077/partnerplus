@@ -12,6 +12,7 @@ import {
   HardHat,
   MapPin,
   Clock,
+  Calendar,
   HeartPulse,
   Tag,
   Banknote,
@@ -62,8 +63,12 @@ interface BookingCheckoutViewProps {
   setCustomerAddress: (val: string) => void;
   handleDetectLocation: () => void;
   isLocating: boolean;
-  selectedSlot: 'immediate' | 'evening' | 'tomorrow';
-  setSelectedSlot: (slot: 'immediate' | 'evening' | 'tomorrow') => void;
+  selectedSlot: 'immediate' | 'evening' | 'tomorrow' | 'custom';
+  setSelectedSlot: (slot: 'immediate' | 'evening' | 'tomorrow' | 'custom') => void;
+  customSlotDate?: string;
+  setCustomSlotDate?: (date: string) => void;
+  customSlotTime?: string;
+  setCustomSlotTime?: (time: string) => void;
   workerTip: number;
   setWorkerTip: (tip: number) => void;
   paymentMode: 'cash' | 'upi';
@@ -112,6 +117,10 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
   isLocating,
   selectedSlot,
   setSelectedSlot,
+  customSlotDate = new Date().toISOString().split('T')[0],
+  setCustomSlotDate = (_date: string) => {},
+  customSlotTime = '10:00 AM',
+  setCustomSlotTime = (_time: string) => {},
   workerTip,
   setWorkerTip,
   paymentMode,
@@ -491,17 +500,25 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
           </div>
 
           {/* Arrival Slot Selector */}
-          <div className="space-y-2">
-            <div className="text-xs font-black text-slate-800 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{t.chooseArrivalSlot || 'Choose Arrival Slot'}</span>
+          <div className="space-y-2.5">
+            <div className="text-xs font-black text-slate-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{t.chooseArrivalSlot || 'Choose Arrival Slot'}</span>
+              </span>
+              {selectedSlot === 'custom' && customSlotDate && (
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                  📅 {customSlotDate} {customSlotTime ? `@ ${customSlotTime}` : ''}
+                </span>
+              )}
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               {[
                 { id: 'immediate', label: t.slotExpress || '15-25 Mins Express', sub: '⚡ Express' },
                 { id: 'evening', label: t.slotEvening || 'Evening 4-7 PM', sub: '4-7 PM' },
-                { id: 'tomorrow', label: t.slotTomorrow || 'Tomorrow 9 AM', sub: '9 AM' }
+                { id: 'tomorrow', label: t.slotTomorrow || 'Tomorrow 9 AM', sub: '9 AM' },
+                { id: 'custom', label: '📅 Custom Date & Time', sub: 'Manual Select' }
               ].map((s) => (
                 <button
                   key={s.id}
@@ -518,6 +535,71 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
                 </button>
               ))}
             </div>
+
+            {/* MANUAL DATE & TIME PICKER PANEL */}
+            {selectedSlot === 'custom' && (
+              <div className="p-3.5 rounded-2xl bg-blue-50/90 border border-blue-200 space-y-3 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between text-xs font-black text-blue-900 border-b border-blue-200/80 pb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                    <span>Select Manual Date & Time</span>
+                  </span>
+                  <span className="text-[10px] text-blue-600 font-bold bg-white px-2 py-0.5 rounded-md border border-blue-200">
+                    Custom Schedule
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-slate-600 uppercase mb-1">
+                      Service Date
+                    </label>
+                    <input
+                      type="date"
+                      min={new Date().toISOString().split('T')[0]}
+                      value={customSlotDate}
+                      onChange={(e) => setCustomSlotDate(e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-xl border border-blue-300 text-xs font-bold bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-slate-600 uppercase mb-1">
+                      Service Time
+                    </label>
+                    <input
+                      type="time"
+                      value={customSlotTime}
+                      onChange={(e) => setCustomSlotTime(e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-xl border border-blue-300 text-xs font-bold bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Quick Time Preset Pills */}
+                <div>
+                  <span className="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">
+                    Quick Time Slots:
+                  </span>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {['09:00 AM', '11:30 AM', '02:00 PM', '04:30 PM', '06:30 PM', '08:00 PM'].map((slotTime) => (
+                      <button
+                        key={slotTime}
+                        type="button"
+                        onClick={() => setCustomSlotTime(slotTime)}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer border ${
+                          customSlotTime === slotTime
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                            : 'bg-white hover:bg-blue-100 text-slate-700 border-blue-200'
+                        }`}
+                      >
+                        {slotTime}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Tip Your Worker */}
