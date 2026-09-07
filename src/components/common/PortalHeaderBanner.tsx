@@ -18,7 +18,7 @@ import {
 
 export const PortalHeaderBanner: React.FC = () => {
   const { user, logout, switchRole } = useAuth();
-  const { lang, setLang } = useApp();
+  const { t, lang, setLang } = useApp();
   const [isSwitchMenuOpen, setIsSwitchMenuOpen] = useState(false);
 
   if (!user) return null;
@@ -27,11 +27,11 @@ export const PortalHeaderBanner: React.FC = () => {
 
   const roleInfo = {
     customer: {
-      portalName: 'CUSTOMER PORTAL',
+      portalName: t.customerPortalTitle || 'CUSTOMER PORTAL',
       badgeBg: 'bg-blue-600',
       textColor: 'text-blue-400',
       icon: User,
-      subtitle: 'Service Booking, Tracking & Reviews'
+      subtitle: t.customerPortalSub || 'Service Booking, Tracking & Reviews'
     },
     worker: {
       portalName: 'WORKER PORTAL',
@@ -125,7 +125,7 @@ export const PortalHeaderBanner: React.FC = () => {
               title="Switch Portal for Evaluation"
             >
               <ArrowLeftRight className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden xs:inline">Switch Portal</span>
+              <span className="hidden xs:inline">{t.switchPortal || 'Switch Portal'}</span>
               <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
 

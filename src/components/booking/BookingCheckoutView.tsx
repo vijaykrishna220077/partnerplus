@@ -1,4 +1,5 @@
 import React from 'react';
+import { useApp } from '../../context/AppContext';
 import {
   ShoppingBag,
   UserCheck,
@@ -120,6 +121,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
   onSubmit,
   lang
 }) => {
+  const { t } = useApp();
   const cartEntries = Object.entries(cart).filter(([_, qty]) => Number(qty) > 0);
   const isCartEmpty = cartEntries.length === 0;
 
@@ -147,7 +149,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
             onClick={onNavigateToWorks}
             className="text-xs font-extrabold text-[#1D68ED] hover:underline flex items-center gap-1 cursor-pointer"
           >
-            &larr; Add More Works / Change Categories
+            {t.addMoreWorks || '← Add More Works / Change Categories'}
           </button>
 
           <button
@@ -155,7 +157,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
             onClick={onNavigateToWorkers}
             className="text-xs font-extrabold text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer"
           >
-            Browse Available Workers &rarr;
+            {t.browseWorkers || 'Browse Available Workers →'}
           </button>
         </div>
 
@@ -165,7 +167,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-[#1D68ED]" />
               <h3 className="text-sm font-black text-slate-900">
-                Selected Works in Cart ({totalItemsCount})
+                {t.selectedWorksCart || 'Selected Works in Cart'} ({totalItemsCount})
               </h3>
             </div>
             <button
@@ -173,7 +175,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
               onClick={onNavigateToWorks}
               className="text-xs font-bold text-[#1D68ED] hover:underline cursor-pointer"
             >
-              + Add Work Items
+              {t.addWorkItems || '+ Add Work Items'}
             </button>
           </div>
 
@@ -258,14 +260,14 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
               <UserCheck className="w-4 h-4 text-emerald-600" />
-              <span>Assigned Cooperative Partner</span>
+              <span>{t.assignedCoopPartner || 'Assigned Cooperative Partner'}</span>
             </h3>
             <button
               type="button"
               onClick={onNavigateToWorkers}
               className="text-xs font-bold text-[#1D68ED] hover:underline cursor-pointer"
             >
-              {selectedWorker ? 'Switch Worker' : 'Pick Specific Worker'} &rarr;
+              {selectedWorker ? 'Switch Worker' : (t.pickSpecificWorker || 'Pick Specific Worker')} &rarr;
             </button>
           </div>
 
@@ -310,10 +312,10 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
                 </div>
                 <div>
                   <div className="text-xs font-black text-slate-900">
-                    ⚡ Auto-Match Nearest Available Partner
+                    ⚡ {t.autoMatchTitle || 'Auto-Match Nearest Available Partner'}
                   </div>
                   <div className="text-[11px] text-blue-800 font-medium mt-0.5">
-                    Automated 15-25 min dispatch to closest certified crew in your sector
+                    {t.autoMatchSub || 'Automated 15-25 min dispatch to closest certified crew in your sector'}
                   </div>
                 </div>
               </div>
@@ -323,7 +325,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
                 onClick={onNavigateToWorkers}
                 className="px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 cursor-pointer shadow-2xs"
               >
-                Choose
+                {t.choose || 'Choose'}
               </button>
             </div>
           )}
@@ -334,18 +336,18 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
               <Bell className="w-4 h-4 text-amber-500" />
-              <span>Service Instructions for Worker</span>
+              <span>{t.serviceInstructions || 'Service Instructions for Worker'}</span>
             </h3>
-            <span className="text-[10px] text-slate-400 font-bold uppercase">Optional</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase">{t.optional || 'OPTIONAL'}</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
-              { id: 'ring_bell', label: 'Ring Doorbell', icon: Bell },
-              { id: 'avoid_calling', label: 'Avoid Calling', icon: VolumeX },
-              { id: 'pet_at_home', label: 'Pet in House', icon: AlertCircle },
+              { id: 'ring_bell', label: t.ringDoorbell || 'Ring Doorbell', icon: Bell },
+              { id: 'avoid_calling', label: t.avoidCalling || 'Avoid Calling', icon: VolumeX },
+              { id: 'pet_at_home', label: t.petInHouse || 'Pet in House', icon: AlertCircle },
               { id: 'parking_spot', label: 'Parking Ready', icon: Car },
-              { id: 'security_gate', label: 'Gate Pass Reqd', icon: ShieldCheck }
+              { id: 'security_gate', label: t.leaveAtSecurity || 'Gate Pass Reqd', icon: ShieldCheck }
             ].map((chip) => {
               const active = deliveryInstructions.includes(chip.id);
               const ChipIcon = chip.icon;
@@ -427,20 +429,20 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-red-500" />
-                <span>Delivery Address &amp; Contact</span>
+                <span>{t.deliveryAddressContact || 'Delivery Address & Contact'}</span>
               </h3>
               
               <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg">
-                {(['home', 'work', 'other'] as const).map((t) => (
+                {(['home', 'work', 'other'] as const).map((tagKey) => (
                   <button
-                    key={t}
+                    key={tagKey}
                     type="button"
-                    onClick={() => setAddressTag(t)}
+                    onClick={() => setAddressTag(tagKey)}
                     className={`px-2 py-0.5 rounded-md text-[10px] font-bold capitalize transition cursor-pointer ${
-                      addressTag === t ? 'bg-white text-[#1D68ED] shadow-2xs' : 'text-slate-500'
+                      addressTag === tagKey ? 'bg-white text-[#1D68ED] shadow-2xs' : 'text-slate-500'
                     }`}
                   >
-                    {t}
+                    {tagKey === 'home' ? (t.home || 'Home') : tagKey === 'work' ? (t.work || 'Work') : (t.other || 'Other')}
                   </button>
                 ))}
               </div>
@@ -489,14 +491,14 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
           <div className="space-y-2">
             <div className="text-xs font-black text-slate-800 flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Choose Arrival Slot</span>
+              <span>{t.chooseArrivalSlot || 'Choose Arrival Slot'}</span>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'immediate', label: '15-25 Mins', sub: '⚡ Express' },
-                { id: 'evening', label: 'Evening', sub: '4-7 PM' },
-                { id: 'tomorrow', label: 'Tomorrow', sub: '9 AM' }
+                { id: 'immediate', label: t.slotExpress || '15-25 Mins Express', sub: '⚡ Express' },
+                { id: 'evening', label: t.slotEvening || 'Evening 4-7 PM', sub: '4-7 PM' },
+                { id: 'tomorrow', label: t.slotTomorrow || 'Tomorrow 9 AM', sub: '9 AM' }
               ].map((s) => (
                 <button
                   key={s.id}
@@ -520,9 +522,9 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-xs font-black text-slate-800 flex items-center gap-1">
                 <HeartPulse className="w-3.5 h-3.5 text-red-500" />
-                <span>Tip Worker Partner</span>
+                <span>{t.tipWorkerPartner || 'Tip Worker Partner'}</span>
               </span>
-              <span className="text-[10px] text-emerald-700 font-bold">100% goes to partner</span>
+              <span className="text-[10px] text-emerald-700 font-bold">{t.tipNotice || '100% goes to partner'}</span>
             </div>
 
             <div className="flex items-center gap-1.5">
@@ -537,7 +539,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
                       : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
                   }`}
                 >
-                  {amount === 0 ? 'No Tip' : `₹${amount}`}
+                  {amount === 0 ? (t.noTip || 'No Tip') : `₹${amount}`}
                 </button>
               ))}
             </div>
@@ -549,10 +551,10 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
               <Tag className="w-4 h-4 text-emerald-600" />
               <div>
                 <div className="text-xs font-black text-emerald-900">
-                  COOPDIRECT Applied
+                  {t.coopDirectApplied || 'COOPDIRECT Applied'}
                 </div>
                 <div className="text-[10px] text-emerald-700">
-                  ₹{couponDiscount} cooperative welfare subsidy
+                  ₹{couponDiscount} {t.welfareSubsidy || 'cooperative welfare subsidy'}
                 </div>
               </div>
             </div>
@@ -562,17 +564,17 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
           {/* Transparent Bill Breakdown */}
           <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
             <div className="flex items-center justify-between text-slate-600">
-              <span>Base Labour Charge ({totalItemsCount} items)</span>
+              <span>{t.baseLabourCharge || 'Base Labour Charge'} ({totalItemsCount} items)</span>
               <span className="font-semibold text-slate-900">₹{subtotalLabor}</span>
             </div>
 
             <div className="flex items-center justify-between text-slate-600">
-              <span>Cooperative Member Welfare (3%)</span>
+              <span>{t.cooperativeWelfareFundLabel || 'Cooperative Worker Welfare (5%)'}</span>
               <span className="font-semibold text-slate-900">₹{welfareFund}</span>
             </div>
 
             <div className="flex items-center justify-between text-slate-600">
-              <span>GST Govt Tax (5%)</span>
+              <span>{t.gstTaxLabel || 'GST Tax (18%)'}</span>
               <span className="font-semibold text-slate-900">₹{gstTax}</span>
             </div>
 
@@ -592,7 +594,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
 
             {isCouponApplied && (
               <div className="flex items-center justify-between text-emerald-700 font-bold">
-                <span>Cooperative Direct Subsidy</span>
+                <span>{t.directSubsidyLabel || 'Cooperative Direct Subsidy'}</span>
                 <span>-₹{couponDiscount}</span>
               </div>
             )}
@@ -603,7 +605,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-sm font-black text-slate-900">
-              <span>Total Payable</span>
+              <span>{t.totalPayable || 'Total Payable'}</span>
               <span className="text-base text-[#1D68ED]">₹{grossTotal}</span>
             </div>
           </div>
@@ -679,7 +681,7 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
                 </>
               ) : (
                 <>
-                  <span>Click to Book Partner</span>
+                  <span>{t.clickToBook || 'Click to Book Partner'}</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}

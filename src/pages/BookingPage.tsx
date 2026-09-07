@@ -63,7 +63,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   initialTab = 'works',
   onBack
 }) => {
-  const { lang, openTracker, openPayment, openInvoice, addToast, refreshData, setActiveTab } = useApp();
+  const { t, lang, openTracker, openPayment, openInvoice, addToast, refreshData, setActiveTab } = useApp();
 
   // Navigation mode: 'works' (Step 1) | 'workers' (Step 2) | 'cart' (Step 3)
   const [modalView, setModalView] = useState<'works' | 'workers' | 'cart'>(initialTab || 'works');
@@ -526,11 +526,11 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                   }`}
                 >
                   <Hammer className="w-3.5 h-3.5 shrink-0" />
-                  <span>1. What Kind of Works</span>
+                  <span>{t.step1Works || '1. What Kind of Works'}</span>
                   <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
                     modalView === 'works' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
                   }`}>
-                    {CATEGORIES.length} Trades
+                    {CATEGORIES.length} {t.trades || 'Trades'}
                   </span>
                 </button>
 
@@ -550,11 +550,11 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                   }`}
                 >
                   <Users className="w-3.5 h-3.5 shrink-0" />
-                  <span>2. Who is Available Nearby</span>
+                  <span>{t.step2Available || '2. Who is Available Nearby'}</span>
                   <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
                     modalView === 'workers' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
                   }`}>
-                    {ALL_COOPERATIVE_WORKERS.length} On Duty
+                    {ALL_COOPERATIVE_WORKERS.length} {t.onDuty || 'On Duty'}
                   </span>
                 </button>
 
@@ -574,7 +574,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                   }`}
                 >
                   <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
-                  <span>3. Review Cart &amp; Book</span>
+                  <span>{t.step3Review || '3. Review Cart & Book'}</span>
                   <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
                     modalView === 'cart' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'
                   }`}>
@@ -594,7 +594,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                 ) : (
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded-xl text-xs font-semibold">
                     <Zap className="w-3.5 h-3.5 text-blue-600" />
-                    <span>⚡ Express Auto-Match (15-25 Mins)</span>
+                    <span>⚡ {t.expressAutoMatch || 'Express Auto-Match (15-25 Mins)'}</span>
                   </div>
                 )}
               </div>
