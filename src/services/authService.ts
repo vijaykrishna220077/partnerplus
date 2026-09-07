@@ -222,6 +222,7 @@ class AuthService {
   async signUpWorker(params: WorkerSignUpParams): Promise<{
     success: boolean;
     authUser?: any;
+    authUserId?: string;
     dbUser?: any;
     workerProfile?: any;
     message?: string;
@@ -233,6 +234,7 @@ class AuthService {
       // 1. Supabase Auth Sign Up
       let authUserId: string | null = null;
       let authUser: any = null;
+      let authNotice: string | null = null;
 
       if (supabase) {
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -249,8 +251,20 @@ class AuthService {
 
         if (authError) {
           console.warn('[AuthService] Worker Auth signUp notice/error:', authError.message);
-          authUser = authData?.user || null;
-          authUserId = authData?.user?.id || null;
+          if (authError.message.includes('already registered') || authError.message.includes('User already exists')) {
+            const { data: signInData } = await supabase.auth.signInWithPassword({ email, password });
+            if (signInData?.user) {
+              authUser = signInData.user;
+              authUserId = signInData.user.id;
+            }
+          } else if (authError.message.includes('rate limit')) {
+            authNotice = 'Supabase Email Rate Limit reached. User profile recorded in database.';
+            authUser = authData?.user || null;
+            authUserId = authData?.user?.id || null;
+          } else {
+            authUser = authData?.user || null;
+            authUserId = authData?.user?.id || null;
+          }
         } else {
           authUser = authData?.user || null;
           authUserId = authData?.user?.id || null;
@@ -339,13 +353,15 @@ class AuthService {
       return {
         success: true,
         authUser,
+        authUserId: effectiveAuthId,
         dbUser: publicUser,
         workerProfile: workerProfile || {
           id: `wrk-${Date.now().toString().slice(-6)}`,
           user_id: publicUserId,
           full_name: params.fullName,
           phone: params.phone
-        }
+        },
+        message: authNotice || undefined
       };
     } catch (err: any) {
       console.error('[AuthService] Worker signup exception:', err);

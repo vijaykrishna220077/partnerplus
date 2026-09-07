@@ -303,9 +303,11 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
 
         {/* Verification Checklist */}
         <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-left text-xs space-y-2.5">
-          <div className="font-bold text-slate-900 dark:text-white flex items-center justify-between">
+          <div className="font-bold text-slate-900 dark:text-white flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <span>Cooperative Society Verification Pipeline:</span>
-            <span className="font-mono text-slate-500">Ref ID: {registeredWorkerId}</span>
+            <span className="font-mono text-xs font-bold text-amber-500 bg-slate-200 dark:bg-slate-900 px-2 py-0.5 rounded">
+              User ID: {registeredWorkerId}
+            </span>
           </div>
 
           <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
