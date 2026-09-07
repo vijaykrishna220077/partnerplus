@@ -12,8 +12,22 @@
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- 0. Revoke blanket grants handed to `anon`. `authenticated` keeps normal access;
---    RLS policies below decide which rows it can see.
+-- 0. Helper function for admin / staff role check
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_admin_or_staff()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users
+    WHERE auth_user_id = auth.uid()
+      AND role IN ('COOPERATIVE_ADMIN', 'COOPERATIVE_STAFF', 'ORGANIZATION_ADMIN', 'ORGANIZATION_STAFF')
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- ----------------------------------------------------------------------------
+-- Revoke blanket grants handed to `anon`. `authenticated` keeps normal access;
+-- RLS policies below decide which rows it can see.
 -- ----------------------------------------------------------------------------
 REVOKE ALL ON public.users FROM anon;
 REVOKE ALL ON public.customer_profiles FROM anon;
