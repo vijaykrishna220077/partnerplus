@@ -41,6 +41,7 @@ import confetti from 'canvas-confetti';
 import { soundAndSpeech } from '../utils/soundAndSpeech';
 import { useApp } from '../context/AppContext';
 import { bookingService } from '../services/bookingService';
+import { locationService } from '../services/locationService';
 import { Booking, WorkerMatchResult } from '../types';
 import { 
   CooperativeWorkerProfile, 
@@ -409,7 +410,7 @@ export const QuoteCalculatorModal: React.FC<QuoteCalculatorModalProps> = ({
     return localStorage.getItem('sahakari_user_phone') || '98765 43210';
   });
   const [customerAddress, setCustomerAddress] = useState<string>(() => {
-    return localStorage.getItem('sahakari_user_address') || 'Flat 302, Green Park Apartments, 2nd Avenue, Anna Nagar';
+    return localStorage.getItem('sahakari_user_address') || 'Sri Krishna College of Engineering and Technology (SKCET), Kuniamuthur, Coimbatore';
   });
   const [addressTag, setAddressTag] = useState<'home' | 'work' | 'other'>('home');
   const [selectedSlot, setSelectedSlot] = useState<'immediate' | 'evening' | 'tomorrow'>('immediate');
@@ -475,26 +476,28 @@ export const QuoteCalculatorModal: React.FC<QuoteCalculatorModalProps> = ({
   };
 
   // GPS Location auto-detect
-  const handleDetectLocation = () => {
+  const handleDetectLocation = async () => {
     if (!navigator.geolocation) {
       addToast({ type: 'warning', title: 'GPS Unavailable', message: 'Geolocation is not supported by your browser.' });
       return;
     }
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setIsLocating(false);
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setCustomerAddress(`GPS Verified (${lat.toFixed(4)}, ${lng.toFixed(4)}), Anna Nagar Sector 4`);
-        addToast({ type: 'success', title: 'Location Verified', message: 'GPS coordinates attached for express dispatch.' });
-      },
-      () => {
-        setIsLocating(false);
-        addToast({ type: 'info', title: 'Default Location', message: 'Using Anna Nagar Cooperative Cluster Zone.' });
-      },
-      { timeout: 8000 }
-    );
+    try {
+      const { coords, isSimulated } = await locationService.getCurrentLocation();
+      const geoResult = await locationService.fetchReverseGeocode(coords.latitude, coords.longitude);
+      const cleanAddress = geoResult.address || `GPS Verified (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`;
+      setCustomerAddress(cleanAddress);
+      addToast({
+        type: isSimulated ? 'info' : 'success',
+        title: isSimulated ? 'Default Location Set' : 'Location Verified',
+        message: `${cleanAddress}`
+      });
+    } catch {
+      setCustomerAddress('Sri Krishna College of Engineering and Technology (SKCET), Kuniamuthur, Coimbatore');
+      addToast({ type: 'info', title: 'Default Location', message: 'Using SKCET Coimbatore Cooperative Cluster Zone.' });
+    } finally {
+      setIsLocating(false);
+    }
   };
 
   const toggleInstruction = (inst: string) => {

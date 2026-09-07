@@ -1,8 +1,9 @@
 import { GeoPoint, LocationPermissionState, WorkerLocationRecord, CustomerLocationRecord } from '../types';
 import { realtimeHub } from './db';
 
-// Known landmark coordinates across Tamil Nadu (Chennai, Coimbatore, Madurai, Salem)
+// Known landmark coordinates across Tamil Nadu (Coimbatore, Chennai, Madurai, Salem)
 export const KNOWN_AREAS_COORDINATES = [
+  { name: 'Sri Krishna College of Engineering and Technology (SKCET), Kuniamuthur, Coimbatore', lat: 10.9372, lng: 76.9562, city: 'Coimbatore' },
   { name: 'Anna Nagar West, Chennai', lat: 13.0850, lng: 80.2101, city: 'Chennai' },
   { name: 'T. Nagar, Chennai', lat: 13.0418, lng: 80.2341, city: 'Chennai' },
   { name: 'Velachery, Chennai', lat: 12.9815, lng: 80.2180, city: 'Chennai' },
