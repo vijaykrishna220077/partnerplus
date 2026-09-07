@@ -20,6 +20,7 @@ import {
 import { onboardingService } from '../../services/onboardingService';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
+import { ProfilePhotoUploader } from '../common/ProfilePhotoUploader';
 
 interface CustomerRegistrationProps {
   onBack: () => void;
@@ -37,6 +38,7 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
   const totalSteps = 4;
 
   // Step 1: Basic Info
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('');
   const [fullName, setFullName] = useState<string>('Ananya Sharma');
   const [phone, setPhone] = useState<string>('+91 94440 12345');
   const [email, setEmail] = useState<string>('ananya.sharma@gmail.com');
@@ -190,6 +192,7 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
         state,
         postalCode,
         preferredLanguage,
+        profilePhotoUrl: profilePhotoUrl || undefined,
         notificationPreferences: {
           sms: smsNotify,
           whatsapp: whatsappNotify,
@@ -208,7 +211,8 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
         name: fullName,
         email: email,
         phone: phone,
-        role: 'customer'
+        role: 'customer',
+        avatar: profilePhotoUrl || undefined
       });
 
       addToast({
@@ -277,6 +281,20 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
       {/* STEP 1: Basic Information */}
       {step === 1 && (
         <div className="space-y-4">
+          <ProfilePhotoUploader
+            currentPhotoUrl={profilePhotoUrl}
+            onPhotoSelected={(dataUrl) => {
+              setProfilePhotoUrl(dataUrl);
+              addToast({
+                type: 'success',
+                title: 'Profile Photo Set',
+                message: 'Profile picture attached for your customer account.'
+              });
+            }}
+            label="Customer Profile Picture (Camera Selfie / File Upload)"
+            required={false}
+          />
+
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Full Legal Name <span className="text-rose-500">*</span>

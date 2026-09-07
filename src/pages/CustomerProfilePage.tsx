@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import { ProfilePhotoUploader } from '../components/common/ProfilePhotoUploader';
 import { 
   User, 
   Mail, 
@@ -18,7 +19,9 @@ import {
   Sparkles,
   HeartHandshake,
   UserCheck,
-  Edit3
+  Edit3,
+  Camera,
+  X
 } from 'lucide-react';
 
 export const CustomerProfilePage: React.FC = () => {
@@ -26,6 +29,7 @@ export const CustomerProfilePage: React.FC = () => {
   const { currentLocation, city, openLocationPicker, addToast, bookings, lang, setLang } = useApp();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [showPhotoUploader, setShowPhotoUploader] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -83,7 +87,7 @@ export const CustomerProfilePage: React.FC = () => {
         
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-4 sm:gap-6">
-            <div className="relative">
+            <div className="relative group">
               {user?.avatar ? (
                 <img 
                   src={user.avatar} 
@@ -96,6 +100,14 @@ export const CustomerProfilePage: React.FC = () => {
                   {user?.name ? user.name.substring(0, 2).toUpperCase() : 'CU'}
                 </div>
               )}
+              <button
+                type="button"
+                onClick={() => setShowPhotoUploader(!showPhotoUploader)}
+                className="absolute -top-1 -right-1 bg-blue-600 hover:bg-blue-500 text-white p-1.5 rounded-full border-2 border-slate-900 shadow transition cursor-pointer"
+                title="Change or take profile picture"
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </button>
               <span className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full border-2 border-slate-900" title="Verified Customer">
                 <ShieldCheck className="w-4 h-4" />
               </span>
@@ -149,6 +161,39 @@ export const CustomerProfilePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {showPhotoUploader && (
+        <div className="bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900 rounded-3xl p-6 shadow-xl animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Update Customer Profile Picture</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPhotoUploader(false)}
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <ProfilePhotoUploader
+            currentPhotoUrl={user?.avatar}
+            onPhotoSelected={(newUrl) => {
+              updateUserProfile({ avatar: newUrl });
+              addToast({
+                type: 'success',
+                title: 'Profile Picture Updated!',
+                message: 'Your new profile photo is saved and updated across PartnerPlus.'
+              });
+              setShowPhotoUploader(false);
+            }}
+            label="Take Live Camera Selfie or Choose File"
+            required={false}
+          />
+        </div>
+      )}
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
