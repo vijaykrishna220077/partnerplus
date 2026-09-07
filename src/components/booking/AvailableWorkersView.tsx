@@ -35,7 +35,8 @@ export const AvailableWorkersView: React.FC<AvailableWorkersViewProps> = ({
   workerCategoryFilter = 'all',
   setWorkerCategoryFilter = (_trade: string) => {},
   onProceedToCart = () => {},
-  onProceedWithWorker
+  onProceedWithWorker,
+  onBackToWorks
 }) => {
   const { t } = useApp();
 
@@ -52,14 +53,26 @@ export const AvailableWorkersView: React.FC<AvailableWorkersViewProps> = ({
       {/* Header & Worker Category Filters */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-              <Users className="w-5 h-5 text-emerald-600" />
-              <span>{t("booking.step2Available") || "2. Who is Available Nearby?"}</span>
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {t("landing.guaranteedCooperative") || "Verified cooperative members on active duty"} • {t("location.nearbyWorkers") || "GPS distance"}
-            </p>
+          <div className="flex items-center gap-2.5">
+            {onBackToWorks && (
+              <button
+                type="button"
+                onClick={onBackToWorks}
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition cursor-pointer text-xs font-bold flex items-center gap-1 shrink-0 border border-slate-200"
+                title="Back to Works Catalog"
+              >
+                <span>&larr; Works</span>
+              </button>
+            )}
+            <div>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                <Users className="w-5 h-5 text-emerald-600" />
+                <span>{t("booking.step2Available") || "2. Who is Available Nearby?"}</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {t("landing.guaranteedCooperative") || "Verified cooperative members on active duty"} • {t("location.nearbyWorkers") || "GPS distance"}
+              </p>
+            </div>
           </div>
 
           {/* Selected Worker Indicator */}

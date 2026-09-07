@@ -117,6 +117,16 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       ...prev,
       [taskId]: (Number(prev[taskId]) || 0) + 1
     }));
+    // Find task category and switch directly to showing available workers in that field
+    const found = findTaskById(taskId);
+    const catId = found ? found.category.id : activeCategoryId;
+    setWorkerCategoryFilter(catId);
+    setModalView('workers');
+    addToast({
+      type: 'success',
+      title: 'Work Selected',
+      message: `Showing verified ${found ? found.category.name : 'trade'} partners available nearby.`
+    });
   };
 
   const handleRemoveFromCart = (taskId: string) => {
@@ -721,7 +731,10 @@ export const BookingPage: React.FC<BookingPageProps> = ({
               <WorksCatalogView
                 categories={CATEGORIES}
                 activeCategoryId={activeCategoryId}
-                setActiveCategoryId={setActiveCategoryId}
+                setActiveCategoryId={(catId) => {
+                  setActiveCategoryId(catId);
+                  setWorkerCategoryFilter(catId);
+                }}
                 filteredTasks={filteredTasksList}
                 filteredTasksList={filteredTasksList}
                 cart={cart}
