@@ -1,7 +1,7 @@
 import { StructuredWorkerProfile } from '../types/workerSkillRegistry';
 import { WorkerJobOpening } from '../data/workerJobData';
 import { workerEligibilityService } from './workerEligibilityService';
-import { realtimeHub } from './db';
+import { db, realtimeHub } from './db';
 import { 
   CooperativeAuditLog, 
   CooperativeComplaint, 
@@ -218,10 +218,19 @@ class CooperativeBackendService {
       return { success: false, message: 'Backend Error: Worker is currently offline.' };
     }
 
-    if (this.activeJobsMap.has(worker.id)) {
+    // Verify if worker actually has an active non-completed booking in memory/db
+    const allBookings = db.getBookings();
+    const activeBooking = allBookings.find(b => 
+      (b.workerId === worker.id || (worker.name && b.workerName?.toLowerCase() === worker.name.toLowerCase())) &&
+      !['service_completed', 'cancelled', 'rejected'].includes(b.status)
+    );
+
+    if (!activeBooking) {
+      this.activeJobsMap.delete(worker.id);
+    } else if (this.activeJobsMap.has(worker.id) && this.activeJobsMap.get(worker.id) !== job.id) {
       return { 
         success: false, 
-        message: 'Backend Error: Worker already has an active ongoing assignment.' 
+        message: `Backend Error: Worker already has an active ongoing booking (${activeBooking.bookingCode}).` 
       };
     }
 

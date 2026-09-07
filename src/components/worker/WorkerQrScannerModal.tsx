@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   QrCode, 
@@ -9,7 +9,8 @@ import {
   AlertCircle, 
   KeyRound,
   ArrowRight,
-  Volume2
+  Volume2,
+  Video
 } from 'lucide-react';
 import { WorkerJobOpening } from '../../data/workerJobData';
 import { Booking } from '../../types';
@@ -36,6 +37,45 @@ export const WorkerQrScannerModal: React.FC<WorkerQrScannerModalProps> = ({
   const [manualPin, setManualPin] = useState<string>('');
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
+  const [cameraError, setCameraError] = useState<string>('');
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Real WebCam camera stream initializer for mobile & desktop devices
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+
+    if (isOpen) {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } }
+        })
+        .then((mediaStream) => {
+          stream = mediaStream;
+          setIsCameraActive(true);
+          setCameraError('');
+          if (videoRef.current) {
+            videoRef.current.srcObject = mediaStream;
+            videoRef.current.play().catch(() => {});
+          }
+        })
+        .catch((err) => {
+          console.warn('Camera stream error:', err);
+          setIsCameraActive(false);
+          setCameraError('Live camera preview unavailable or permission blocked.');
+        });
+      } else {
+        setIsCameraActive(false);
+        setCameraError('Camera API not supported on this browser.');
+      }
+    }
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -188,22 +228,51 @@ export const WorkerQrScannerModal: React.FC<WorkerQrScannerModalProps> = ({
             </div>
           </div>
 
-          {/* Camera Viewfinder Mockup */}
-          <div className="relative bg-black rounded-2xl p-6 border-2 border-emerald-500/60 flex flex-col items-center justify-center min-h-[210px] overflow-hidden group shadow-inner">
+          {/* Live Camera Viewfinder */}
+          <div className="relative bg-black rounded-2xl border-2 border-emerald-500/60 flex flex-col items-center justify-center min-h-[220px] overflow-hidden group shadow-inner">
+            {/* Live Camera Video Feed */}
+            {isCameraActive && (
+              <video
+                ref={videoRef}
+                aria-label="Camera Video Stream"
+                autoPlay
+                playsInline
+                muted
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+
             {/* Viewfinder Corner Reticles */}
-            <div className="absolute top-3 left-3 w-6 h-6 border-t-3 border-l-3 border-emerald-400 rounded-tl" />
-            <div className="absolute top-3 right-3 w-6 h-6 border-t-3 border-r-3 border-emerald-400 rounded-tr" />
-            <div className="absolute bottom-3 left-3 w-6 h-6 border-b-3 border-l-3 border-emerald-400 rounded-bl" />
-            <div className="absolute bottom-3 right-3 w-6 h-6 border-b-3 border-r-3 border-emerald-400 rounded-br" />
+            <div className="absolute top-3 left-3 w-6 h-6 border-t-3 border-l-3 border-emerald-400 rounded-tl z-10" />
+            <div className="absolute top-3 right-3 w-6 h-6 border-t-3 border-r-3 border-emerald-400 rounded-tr z-10" />
+            <div className="absolute bottom-3 left-3 w-6 h-6 border-b-3 border-l-3 border-emerald-400 rounded-bl z-10" />
+            <div className="absolute bottom-3 right-3 w-6 h-6 border-b-3 border-r-3 border-emerald-400 rounded-br z-10" />
 
             {/* Laser scanning beam animation */}
-            <div className="absolute inset-x-4 top-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10B981] animate-bounce" />
+            <div className="absolute inset-x-4 top-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10B981] animate-bounce z-10" />
 
-            <QrCode className="w-16 h-16 text-slate-600 mb-2 group-hover:scale-105 transition-transform" />
-            
-            <p className="text-xs text-slate-300 text-center font-medium px-4">
-              Align customer's <strong>Job Completion QR Code</strong> inside this frame
-            </p>
+            {/* Overlay content when camera is inactive */}
+            {!isCameraActive && (
+              <div className="flex flex-col items-center p-4 text-center z-10">
+                <QrCode className="w-14 h-14 text-slate-500 mb-2 group-hover:scale-105 transition-transform" />
+                <p className="text-xs text-slate-300 font-medium px-4">
+                  Align customer's <strong>Job Completion QR Code</strong> inside this frame
+                </p>
+                {cameraError && (
+                  <span className="text-[10px] text-amber-400 mt-1.5 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
+                    {cameraError}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Camera Active Live Badge */}
+            {isCameraActive && (
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 z-10 backdrop-blur-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>LIVE CAMERA ACTIVE</span>
+              </div>
+            )}
 
             {isScanning && (
               <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center gap-2 z-20">
