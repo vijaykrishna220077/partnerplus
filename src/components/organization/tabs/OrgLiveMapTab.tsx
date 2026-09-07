@@ -22,33 +22,27 @@ interface OrgLiveMapTabProps {
   workRequests: OrganizationWorkRequest[];
 }
 
-type MapStyleOption = 'dark' | 'street' | 'googleRoads' | 'googleSatellite';
+type MapStyleOption = 'dark' | 'street' | 'satellite';
 
-// Map Tile Styles (OpenStreetMap, CartoDB Dark, Google Maps & Satellite)
-const TILE_SERVERS: Record<MapStyleOption, { label: string; url: string; attribution: string; subdomains: string }> = {
+// 100% Free, Un-watermarked Map Tile Servers (No API Key Required)
+const TILE_SERVERS: Record<MapStyleOption, { label: string; url: string; attribution: string; maxZoom: number }> = {
   dark: {
-    label: 'Dark Tactical',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    subdomains: 'abcd'
+    label: 'Dark Tactical (Esri Dark)',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, HERE, Garmin, USGS, NGA, EPA',
+    maxZoom: 16
   },
   street: {
-    label: 'OpenStreetMap',
+    label: 'OpenStreetMap (Street)',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OpenStreetMap contributors',
-    subdomains: 'abc'
+    maxZoom: 19
   },
-  googleRoads: {
-    label: 'Google Maps (Street)',
-    url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-    attribution: '&copy; Google Maps',
-    subdomains: 'abc'
-  },
-  googleSatellite: {
-    label: 'Google Maps (Satellite)',
-    url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-    attribution: '&copy; Google Maps',
-    subdomains: 'abc'
+  satellite: {
+    label: 'World Imagery (Satellite)',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, Maxar, Earthstar Geographics, USDA',
+    maxZoom: 18
   }
 };
 
@@ -162,8 +156,8 @@ export const OrgLiveMapTab: React.FC<OrgLiveMapTabProps> = ({
 
         const activeTileConfig = TILE_SERVERS[mapStyle];
         const tileLayer = L.tileLayer(activeTileConfig.url, {
-          maxZoom: 19,
-          subdomains: activeTileConfig.subdomains
+          maxZoom: activeTileConfig.maxZoom,
+          attribution: activeTileConfig.attribution
         }).addTo(map);
 
         tileLayerRef.current = tileLayer;
