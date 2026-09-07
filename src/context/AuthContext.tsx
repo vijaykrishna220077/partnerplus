@@ -342,10 +342,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const matchedDemo = DEMO_ACCOUNTS.find(d => d.role === role) || DEMO_ACCOUNTS[0];
+    const derivedName = customUserData?.name || (
+      identifier.includes('@')
+        ? identifier.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+        : (identifier.replace(/\D/g, '').length >= 4
+            ? `Customer (${identifier.replace(/\D/g, '').slice(-4)})`
+            : 'Valued Customer')
+    );
+
     const customUser: AuthUser = {
       ...matchedDemo.user,
       id: customUserData?.id || `usr-${Date.now()}`,
-      name: customUserData?.name || (identifier.includes('@') ? identifier.split('@')[0] : 'Registered User'),
+      name: derivedName,
       email: customUserData?.email || (identifier.includes('@') ? identifier : `${identifier.replace(/\D/g, '')}@partnerplus.org`),
       phone: customUserData?.phone || identifier,
       role: role,

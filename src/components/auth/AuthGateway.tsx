@@ -56,8 +56,8 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
   const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole); // Default to Commercial Client for real user flow
   
   // Credentials
-  const [identifier, setIdentifier] = useState('sarah.jenkins@highpointcorp.com');
-  const [password, setPassword] = useState('partnerplus2025');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -82,15 +82,8 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
     setSelectedRole(role);
     setErrorMessage('');
     setInfoMessage('');
-    if (role === 'customer') {
-      setIdentifier('sarah.jenkins@highpointcorp.com');
-    } else if (role === 'worker') {
-      setIdentifier('marcus.pro@partnerpluscleaning.com');
-    } else if (role === 'organization_admin') {
-      setIdentifier('priya.n@ltfacilities.co.in');
-    } else {
-      setIdentifier('dave.robertson@partnerplusdispatch.com');
-    }
+    setIdentifier('');
+    setPassword('');
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -99,9 +92,21 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
     setErrorMessage('');
     setInfoMessage('');
 
+    const loginId = identifier.trim();
+    if (!loginId || loginId.length < 3) {
+      setLoading(false);
+      setErrorMessage('Please enter a valid email address or 10-digit mobile number.');
+      return;
+    }
+
+    if (!password || password.trim().length < 3) {
+      setLoading(false);
+      setErrorMessage('Please enter your account password or access PIN.');
+      return;
+    }
+
     if (selectedRole === 'organization_admin') {
-      const loginId = identifier.trim() || 'priya.n@ltfacilities.co.in';
-      const res = await loginOrganization(loginId, password || 'partnerplus2025', 'ORGANIZATION_ADMIN');
+      const res = await loginOrganization(loginId, password, 'ORGANIZATION_ADMIN');
       setLoading(false);
       if (!res.success) {
         setErrorMessage(res.message || 'Company authentication failed. Check credentials.');
@@ -109,17 +114,9 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
       return;
     }
 
-    const loginId = identifier.trim() || (
-      selectedRole === 'customer' 
-        ? 'sarah.jenkins@highpointcorp.com' 
-        : selectedRole === 'worker' 
-        ? 'marcus.pro@partnerpluscleaning.com' 
-        : 'dave.robertson@partnerplusdispatch.com'
-    );
-
     const res = await loginWithCredentials(
       loginId,
-      password || 'secure123',
+      password,
       selectedRole
     );
     setLoading(false);
