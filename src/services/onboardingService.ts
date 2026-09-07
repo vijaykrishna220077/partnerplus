@@ -12,6 +12,8 @@ import {
 import { realtimeHub, db } from './db';
 import { Worker } from '../types';
 import { mockCooperatives } from '../data/mockData';
+import { authService } from './authService';
+
 
 const ONBOARDING_STORAGE_KEYS = {
   USERS: 'sahakari_users_v2',
@@ -210,8 +212,21 @@ class OnboardingService {
       return { success: false, message: dup.message };
     }
 
-    const userId = `user-c-${Date.now()}`;
-    const authUserId = `auth-${Date.now()}`;
+    // Persist to Supabase Auth & PostgreSQL
+    const authRes = await authService.signUpCustomer({
+      fullName: params.fullName,
+      phone: params.phone,
+      email: params.email,
+      address: params.address,
+      city: params.city,
+      state: params.state,
+      postalCode: params.postalCode,
+      preferredLanguage: params.preferredLanguage,
+      profilePhotoUrl: params.profilePhotoUrl
+    });
+
+    const userId = authRes.dbUser?.id || `user-c-${Date.now()}`;
+    const authUserId = authRes.authUser?.id || authRes.dbUser?.auth_user_id || `auth-${Date.now()}`;
     const now = new Date().toISOString();
 
     const newUser: UserAccount = {
@@ -228,7 +243,7 @@ class OnboardingService {
     };
 
     const newProfile: CustomerProfile = {
-      id: `cust-prof-${Date.now()}`,
+      id: authRes.customerProfile?.id || `cust-prof-${Date.now()}`,
       user_id: userId,
       full_name: params.fullName.trim(),
       profile_photo_url: params.profilePhotoUrl,
@@ -300,12 +315,31 @@ class OnboardingService {
       return { success: false, message: dup.message };
     }
 
-    const userId = `user-w-${Date.now()}`;
-    const authUserId = `auth-${Date.now()}`;
-    const workerId = `wrk-${Date.now().toString().slice(-6)}`;
-    const now = new Date().toISOString();
-
     const selectedCoop = mockCooperatives.find(c => c.id === params.cooperativeId) || mockCooperatives[0];
+
+    // Persist to Supabase Auth & PostgreSQL
+    const authRes = await authService.signUpWorker({
+      fullName: params.fullName,
+      phone: params.phone,
+      email: params.email,
+      address: params.address,
+      city: params.city,
+      state: params.state,
+      postalCode: params.postalCode,
+      preferredLanguage: params.preferredLanguage,
+      profilePhotoUrl: params.profilePhotoUrl,
+      workerType: params.workerType,
+      primarySkillId: params.primarySkill?.id,
+      primarySkillLabel: params.primarySkill?.name,
+      experienceYears: params.primarySkill?.years,
+      cooperativeId: selectedCoop.id,
+      emergencyAvailable: params.availability?.emergencyAvailable
+    });
+
+    const userId = authRes.dbUser?.id || `user-w-${Date.now()}`;
+    const authUserId = authRes.authUser?.id || authRes.dbUser?.auth_user_id || `auth-${Date.now()}`;
+    const workerId = authRes.workerProfile?.id || `wrk-${Date.now().toString().slice(-6)}`;
+    const now = new Date().toISOString();
 
     // 1. Central users record
     const newUser: UserAccount = {
@@ -501,9 +535,25 @@ class OnboardingService {
       return { success: false, message: dup.message };
     }
 
-    const userId = `user-org-${Date.now()}`;
-    const authUserId = `auth-${Date.now()}`;
-    const orgId = `org-${Date.now().toString().slice(-6)}`;
+    const authRes = await authService.signUpOrganization({
+      organizationName: params.organizationName,
+      legalName: params.legalName,
+      organizationType: params.organizationType,
+      registrationNumber: params.registrationNumber,
+      gstNumber: params.gstNumber,
+      contactPerson: params.contactPerson,
+      phone: params.phone,
+      email: params.email,
+      address: params.address,
+      city: params.city,
+      state: params.state,
+      postalCode: params.postalCode,
+      description: params.description
+    });
+
+    const userId = authRes.dbUser?.id || `user-org-${Date.now()}`;
+    const authUserId = authRes.authUser?.id || authRes.dbUser?.auth_user_id || `auth-${Date.now()}`;
+    const orgId = authRes.organizationProfile?.id || `org-${Date.now().toString().slice(-6)}`;
     const now = new Date().toISOString();
 
     const newUser: UserAccount = {
@@ -583,13 +633,30 @@ class OnboardingService {
       return { success: false, message: dup.message };
     }
 
-    const userId = `user-coop-${Date.now()}`;
-    const authUserId = `auth-${Date.now()}`;
-    const memberRequestId = `coop-req-${Date.now().toString().slice(-6)}`;
+    const mappedRole: 'COOPERATIVE_ADMIN' | 'COOPERATIVE_STAFF' =
+      params.requestedRole === 'COOPERATIVE_ADMIN' ? 'COOPERATIVE_ADMIN' : 'COOPERATIVE_STAFF';
+
+    const authRes = await authService.signUpCooperativeOfficial({
+      cooperativeName: params.cooperativeName,
+      registrationNumber: params.registrationNumber,
+      cooperativeAddress: params.cooperativeAddress,
+      city: params.city,
+      state: params.state,
+      postalCode: params.postalCode,
+      officialEmail: params.officialEmail,
+      phone: params.phone,
+      contactPerson: params.contactPerson,
+      designation: params.designation,
+      requestedRole: mappedRole,
+      reasonForAccess: params.reasonForAccess,
+      cooperativeId: params.cooperativeId
+    });
+
+    const userId = authRes.dbUser?.id || `user-coop-${Date.now()}`;
+    const authUserId = authRes.authUser?.id || authRes.dbUser?.auth_user_id || `auth-${Date.now()}`;
+    const memberRequestId = authRes.memberRecord?.id || `coop-req-${Date.now().toString().slice(-6)}`;
     const now = new Date().toISOString();
 
-    // User is created with PENDING role & PENDING_APPROVAL status.
-    // Privileged access is NOT granted automatically!
     const newUser: UserAccount = {
       id: userId,
       auth_user_id: authUserId,
