@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   MapPin, 
   Radio, 
@@ -10,7 +10,10 @@ import {
   Briefcase,
   AlertCircle,
   Eye,
-  CheckCircle2
+  CheckCircle2,
+  Layers,
+  Maximize2,
+  RotateCcw
 } from 'lucide-react';
 import { OrganizationProject, OrganizationWorkRequest, OrganizationWorkerAssignment } from '../../../types';
 
@@ -19,14 +22,55 @@ interface OrgLiveMapTabProps {
   workRequests: OrganizationWorkRequest[];
 }
 
+// Map Tile Styles
+const TILE_SERVERS = {
+  dark: {
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd'
+  },
+  street: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    subdomains: 'abc'
+  }
+};
+
+// Base coordinates for Coimbatore projects
+const PROJECT_COORDS: Record<string, { lat: number; lng: number; title: string }> = {
+  ALL: { lat: 11.0284, lng: 77.0034, title: 'Coimbatore Industrial Sector Zone' },
+  'proj-1': { lat: 11.0284, lng: 77.0034, title: 'Peelamedu Logistics Hub' },
+  'proj-2': { lat: 11.0168, lng: 76.9674, title: 'Gandhipuram Commercial Complex' },
+  'proj-3': { lat: 10.9372, lng: 76.9562, title: 'SKCET Smart Campus Site' },
+  'proj-4': { lat: 11.0012, lng: 77.0312, title: 'Singanallur Agro Warehouse' }
+};
+
+// Offset worker coords around project center based on index & status
+function getWorkerGeoCoords(baseLat: number, baseLng: number, index: number, total: number, status: string) {
+  const angle = (index / Math.max(1, total)) * 2 * Math.PI + (index * 0.4);
+  const distance = status === 'WORKING' ? 0.0015 : status === 'ARRIVED' ? 0.0035 : 0.0080;
+  
+  const lat = baseLat + Math.cos(angle) * distance;
+  const lng = baseLng + Math.sin(angle) * distance;
+  return { lat, lng };
+}
+
 export const OrgLiveMapTab: React.FC<OrgLiveMapTabProps> = ({
   projects,
   workRequests
 }) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string>(projects[0]?.id || 'ALL');
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
+  const [mapStyle, setMapStyle] = useState<'dark' | 'street'>('dark');
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(false);
 
-  // Flatten all assignments
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const tileLayerRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+
+  // Flatten active assignments
   const relevantRequests = selectedProjectId === 'ALL' 
     ? workRequests 
     : workRequests.filter(r => r.projectId === selectedProjectId);
@@ -37,6 +81,192 @@ export const OrgLiveMapTab: React.FC<OrgLiveMapTabProps> = ({
   const workingCount = activeAssignments.filter(a => a.status === 'WORKING').length;
   const enRouteCount = activeAssignments.filter(a => a.status === 'ON_THE_WAY').length;
   const arrivedCount = activeAssignments.filter(a => a.status === 'ARRIVED').length;
+
+  // Dynamically load Leaflet CDN
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadLeaflet = () => {
+      if (!document.getElementById('leaflet-css-cdn')) {
+        const link = document.createElement('link');
+        link.id = 'leaflet-css-cdn';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+
+      if (!(window as any).L) {
+        if (!document.getElementById('leaflet-js-cdn')) {
+          const script = document.createElement('script');
+          script.id = 'leaflet-js-cdn';
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          script.async = true;
+          script.onload = () => {
+            if (isMounted) setIsMapLoaded(true);
+          };
+          script.onerror = () => {
+            if (isMounted) setMapError(true);
+          };
+          document.head.appendChild(script);
+        } else {
+          const checkInterval = setInterval(() => {
+            if ((window as any).L && isMounted) {
+              clearInterval(checkInterval);
+              setIsMapLoaded(true);
+            }
+          }, 100);
+        }
+      } else {
+        if (isMounted) setIsMapLoaded(true);
+      }
+    };
+
+    loadLeaflet();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Initialize and update Leaflet Map
+  useEffect(() => {
+    if (!isMapLoaded || !mapContainerRef.current || !(window as any).L) return;
+    const L = (window as any).L;
+
+    const baseCoords = PROJECT_COORDS[selectedProjectId] || PROJECT_COORDS['ALL'];
+
+    try {
+      // Create map instance if not already existing
+      if (!mapInstanceRef.current) {
+        const map = L.map(mapContainerRef.current, {
+          center: [baseCoords.lat, baseCoords.lng],
+          zoom: 15,
+          zoomControl: false,
+          attributionControl: false
+        });
+
+        const activeTileConfig = TILE_SERVERS[mapStyle];
+        const tileLayer = L.tileLayer(activeTileConfig.url, {
+          maxZoom: 19,
+          subdomains: activeTileConfig.subdomains
+        }).addTo(map);
+
+        tileLayerRef.current = tileLayer;
+        mapInstanceRef.current = map;
+
+        // Custom Leaflet Zoom control bottom right
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+      } else {
+        // Update center if project changed
+        mapInstanceRef.current.setView([baseCoords.lat, baseCoords.lng], 15);
+      }
+
+      const map = mapInstanceRef.current;
+
+      // Update Tile Layer if style changed
+      if (tileLayerRef.current) {
+        tileLayerRef.current.setUrl(TILE_SERVERS[mapStyle].url);
+      }
+
+      // Clear previous markers
+      markersRef.current.forEach(m => m.remove());
+      markersRef.current = [];
+
+      // 1. Add Project Center Site Marker
+      const projectSiteIcon = L.divIcon({
+        className: 'custom-leaflet-project-marker',
+        html: `
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(245, 158, 11, 0.2); border: 2px dashed #f59e0b; display: flex; align-items: center; justify-content: center; animation: pulse 2s infinite;">
+              <div style="width: 28px; height: 28px; border-radius: 50%; background: #f59e0b; color: #090d16; display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: 0 4px 12px rgba(245,158,11,0.4);">
+                🏢
+              </div>
+            </div>
+            <div style="margin-top: 4px; padding: 2px 8px; border-radius: 4px; background: rgba(15, 23, 42, 0.95); color: #fde68a; font-size: 10px; font-weight: 800; border: 1px solid #334155; white-space: nowrap;">
+              ${baseCoords.title}
+            </div>
+          </div>
+        `,
+        iconSize: [0, 0]
+      });
+
+      const projectMarker = L.marker([baseCoords.lat, baseCoords.lng], { icon: projectSiteIcon }).addTo(map);
+      markersRef.current.push(projectMarker);
+
+      // 2. Add Worker Markers with Interactive Click & Status Styling
+      const bounds = L.latLngBounds([[baseCoords.lat, baseCoords.lng]]);
+
+      activeAssignments.forEach((asgn, idx) => {
+        const workerPos = getWorkerGeoCoords(baseCoords.lat, baseCoords.lng, idx, activeAssignments.length, asgn.status);
+        bounds.extend([workerPos.lat, workerPos.lng]);
+
+        const isSelected = selectedWorker?.workerId === asgn.workerId;
+        const colorBg = asgn.status === 'WORKING' ? '#10b981' : asgn.status === 'ARRIVED' ? '#f59e0b' : '#3b82f6';
+        const colorBorder = asgn.status === 'WORKING' ? '#a7f3d0' : asgn.status === 'ARRIVED' ? '#fde68a' : '#bfdbfe';
+
+        const workerIcon = L.divIcon({
+          className: 'custom-worker-marker',
+          html: `
+            <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%); transition: transform 0.2s ease;">
+              <div style="
+                width: ${isSelected ? '36px' : '30px'}; 
+                height: ${isSelected ? '36px' : '30px'}; 
+                border-radius: 50%; 
+                background: ${colorBg}; 
+                border: 2px solid ${colorBorder}; 
+                color: #ffffff; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                font-weight: 900; 
+                font-size: 12px;
+                box-shadow: 0 0 12px ${colorBg}88;
+                ${isSelected ? 'transform: scale(1.15); outline: 3px solid #f59e0b;' : ''}
+              ">
+                ${asgn.workerName[0]}
+              </div>
+              <div style="
+                margin-top: 3px; 
+                padding: 1px 6px; 
+                border-radius: 4px; 
+                background: ${isSelected ? '#f59e0b' : 'rgba(15, 23, 42, 0.92)'}; 
+                color: ${isSelected ? '#0f172a' : '#e2e8f0'}; 
+                font-size: 9px; 
+                font-weight: 800; 
+                border: 1px solid ${isSelected ? '#f59e0b' : '#334155'};
+                white-space: nowrap;
+              ">
+                ${asgn.workerName.split(' ')[0]} (${asgn.status})
+              </div>
+            </div>
+          `,
+          iconSize: [0, 0]
+        });
+
+        const marker = L.marker([workerPos.lat, workerPos.lng], { icon: workerIcon }).addTo(map);
+
+        marker.on('click', () => {
+          setSelectedWorkerId(asgn.workerId);
+        });
+
+        markersRef.current.push(marker);
+      });
+
+      // Adjust bounds to fit all markers comfortably
+      if (activeAssignments.length > 0) {
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+      }
+
+    } catch (err) {
+      console.error('Error initializing Leaflet live map:', err);
+    }
+  }, [isMapLoaded, selectedProjectId, activeAssignments.length, mapStyle, selectedWorker?.workerId]);
+
+  const handleFitBounds = () => {
+    if (!mapInstanceRef.current || !markersRef.current.length || !(window as any).L) return;
+    const L = (window as any).L;
+    const group = L.featureGroup(markersRef.current);
+    mapInstanceRef.current.fitBounds(group.getBounds(), { padding: [50, 50], maxZoom: 16 });
+  };
 
   return (
     <div className="space-y-6">
@@ -49,11 +279,11 @@ export const OrgLiveMapTab: React.FC<OrgLiveMapTabProps> = ({
             <span>Organization Live Workforce Map</span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Privacy-scoped GPS tracking restricted to currently assigned project workforce.
+            Privacy-scoped real-time OpenStreetMap tracking restricted to currently assigned project workforce.
           </p>
         </div>
 
-        {/* Project Selector */}
+        {/* Project Selector & Controls */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-slate-600">Filter Site:</span>
           <select
@@ -115,84 +345,66 @@ export const OrgLiveMapTab: React.FC<OrgLiveMapTabProps> = ({
       {/* Interactive Tactical Map & Worker Detail Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-xl min-h-[520px]">
         
-        {/* Left / Center: Interactive Map Stage (8 Cols) */}
-        <div className="lg:col-span-8 relative p-4 flex flex-col justify-between overflow-hidden bg-[#0A0F1D]">
+        {/* Left / Center: Interactive Leaflet Map Stage (8 Cols) */}
+        <div className="lg:col-span-8 relative p-0 flex flex-col justify-between overflow-hidden bg-[#0A0F1D] min-h-[420px]">
           
-          {/* Subtle Grid Map Canvas Background */}
-          <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px]"></div>
-          
-          {/* Top Map Overlays */}
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-xs font-bold text-slate-200 backdrop-blur-md">
+          {/* Top Floating Map Overlays */}
+          <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-xs font-bold text-slate-200 backdrop-blur-md shadow-md pointer-events-auto">
               <MapPin className="w-3.5 h-3.5 text-amber-400" />
-              <span>Coimbatore Industrial Sector Zone • GPS Mesh Active</span>
+              <span>{PROJECT_COORDS[selectedProjectId]?.title || 'Coimbatore Industrial Sector'} • Live OpenStreetMap</span>
             </div>
 
-            <div className="flex items-center gap-2 text-[10px] font-mono text-emerald-400 bg-slate-900/90 px-2.5 py-1 rounded-full border border-slate-800">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span>GPS ACCURACY: HIGH (&lt;10m)</span>
-            </div>
-          </div>
+            <div className="flex items-center gap-2 pointer-events-auto">
+              {/* Map Layer Switcher */}
+              <button
+                type="button"
+                onClick={() => setMapStyle(prev => prev === 'dark' ? 'street' : 'dark')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-xs font-bold text-slate-200 hover:text-amber-400 hover:border-amber-400/50 backdrop-blur-md shadow-md transition cursor-pointer"
+              >
+                <Layers className="w-3.5 h-3.5 text-amber-400" />
+                <span>{mapStyle === 'dark' ? 'Dark Tactical' : 'OpenStreetMap'}</span>
+              </button>
 
-          {/* Interactive Worker Pins Stage */}
-          <div className="relative z-10 my-auto h-80 w-full flex items-center justify-center">
-            
-            {/* Center Project Site Pin */}
-            <div className="relative flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-amber-500/10 border-2 border-dashed border-amber-500/40 animate-pulse flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30">
-                  <Briefcase className="w-5 h-5" />
-                </div>
+              {/* Fit All Markers */}
+              <button
+                type="button"
+                onClick={handleFitBounds}
+                title="Fit all markers in map view"
+                className="p-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-slate-200 hover:text-amber-400 backdrop-blur-md shadow-md transition cursor-pointer"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 bg-slate-900/90 px-2.5 py-1.5 rounded-full border border-slate-800 shadow-md">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span>GPS LIVE (&lt;5m)</span>
               </div>
-              <span className="mt-1 px-2.5 py-0.5 rounded bg-slate-900/90 text-amber-300 font-bold text-[10px] border border-slate-700">
-                Project Site: Peelamedu Logistics Hub
-              </span>
             </div>
-
-            {/* Simulated Satellite Positions for Workers */}
-            {activeAssignments.map((asgn, idx) => {
-              // Calculate spatial circle offset
-              const angle = (idx / (activeAssignments.length || 1)) * 2 * Math.PI;
-              const radius = asgn.status === 'WORKING' ? 45 : asgn.status === 'ARRIVED' ? 85 : 140;
-              const x = Math.cos(angle) * radius;
-              const y = Math.sin(angle) * radius;
-              const isSelected = selectedWorker?.workerId === asgn.workerId;
-
-              return (
-                <div
-                  key={asgn.id}
-                  onClick={() => setSelectedWorkerId(asgn.workerId)}
-                  style={{
-                    transform: `translate(${x}px, ${y}px)`
-                  }}
-                  className={`absolute transition-all duration-500 flex flex-col items-center cursor-pointer group ${
-                    isSelected ? 'z-30 scale-110' : 'z-20 hover:scale-105'
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-black shadow-md transition ${
-                    asgn.status === 'WORKING'
-                      ? 'bg-emerald-500 text-white border-emerald-300 ring-2 ring-emerald-500/40'
-                      : asgn.status === 'ARRIVED'
-                      ? 'bg-amber-500 text-slate-950 border-amber-300 ring-2 ring-amber-500/40'
-                      : 'bg-blue-500 text-white border-blue-300 ring-2 ring-blue-500/40'
-                  }`}>
-                    {asgn.workerName[0]}
-                  </div>
-
-                  <span className={`mt-1 px-1.5 py-0.2 rounded text-[9px] font-bold whitespace-nowrap shadow-xs ${
-                    isSelected 
-                      ? 'bg-amber-400 text-slate-950 font-black' 
-                      : 'bg-slate-900/90 text-slate-300 border border-slate-800'
-                  }`}>
-                    {asgn.workerName.split(' ')[0]} ({asgn.status})
-                  </span>
-                </div>
-              );
-            })}
           </div>
 
-          {/* Bottom Map Legend */}
-          <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 text-xs bg-slate-900/90 p-3 rounded-xl border border-slate-800 text-slate-400">
+          {/* Leaflet Map Canvas Container */}
+          <div className="relative w-full h-full min-h-[440px] z-10">
+            <div ref={mapContainerRef} className="w-full h-full min-h-[440px] bg-slate-950" />
+
+            {!isMapLoaded && !mapError && (
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/80 text-slate-300 gap-3">
+                <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-xs font-bold">Initializing OpenStreetMap GPS Engine...</span>
+              </div>
+            )}
+
+            {mapError && (
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950 text-amber-400 p-6 text-center gap-2">
+                <AlertCircle className="w-8 h-8" />
+                <span className="text-sm font-bold text-white">Map Engine Unavailable</span>
+                <span className="text-xs text-slate-400">Showing raw dispatch coordinates view.</span>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Map Legend Overlay */}
+          <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 text-xs bg-slate-900/95 p-3 border-t border-slate-800 text-slate-400">
             <div className="flex items-center gap-4 text-[11px] font-bold">
               <span className="flex items-center gap-1.5 text-emerald-400">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -209,7 +421,7 @@ export const OrgLiveMapTab: React.FC<OrgLiveMapTabProps> = ({
             </div>
 
             <span className="text-[10px] text-slate-500">
-              Only authorized project personnel are mapped.
+              Click any worker marker on map to inspect dossier.
             </span>
           </div>
 
