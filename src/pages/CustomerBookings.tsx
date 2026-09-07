@@ -47,19 +47,19 @@ export const CustomerBookings: React.FC = () => {
   const getStatusBadge = (status: Booking['status']) => {
     switch (status) {
       case 'confirmed':
-        return <span className="bg-amber-50 text-amber-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-amber-200">Confirmed</span>;
+        return <span className="bg-amber-50 text-amber-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-amber-200">{t("status.REQUESTED")}</span>;
       case 'worker_accepted':
-        return <span className="bg-blue-50 text-blue-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-blue-200">Worker Accepted</span>;
+        return <span className="bg-blue-50 text-blue-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-blue-200">{t("status.ACCEPTED")}</span>;
       case 'on_the_way':
-        return <span className="bg-indigo-50 text-indigo-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-indigo-200 animate-pulse">On The Way</span>;
+        return <span className="bg-indigo-50 text-indigo-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-indigo-200 animate-pulse">{t("status.ON_THE_WAY")}</span>;
       case 'arrived':
-        return <span className="bg-purple-50 text-purple-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-purple-200">Arrived</span>;
+        return <span className="bg-purple-50 text-purple-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-purple-200">{t("status.ARRIVED")}</span>;
       case 'service_started':
-        return <span className="bg-emerald-50 text-emerald-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-emerald-200 animate-pulse">In Progress</span>;
+        return <span className="bg-emerald-50 text-emerald-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-emerald-200 animate-pulse">{t("status.IN_PROGRESS")}</span>;
       case 'service_completed':
-        return <span className="bg-black text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Completed</span>;
+        return <span className="bg-black text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">{t("status.COMPLETED")}</span>;
       default:
-        return <span className="bg-gray-100 text-gray-700 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Cancelled</span>;
+        return <span className="bg-gray-100 text-gray-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">{t("status.CANCELLED")}</span>;
     }
   };
 

@@ -12,7 +12,8 @@ export const LocationPickerModal: React.FC = () => {
     setCurrentLocation, 
     city, 
     setCity, 
-    addToast 
+    addToast,
+    t
   } = useApp();
 
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
@@ -84,10 +85,10 @@ export const LocationPickerModal: React.FC = () => {
             <MapPin className="w-5 h-5 text-emerald-400" />
             <div>
               <h3 className="text-lg font-bold font-serif text-white">
-                Where do you need the service?
+                {t("location.changeLocation") || "Where do you need the service?"}
               </h3>
               <p className="text-[11px] text-slate-300">
-                Current City: <span className="font-semibold text-emerald-400">{city || 'Not set'}</span>
+                {t("location.serviceArea") || "Current City"}: <span className="font-semibold text-emerald-400">{city || 'Not set'}</span>
               </p>
             </div>
           </div>
@@ -118,11 +119,11 @@ export const LocationPickerModal: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-sm block text-emerald-950">Locate Me</span>
+                  <span className="font-extrabold text-sm block text-emerald-950">{t("location.useCurrentLocation") || "Locate Me"}</span>
                   <span className="text-[10px] uppercase font-bold bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded">GPS</span>
                 </div>
                 <span className="text-[11px] text-emerald-800 font-medium">
-                  {isLoadingLocation ? 'Fetching coordinates & reverse geocoding...' : 'Detect location via OpenStreetMap'}
+                  {isLoadingLocation ? 'Fetching coordinates...' : 'Detect location via OpenStreetMap'}
                 </span>
               </div>
             </div>
@@ -145,14 +146,14 @@ export const LocationPickerModal: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500">
-                Popular Localities
+                {t("location.nearbyWorkers") || "Popular Localities"}
               </h4>
               {selectedCityFilter !== 'All' && (
                 <button
                   onClick={() => setSelectedCityFilter('All')}
                   className="text-[11px] text-emerald-600 hover:underline font-medium cursor-pointer"
                 >
-                  Show All Cities
+                  Show All
                 </button>
               )}
             </div>

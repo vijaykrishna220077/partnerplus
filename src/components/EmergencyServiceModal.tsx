@@ -28,7 +28,8 @@ export const EmergencyServiceModal: React.FC = () => {
     currentLocation, 
     openPayment, 
     addToast, 
-    refreshData 
+    refreshData,
+    t 
   } = useApp();
 
   const [selectedCat, setSelectedCat] = useState<ServiceCategory>('plumbing');
@@ -121,10 +122,10 @@ export const EmergencyServiceModal: React.FC = () => {
             </div>
             <div>
               <span className="text-[10px] font-bold tracking-wider uppercase text-rose-300">
-                15-30 Minute Express Response
+                15-30 {t("status.inProgress") || "Minute Express Response"}
               </span>
               <h3 className="text-xl font-black font-serif text-white">
-                Emergency Service Help
+                {t("landing.emergencyResponse") || "Emergency Service Help"}
               </h3>
             </div>
           </div>

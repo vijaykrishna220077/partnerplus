@@ -49,7 +49,7 @@ export const PartnerPlusCoreServices: React.FC<PartnerPlusCoreServicesProps> = (
   onSelectService,
   onOpenPrices
 }) => {
-  const { lang } = useApp();
+  const { lang, t } = useApp();
   const [activeFilter, setActiveFilter] = useState<'all' | 'trades' | 'mechanical' | 'facility' | 'digital' | 'helpers'>('all');
 
   const services: ServiceItemDef[] = [
@@ -98,12 +98,8 @@ export const PartnerPlusCoreServices: React.FC<PartnerPlusCoreServicesProps> = (
       gradient: 'from-sky-500/10 to-indigo-500/10',
       borderColor: 'border-sky-200',
       iconBg: 'bg-sky-100 text-sky-800',
-      subtext: 'Split & window AC power jet servicing, duct clearing, refrigerant gas leak detection, compressor diagnostics, and central heating overhaul.',
-      highlights: [
-        '100% Certified HVAC technicians with digital manifold gauges',
-        '0% Corporate commission cut — 95% goes directly to the technician',
-        'Transparent cooperative diagnostic rates with no hidden gas surcharges'
-      ]
+      subtext: 'AC jet pump foam wash, R32/R410 gas pressure top-up, compressor capacitor replacement, split AC installation, and duct leaks.',
+      highlights: ['Digital manifold gauge testing', 'Copper pipe leak brazing', '90-Day cooling warranty']
     },
     {
       id: 'masonry',
@@ -146,7 +142,7 @@ export const PartnerPlusCoreServices: React.FC<PartnerPlusCoreServicesProps> = (
       ]
     },
     {
-      id: 'mechanic',
+      id: 'auto_fleet',
       type: 'mechanical',
       title: 'Auto & Fleet Mechanics',
       titleHi: 'ऑटो व फ्लीट मैकेनिक (Doorstep)',
@@ -297,6 +293,10 @@ export const PartnerPlusCoreServices: React.FC<PartnerPlusCoreServicesProps> = (
   });
 
   const getLocalizedTitle = (item: ServiceItemDef) => {
+    if (item.id === 'electrical') return t("jobs.electricianJob");
+    if (item.id === 'plumbing') return t("jobs.plumbingJob");
+    if (item.id === 'carpentry') return t("jobs.carpentryJob");
+    if (item.id === 'cleaning') return t("jobs.cleaningJob");
     if (lang === 'hi') return item.titleHi;
     if (lang === 'ta') return item.titleTa;
     return item.title;
@@ -310,24 +310,24 @@ export const PartnerPlusCoreServices: React.FC<PartnerPlusCoreServicesProps> = (
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#0284C7] text-xs font-bold uppercase tracking-wider mb-3">
             <ShieldCheck className="w-3.5 h-3.5 text-[#0284C7]" />
-            <span>ALL JOBS • ONE COOPERATIVE ECOSYSTEM</span>
+            <span>{t("landing.guaranteedCooperative")}</span>
           </div>
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-[#0F172A] tracking-tight font-display">
-            On-Demand Jobs for Every Need
+            {t("landing.coreServicesTitle")}
           </h2>
           <p className="text-sm sm:text-base text-gray-500 mt-3 font-medium">
-            From licensed technical tradesmen, machine operators, and IT technicians to daily wage helpers, hire verified workers backed by social security and fair cooperative rates.
+            {t("landing.coreServicesSub")}
           </p>
 
           {/* Filter Tabs */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             {[
-              { id: 'all', label: 'All Jobs (सभी काम)' },
-              { id: 'trades', label: 'Skilled Trades & Civil (बिजली, प्लंबर, वेल्डिंग, चिनाई)' },
-              { id: 'mechanical', label: 'Fleet & Heavy Machinery (मैकेनिक व क्रेन ऑपरेटर)' },
-              { id: 'facility', label: 'Cleaning & Landscaping (सफाई व बागवानी)' },
-              { id: 'digital', label: 'IT, Network & HVAC (आईटी व एसी)' },
-              { id: 'helpers', label: 'Daily Wage Helpers (मजदूर व हेल्पर)' }
+              { id: 'all', label: t("common.all") },
+              { id: 'trades', label: t("landing.exploreServices") },
+              { id: 'mechanical', label: t("organization.workers") },
+              { id: 'facility', label: t("jobs.cleaningJob") },
+              { id: 'digital', label: t("jobs.electricianJob") },
+              { id: 'helpers', label: t("worker.workerPortalTitle") }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -398,7 +398,7 @@ export const PartnerPlusCoreServices: React.FC<PartnerPlusCoreServicesProps> = (
                     onClick={() => onOpenPrices(item.id)}
                     className="flex-1 py-2.5 px-4 bg-[#1D68ED] hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer active:scale-98"
                   >
-                    <span>Check Price &amp; Book</span>
+                    <span>{t("booking.bookNow")}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
 

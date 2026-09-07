@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Award
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const CitySkylineSilhouette: React.FC = () => (
   <svg viewBox="0 0 1200 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-16 sm:h-20 text-blue-900/30">
@@ -25,6 +26,8 @@ interface PartnerPlusIndustriesProps {
 }
 
 export const PartnerPlusIndustries: React.FC<PartnerPlusIndustriesProps> = ({ onOpenQuote }) => {
+  const { t } = useApp();
+
   const industries = [
     {
       title: 'Residential Homes & Flats',
@@ -78,7 +81,7 @@ export const PartnerPlusIndustries: React.FC<PartnerPlusIndustriesProps> = ({ on
             <div className="text-xl sm:text-2xl shrink-0">🤝</div>
             <div>
               <p className="text-xs sm:text-sm font-semibold leading-relaxed">
-                <span className="font-extrabold text-[#1D68ED]">95% of payments</span> go directly to the worker’s own bank account with 0% corporate broker cut, ensuring honest effort and high work pride.
+                <span className="font-extrabold text-[#1D68ED]">100% {t("landing.guaranteedCooperative")}</span> {t("landing.heroSub")}
               </p>
             </div>
             {/* Bubble Tail */}
@@ -90,7 +93,7 @@ export const PartnerPlusIndustries: React.FC<PartnerPlusIndustriesProps> = ({ on
             <div className="text-xl sm:text-2xl shrink-0">🛡️</div>
             <div>
               <p className="text-xs sm:text-sm font-semibold leading-relaxed">
-                <span className="font-extrabold text-[#0284C7]">100% Verified Workers</span> with Aadhaar identification, police verification, and community skill tests before taking cooperative jobs.
+                <span className="font-extrabold text-[#0284C7]">{t("landing.verifiedWorkers")}</span> {t("customer.customerPortalSub")}
               </p>
             </div>
             {/* Bubble Tail */}
@@ -102,13 +105,13 @@ export const PartnerPlusIndustries: React.FC<PartnerPlusIndustriesProps> = ({ on
         <div className="text-center max-w-3xl mx-auto px-4 relative z-10 mb-10 sm:mb-14">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-900/60 border border-blue-700/50 text-[#00D2FF] text-xs font-bold uppercase tracking-wider mb-3">
             <span>🏢</span>
-            <span>SERVING HOMES &amp; ENTERPRISES ALIKE</span>
+            <span>{t("landing.guaranteedCooperative")}</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-display">
-            Who We Provide Jobs For
+            {t("landing.industriesTitle")}
           </h2>
           <p className="text-sm sm:text-base text-gray-400 mt-2 font-medium">
-            From single-room home repairs to multi-worker logistics shifts, we dispatch the right worker at transparent rates.
+            {t("landing.industriesSub")}
           </p>
         </div>
 
@@ -132,7 +135,7 @@ export const PartnerPlusIndustries: React.FC<PartnerPlusIndustriesProps> = ({ on
               </div>
 
               <div className="pt-4 mt-3 border-t border-white/15 flex items-center justify-between text-xs font-bold text-cyan-200">
-                <span>Cooperative Standard</span>
+                <span>{t("common.verified")}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </div>
@@ -145,7 +148,7 @@ export const PartnerPlusIndustries: React.FC<PartnerPlusIndustriesProps> = ({ on
             onClick={onOpenQuote}
             className="px-9 py-3.5 bg-[#00E5FF] hover:bg-[#33EBFF] text-black font-black text-sm sm:text-base rounded-xl shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-200 active:scale-98 cursor-pointer inline-flex items-center gap-2"
           >
-            <span>Check Job Prices &amp; Book</span>
+            <span>{t("booking.bookNow")}</span>
             <ArrowRight className="w-4 h-4 stroke-[3]" />
           </button>
         </div>
