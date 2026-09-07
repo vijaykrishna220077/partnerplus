@@ -15,9 +15,7 @@ import {
   Wrench, 
   ShieldCheck, 
   Info, 
-  Clock, 
-  RefreshCw,
-  ExternalLink
+  Star
 } from 'lucide-react';
 import { Booking, ChatMessage, Worker } from '../types';
 import { apiService } from '../services/apiService';
@@ -43,8 +41,6 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
   const { lang, workers } = useApp();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
-  const initialTarget = initialRole === 'worker' ? 'customer' : 'worker';
-  const [targetContact, setTargetContact] = useState<'customer' | 'worker'>(initialTarget);
   const [isListeningSpeech, setIsListeningSpeech] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeakingMessageId, setIsSpeakingMessageId] = useState<string | null>(null);
@@ -53,12 +49,8 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
-  // Synchronize initial target contact when modal opens with a specified role
-  useEffect(() => {
-    setTargetContact(initialRole === 'worker' ? 'customer' : 'worker');
-  }, [initialRole, isOpen]);
-
-  const activeRole = targetContact === 'worker' ? 'customer' : 'worker';
+  // activeRole is determined strictly by initialRole (portal context)
+  const activeRole: 'customer' | 'worker' = initialRole === 'worker' ? 'worker' : 'customer';
 
   // Find worker details for this booking
   const assignedWorker: Worker | undefined = workers.find(
@@ -67,9 +59,9 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
 
   const { user } = useAuth();
   const customerName = (user?.role === 'customer' ? user.name : booking?.customerName) || user?.name || booking?.customerName || 'Customer';
-  const workerName = assignedWorker?.name || booking?.workerName || 'Cooperative Worker';
-  const workerPhone = assignedWorker?.phone || '+91 98450 12345';
-  const customerPhone = booking?.customerPhone || '+91 94432 67890';
+  const workerName = assignedWorker?.name || booking?.workerName || 'Murugan Thangaraj';
+  const workerPhone = assignedWorker?.phone || booking?.workerPhone || '+91 98412 34567';
+  const customerPhone = booking?.customerPhone || user?.phone || '+91 94432 67890';
 
   // Customer photo priority: user avatar (if customer) -> booking customerPhoto -> default unsplash avatar
   const customerPhoto = (user?.role === 'customer' && user?.avatar)
@@ -82,10 +74,13 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
     || booking?.workerPhoto 
     || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80';
 
-  const otherPartyName = activeRole === 'customer' ? workerName : customerName;
-  const otherPartyPhone = activeRole === 'customer' ? workerPhone : customerPhone;
-  const otherPartyPhoto = activeRole === 'customer' ? workerPhoto : customerPhoto;
-  const otherPartyRoleLabel = activeRole === 'customer' ? 'Cooperative Artisan' : 'Customer';
+  // Person the current user is chatting with in this modal:
+  // If activeRole === 'customer', chatting with Worker (Murugan Thangaraj)
+  // If activeRole === 'worker', chatting with Customer (Subanthar)
+  const isCustomerPortalView = activeRole === 'customer';
+  const otherPartyName = isCustomerPortalView ? workerName : customerName;
+  const otherPartyPhone = isCustomerPortalView ? workerPhone : customerPhone;
+  const otherPartyPhoto = isCustomerPortalView ? workerPhoto : customerPhoto;
 
   // Load messages for this booking
   const loadMessages = async () => {
@@ -184,7 +179,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
 
     const senderRole = activeRole;
     const senderName = activeRole === 'customer' ? customerName : workerName;
-    const senderId = activeRole === 'customer' ? (booking.customerId || 'cust-demo-1') : (assignedWorker?.id || 'worker-1');
+    const senderId = activeRole === 'customer' ? (user?.id || booking.customerId || 'cust-demo-1') : (assignedWorker?.id || 'worker-1');
 
     setInputText('');
 
@@ -316,127 +311,112 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
         onClick={(e) => e.stopPropagation()}
       >
         {/* MODAL HEADER */}
-        <div className="bg-slate-900 text-white px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col gap-3 border-b border-slate-800 shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <img 
-                  src={otherPartyPhoto} 
-                  alt={otherPartyName} 
-                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover border-2 border-emerald-400/90 shadow-md"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = activeRole === 'customer'
-                      ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
-                      : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
-                  }}
-                />
-                <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full shadow-xs"></span>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-black text-base sm:text-lg text-white leading-tight">
-                    {otherPartyName}
-                  </h3>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    {otherPartyRoleLabel}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-300 font-medium flex items-center gap-1.5 mt-0.5">
-                  <span className="text-emerald-400 font-semibold">{booking.serviceName}</span>
-                  <span>•</span>
-                  <span className="text-slate-400 font-mono">#{booking.bookingCode || booking.bookingReference || booking.id.slice(0, 8)}</span>
-                </p>
-              </div>
+        <div className="bg-slate-900 text-white px-4 py-3.5 sm:px-6 sm:py-4 flex items-center justify-between border-b border-slate-800 shrink-0">
+          <div className="flex items-center gap-3.5">
+            {/* Clean Circular Avatar */}
+            <div className="relative inline-flex shrink-0">
+              <img 
+                src={otherPartyPhoto} 
+                alt={otherPartyName} 
+                className="w-12 h-12 rounded-full object-cover border-2 border-emerald-400 shadow-md shrink-0"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = isCustomerPortalView
+                    ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
+                    : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+                }}
+              />
+              <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full shadow-xs"></span>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Call Shortcut */}
-              <a
-                href={`tel:${otherPartyPhone}`}
-                className="p-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-bold shadow-xs active:scale-95"
-                title={`Call ${otherPartyName}`}
-              >
-                <Phone className="w-4 h-4" />
-                <span className="hidden sm:inline">Call</span>
-              </a>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-extrabold text-base sm:text-lg text-white leading-tight">
+                  {otherPartyName}
+                </h3>
+                {isCustomerPortalView ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <span>👷</span>
+                    <span>{assignedWorker?.primarySkillLabel || 'Verified Worker'}</span>
+                    <span className="text-amber-300 font-bold ml-1 flex items-center gap-0.5">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline" />
+                      {assignedWorker?.rating || 4.9}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    <span>👤</span>
+                    <span>Customer</span>
+                  </span>
+                )}
+              </div>
 
-              {/* Close Button */}
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition cursor-pointer"
-                aria-label="Close chat"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2 text-xs text-slate-300 font-medium mt-1">
+                <span className="text-emerald-400 font-semibold">{booking.serviceName}</span>
+                <span className="text-slate-500">•</span>
+                <span className="text-slate-400 font-mono bg-slate-800/90 px-2 py-0.5 rounded-md text-[11px]">
+                  #{booking.bookingCode || booking.bookingReference || booking.id.slice(0, 8)}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* ACTIVE ROLE SWITCHER & LOCATION BAR */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-slate-800/90 text-xs">
-            <div className="flex items-center gap-1.5 bg-slate-800/90 px-3 py-1 rounded-xl text-slate-300 border border-slate-700/60">
-              <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-              <span className="truncate max-w-[200px] sm:max-w-[320px] font-medium">
-                {typeof booking.address === 'string' ? booking.address : `${booking.address?.street || ''}, ${booking.address?.area || ''}`}
-              </span>
-            </div>
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* Call Shortcut */}
+            <a
+              href={`tel:${otherPartyPhone}`}
+              className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-bold shadow-xs active:scale-95 shrink-0"
+              title={`Call ${otherPartyName}`}
+            >
+              <Phone className="w-4 h-4" />
+              <span className="hidden sm:inline">Call {isCustomerPortalView ? 'Worker' : 'Customer'}</span>
+            </a>
 
-            {/* Contact Target Toggle */}
-            <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-[11px]">
-              <span className="text-slate-400 pl-1 font-medium hidden sm:inline">Talk to:</span>
-              <button
-                type="button"
-                onClick={() => setTargetContact('worker')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer flex items-center gap-1 ${
-                  targetContact === 'worker'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <span>Worker</span>
-                <span>👷</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setTargetContact('customer')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer flex items-center gap-1 ${
-                  targetContact === 'customer'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <span>Customer</span>
-                <span>👤</span>
-              </button>
-            </div>
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition cursor-pointer shrink-0"
+              aria-label="Close chat"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
-        {/* SECURITY & PROTOCOL NOTICE */}
-        <div className="bg-blue-50/80 border-b border-blue-100 px-4 py-2 flex items-center justify-between text-[11px] text-blue-900 shrink-0">
-          <div className="flex items-center gap-1.5 font-semibold">
-            <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-            <span>Cooperative Safe Channel: All coordination is logged for fair wage & escrow security.</span>
+        {/* LOCATION & REACTION BAR */}
+        <div className="bg-slate-800/90 border-b border-slate-700/80 px-4 py-2 flex items-center justify-between text-xs text-slate-300 shrink-0">
+          <div className="flex items-center gap-2 font-medium">
+            <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+            <span className="truncate max-w-[260px] sm:max-w-[420px] text-slate-200 text-[11px]">
+              {typeof booking.address === 'string' ? booking.address : `${booking.address?.street || ''}, ${booking.address?.area || ''}`}
+            </span>
           </div>
+
           <button
             type="button"
             onClick={handleSimulateReply}
-            className="text-blue-700 hover:text-blue-900 font-bold underline flex items-center gap-1 cursor-pointer shrink-0 ml-2 active:scale-95"
-            title="Simulate a reply from the other party for testing"
+            className="text-emerald-400 hover:text-emerald-300 font-bold text-[11px] flex items-center gap-1 cursor-pointer shrink-0 ml-2 active:scale-95 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700"
+            title="Simulate quick reply for testing"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span className="hidden sm:inline">Simulate Reply</span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>Simulate Reply</span>
           </button>
+        </div>
+
+        {/* SECURITY PROTOCOL NOTICE */}
+        <div className="bg-blue-50/80 border-b border-blue-100 px-4 py-1.5 flex items-center justify-between text-[11px] text-blue-900 shrink-0">
+          <div className="flex items-center gap-1.5 font-semibold">
+            <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+            <span>Cooperative Safe Channel: Direct end-to-end dispatch & fair wage logging.</span>
+          </div>
         </div>
 
         {/* MESSAGES SCROLL AREA */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-slate-50/60">
           <div className="text-center my-1">
             <span className="px-3 py-1 bg-slate-200/80 text-slate-600 text-[10px] font-bold rounded-full uppercase tracking-wider border border-slate-300/60">
-              Today • Job Coordination
+              Today • Direct Coordination
             </span>
           </div>
 
@@ -475,7 +455,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
                     <img
                       src={displaySenderPhoto}
                       alt={displaySenderName}
-                      className="w-7 h-7 rounded-xl object-cover border border-slate-200 shrink-0 shadow-xs mb-0.5"
+                      className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0 shadow-xs mb-0.5"
                       referrerPolicy="no-referrer"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = isCustomerMsg
@@ -487,9 +467,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
                     <div
                       className={`px-4 py-2.5 rounded-2xl shadow-xs text-sm leading-relaxed ${
                         isMe
-                          ? activeRole === 'customer'
-                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-xs'
-                            : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-br-xs'
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-xs'
                           : 'bg-white text-slate-800 border border-slate-200/90 rounded-bl-xs'
                       }`}
                     >
@@ -538,7 +516,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
               <img
                 src={otherPartyPhoto}
                 alt={otherPartyName}
-                className="w-6 h-6 rounded-full object-cover border border-slate-200"
+                className="w-7 h-7 rounded-full object-cover border border-slate-200"
                 referrerPolicy="no-referrer"
               />
               <div className="bg-white border border-slate-200 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs">
@@ -560,7 +538,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              1-Tap Quick Coordination ({activeRole === 'customer' ? 'Customer phrases' : 'Worker phrases'}):
+              1-Tap Quick Coordination ({isCustomerPortalView ? 'Customer phrases' : 'Worker phrases'}):
             </span>
             <button
               type="button"
@@ -617,7 +595,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
             placeholder={
               isListeningSpeech 
                 ? 'Listening to your voice...' 
-                : activeRole === 'customer' 
+                : isCustomerPortalView 
                   ? 'Ask worker about ETA, gate access, parking...' 
                   : 'Update customer on arrival, spare parts...'
             }
@@ -630,7 +608,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
             disabled={!inputText.trim()}
             className={`px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 ${
               inputText.trim()
-                ? activeRole === 'customer'
+                ? isCustomerPortalView
                   ? 'bg-blue-600 hover:bg-blue-700 text-white'
                   : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'

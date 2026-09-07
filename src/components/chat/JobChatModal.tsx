@@ -41,15 +41,7 @@ export const JobChatModal: React.FC<JobChatModalProps> = ({
   const onClose = propOnClose || closeChat;
 
   const portalRole = propCurrentRole || activeChatRole || 'customer';
-  const defaultTargetContact = portalRole === 'worker' ? 'customer' : 'worker';
-  const [targetContactOverride, setTargetContactOverride] = useState<'customer' | 'worker' | null>(null);
-
-  useEffect(() => {
-    setTargetContactOverride(null);
-  }, [booking?.id, portalRole]);
-
-  const targetContact = targetContactOverride || defaultTargetContact;
-  const currentRole = targetContact === 'worker' ? 'customer' : 'worker';
+  const currentRole = portalRole;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
@@ -215,76 +207,43 @@ export const JobChatModal: React.FC<JobChatModalProps> = ({
       >
         {/* Header */}
         <div className={`p-4 sm:p-5 border-b flex items-center justify-between shrink-0 ${
-          isWorker ? 'bg-slate-800/90 border-slate-700' : 'bg-slate-50 border-slate-200'
+          isWorker ? 'bg-slate-800/90 border-slate-700' : 'bg-slate-900 border-slate-800 text-white'
         }`}>
-          <div className="flex items-center gap-3">
-            <div className="relative">
+          <div className="flex items-center gap-3.5">
+            <div className="relative inline-flex shrink-0">
               <img 
                 src={counterpartPhoto} 
                 alt={counterpartName}
                 referrerPolicy="no-referrer"
-                className="w-11 h-11 rounded-2xl object-cover border-2 border-white shadow-xs"
+                className="w-12 h-12 rounded-full object-cover border-2 border-emerald-400 shadow-sm shrink-0"
               />
-              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+              <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full shadow-xs"></span>
             </div>
 
             <div>
-              <div className="flex items-center gap-1.5">
-                <h3 className={`font-black text-sm sm:text-base leading-tight ${isWorker ? 'text-white' : 'text-slate-900'}`}>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className={`font-black text-sm sm:text-base leading-tight ${isWorker ? 'text-white' : 'text-white'}`}>
                   {counterpartName}
                 </h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
                   {counterpartRole}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <p className="text-[11px] text-slate-300 font-medium flex items-center gap-1.5 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span>Job: {booking.serviceName} • Ref: #{booking.bookingCode}</span>
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-200/80 dark:bg-slate-800 p-1 rounded-xl text-[10px]">
-              <span className="text-slate-500 dark:text-slate-400 font-bold px-1 hidden sm:inline">Talk to:</span>
-              <button
-                type="button"
-                onClick={() => setTargetContactOverride('worker')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer flex items-center gap-1 ${
-                  targetContact === 'worker' 
-                    ? 'bg-emerald-600 text-white shadow-xs' 
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-                title="View & Chat with Cooperative Worker"
-              >
-                <span>Worker</span>
-                <span>👷</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setTargetContactOverride('customer')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer flex items-center gap-1 ${
-                  targetContact === 'customer' 
-                    ? 'bg-blue-600 text-white shadow-xs' 
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-                title="View & Chat with Customer"
-              >
-                <span>Customer</span>
-                <span>👤</span>
-              </button>
-            </div>
-
             <a
               href={`tel:${counterpartPhone}`}
-              className={`p-2 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
-                isWorker 
-                  ? 'bg-emerald-500 text-black hover:bg-emerald-400' 
-                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-xs'
-              }`}
-              title="Call Counterpart directly"
+              className="px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-xs shrink-0"
+              title={`Call ${counterpartName}`}
             >
               <Phone className="w-4 h-4" />
+              <span className="hidden sm:inline">Call {isWorker ? 'Customer' : 'Worker'}</span>
             </a>
 
             <button
