@@ -119,10 +119,10 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
           <div>
             <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
               <Hammer className="w-5 h-5 text-[#1D68ED]" />
-              <span>1. What Kind of Works Do You Need?</span>
+              <span>1. {t("landing.coreServicesTitle") || "What Kind of Works Do You Need?"}</span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Choose from 50+ standardized skilled trade works • Transparent fixed rates • 0% middleman commission
+              {t("landing.coreServicesSub") || "Choose from standardized skilled trade works • Transparent fixed rates • 0% middleman commission"}
             </p>
           </div>
 
@@ -135,7 +135,7 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span>See Available Workers ({totalWorkersCount}) &rarr;</span>
+            <span>{t("worker.available") || "See Available Workers"} ({totalWorkersCount}) &rarr;</span>
           </button>
         </div>
 
@@ -146,7 +146,7 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search works (e.g., tap leak, switchboard wiring, AC jet wash, bricklaying, welding, car diagnostics)..."
+            placeholder={t("location.searchLocation") || "Search works (e.g., tap leak, switchboard wiring, AC jet wash, bricklaying, welding)..."}
             className="w-full pl-10 pr-10 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#1D68ED] bg-slate-50 focus:bg-white"
           />
           {searchQuery && (
@@ -166,10 +166,10 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
       <div>
         <div className="flex items-center justify-between mb-2.5 px-1">
           <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <span>Select Trade Category</span>
+            <span>{t("landing.exploreServices") || "Select Trade Category"}</span>
           </span>
           <span className="text-[11px] font-bold text-[#1D68ED]">
-            {(categories || []).length} Skilled Trade Categories
+            {(categories || []).length} {t("landing.coreServicesTitle") || "Skilled Trade Categories"}
           </span>
         </div>
 
@@ -215,7 +215,7 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
                 {getCategoryLabel(currentCategory)}
               </span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 text-[10px] font-black border border-emerald-300">
-                ₹0 Middleman Fee
+                ₹0 {t("booking.cooperativeWelfareFundLabel") || "Middleman Fee"}
               </span>
             </div>
             <p className="text-xs text-slate-600 mt-0.5">
@@ -230,7 +230,7 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
           className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-bold shadow-2xs transition flex items-center gap-1.5 cursor-pointer shrink-0"
         >
           <Users className="w-3.5 h-3.5 text-blue-600" />
-          <span>View {getCategoryLabel(currentCategory)} Crew &rarr;</span>
+          <span>{t("common.viewDetails") || "View"} {getCategoryLabel(currentCategory)} &rarr;</span>
         </button>
       </div>
 
@@ -238,10 +238,10 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
       <div>
         <div className="flex items-center justify-between mb-3 px-1">
           <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
-            <span>Available Works ({(tasksToDisplay || []).length})</span>
+            <span>{t("landing.coreServicesTitle") || "Available Works"} ({(tasksToDisplay || []).length})</span>
           </h3>
           <span className="text-xs text-slate-500">
-            Click <strong className="text-blue-600">+ ADD</strong> to add to booking cart
+            {t("booking.addWorkItems") || "Click + ADD to add to booking cart"}
           </span>
         </div>
 
@@ -296,7 +296,7 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
                       ₹{task.basePrice}
                     </div>
                     <div className="text-[10px] text-slate-400">
-                      per {task.unit}
+                      /{task.unit}
                     </div>
                   </div>
 
@@ -331,7 +331,7 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
                         className="px-4 py-2 bg-blue-50 hover:bg-[#1D68ED] text-[#1D68ED] hover:text-white font-black text-xs rounded-xl border border-blue-200 transition-all duration-150 shadow-2xs flex items-center gap-1 cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>ADD</span>
+                        <span>{t("booking.choose") || "ADD"}</span>
                       </button>
                     )}
                   </div>
