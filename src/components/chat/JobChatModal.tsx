@@ -112,9 +112,12 @@ export const JobChatModal: React.FC<JobChatModalProps> = ({
   const counterpartName = isWorker ? activeCustomerName : (booking.workerName || 'Cooperative Artisan');
   const counterpartRole = isWorker ? 'Customer' : 'Cooperative Artisan';
   const counterpartPhone = isWorker ? (booking.customerPhone || '9845012345') : (booking.workerPhone || '9845012345');
-  const counterpartPhoto = isWorker 
-    ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
-    : (booking.workerPhoto || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80');
+  const customerPhoto = (user?.role === 'customer' && user?.avatar) 
+    || (booking as any)?.customerPhoto 
+    || user?.avatar 
+    || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+  const workerPhoto = booking.workerPhoto || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80';
+  const counterpartPhoto = isWorker ? customerPhoto : workerPhoto;
 
   const handleSendMessage = (textToSend?: string, type?: 'eta' | 'arrival' | 'direction' | 'materials' | 'general', isVoice?: boolean) => {
     const text = (textToSend || inputText).trim();

@@ -71,6 +71,22 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
   const workerPhone = assignedWorker?.phone || '+91 98450 12345';
   const customerPhone = booking?.customerPhone || '+91 94432 67890';
 
+  // Customer photo priority: user avatar (if customer) -> booking customerPhoto -> default unsplash avatar
+  const customerPhoto = (user?.role === 'customer' && user?.avatar)
+    || (booking as any)?.customerPhoto 
+    || user?.avatar 
+    || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+
+  // Worker photo priority: assignedWorker photoUrl -> booking workerPhoto -> default unsplash worker photo
+  const workerPhoto = assignedWorker?.photoUrl 
+    || booking?.workerPhoto 
+    || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80';
+
+  const otherPartyName = activeRole === 'customer' ? workerName : customerName;
+  const otherPartyPhone = activeRole === 'customer' ? workerPhone : customerPhone;
+  const otherPartyPhoto = activeRole === 'customer' ? workerPhoto : customerPhoto;
+  const otherPartyRoleLabel = activeRole === 'customer' ? 'Cooperative Artisan' : 'Customer';
+
   // Load messages for this booking
   const loadMessages = async () => {
     if (!booking) return;
@@ -149,7 +165,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
   const customerQuickChips = [
     { label: '📍 Flat & Gate Details', text: 'Please take the elevator to 2nd floor, Apt 2B. Ring 2B bell.' },
     { label: '⏱️ What is your ETA?', text: 'Hi! Could you share your estimated arrival time?' },
-    { label: '🚗 Visitor Parking', text: 'You can park your bike inside the visitor parking lot near tower entrance.' },
+    { label: '🚗 Visitor Parking', text: 'You can park your vehicle inside the visitor parking lot near tower entrance.' },
     { label: '📞 Call at Security Gate', text: 'Security needs your name at main gate, please call when you reach.' },
     { label: '🛠️ Spare Parts / Tools', text: 'Do you need any additional ladders, water, or specific materials?' }
   ];
@@ -292,48 +308,46 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
   if (!isOpen || !booking) return null;
 
   const currentChips = activeRole === 'customer' ? customerQuickChips : workerQuickChips;
-  const otherPartyName = activeRole === 'customer' ? workerName : customerName;
-  const otherPartyPhone = activeRole === 'customer' ? workerPhone : customerPhone;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-2 sm:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-xs p-2 sm:p-4 animate-in fade-in duration-200">
       <div 
-        className="bg-white w-full max-w-2xl h-[92vh] max-h-[780px] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200"
+        className="bg-white w-full max-w-2xl h-[92vh] max-h-[780px] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200/90 animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* MODAL HEADER */}
-        <div className="bg-slate-900 text-white px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col gap-2.5 border-b border-slate-800">
+        <div className="bg-slate-900 text-white px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col gap-3 border-b border-slate-800 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {activeRole === 'customer' && assignedWorker?.photoUrl ? (
+              <div className="relative">
                 <img 
-                  src={assignedWorker.photoUrl} 
-                  alt={workerName} 
-                  className="w-11 h-11 rounded-2xl object-cover border-2 border-emerald-400"
+                  src={otherPartyPhoto} 
+                  alt={otherPartyName} 
+                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover border-2 border-emerald-400/90 shadow-md"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = activeRole === 'customer'
+                      ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
+                      : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+                  }}
                 />
-              ) : (
-                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-base shadow-sm ${
-                  activeRole === 'customer' ? 'bg-emerald-500 text-slate-950' : 'bg-blue-500 text-white'
-                }`}>
-                  {activeRole === 'customer' ? <Wrench className="w-6 h-6" /> : <User className="w-6 h-6" />}
-                </div>
-              )}
+                <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full shadow-xs"></span>
+              </div>
 
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-base sm:text-lg text-white leading-tight">
+                  <h3 className="font-black text-base sm:text-lg text-white leading-tight">
                     {otherPartyName}
                   </h3>
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Live Direct
+                    {otherPartyRoleLabel}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                  <span>{booking.serviceName}</span>
+                <p className="text-xs text-slate-300 font-medium flex items-center gap-1.5 mt-0.5">
+                  <span className="text-emerald-400 font-semibold">{booking.serviceName}</span>
                   <span>•</span>
-                  <span className="text-slate-300 font-mono">#{booking.bookingReference || booking.id.slice(0, 8)}</span>
+                  <span className="text-slate-400 font-mono">#{booking.bookingCode || booking.bookingReference || booking.id.slice(0, 8)}</span>
                 </p>
               </div>
             </div>
@@ -342,7 +356,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
               {/* Call Shortcut */}
               <a
                 href={`tel:${otherPartyPhone}`}
-                className="p-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-bold border border-slate-700 active:scale-95"
+                className="p-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-bold shadow-xs active:scale-95"
                 title={`Call ${otherPartyName}`}
               >
                 <Phone className="w-4 h-4" />
@@ -362,11 +376,11 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
           </div>
 
           {/* ACTIVE ROLE SWITCHER & LOCATION BAR */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80 text-xs">
-            <div className="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1 rounded-xl text-slate-300">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-slate-800/90 text-xs">
+            <div className="flex items-center gap-1.5 bg-slate-800/90 px-3 py-1 rounded-xl text-slate-300 border border-slate-700/60">
               <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-              <span className="truncate max-w-[200px] sm:max-w-[320px]">
-                {booking.address || 'Customer site location'}
+              <span className="truncate max-w-[200px] sm:max-w-[320px] font-medium">
+                {typeof booking.address === 'string' ? booking.address : `${booking.address?.street || ''}, ${booking.address?.area || ''}`}
               </span>
             </div>
 
@@ -376,57 +390,59 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
               <button
                 type="button"
                 onClick={() => setTargetContact('worker')}
-                className={`px-2.5 py-0.5 rounded-lg font-bold transition cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer flex items-center gap-1 ${
                   targetContact === 'worker'
-                    ? 'bg-emerald-600 text-white shadow-sm'
+                    ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Worker 👷
+                <span>Worker</span>
+                <span>👷</span>
               </button>
               <button
                 type="button"
                 onClick={() => setTargetContact('customer')}
-                className={`px-2.5 py-0.5 rounded-lg font-bold transition cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer flex items-center gap-1 ${
                   targetContact === 'customer'
-                    ? 'bg-blue-600 text-white shadow-sm'
+                    ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Customer 👤
+                <span>Customer</span>
+                <span>👤</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* SECURITY & PROTOCOL NOTICE */}
-        <div className="bg-blue-50/70 border-b border-blue-100 px-4 py-1.5 flex items-center justify-between text-[11px] text-blue-900">
-          <div className="flex items-center gap-1.5 font-medium">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+        <div className="bg-blue-50/80 border-b border-blue-100 px-4 py-2 flex items-center justify-between text-[11px] text-blue-900 shrink-0">
+          <div className="flex items-center gap-1.5 font-semibold">
+            <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
             <span>Cooperative Safe Channel: All coordination is logged for fair wage & escrow security.</span>
           </div>
           <button
             type="button"
             onClick={handleSimulateReply}
-            className="text-blue-700 hover:text-blue-900 font-bold underline flex items-center gap-1 cursor-pointer shrink-0 ml-2"
-            title="Simulate a reply from the other party for demo"
+            className="text-blue-700 hover:text-blue-900 font-bold underline flex items-center gap-1 cursor-pointer shrink-0 ml-2 active:scale-95"
+            title="Simulate a reply from the other party for testing"
           >
-            <Sparkles className="w-3 h-3 text-amber-500" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             <span className="hidden sm:inline">Simulate Reply</span>
           </button>
         </div>
 
         {/* MESSAGES SCROLL AREA */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-slate-50/60">
           <div className="text-center my-1">
-            <span className="px-3 py-1 bg-slate-200 text-slate-600 text-[10px] font-bold rounded-full uppercase tracking-wider">
+            <span className="px-3 py-1 bg-slate-200/80 text-slate-600 text-[10px] font-bold rounded-full uppercase tracking-wider border border-slate-300/60">
               Today • Job Coordination
             </span>
           </div>
 
           {messages.length === 0 ? (
             <div className="text-center py-12 px-4 space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-3 shadow-xs">
                 <Info className="w-6 h-6" />
               </div>
               <p className="text-sm font-bold text-slate-700">No messages yet for this service</p>
@@ -439,28 +455,42 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
               const isMe = msg.senderRole === activeRole;
               const isSpeaking = isSpeakingMessageId === msg.id;
 
+              const isCustomerMsg = msg.senderRole === 'customer';
+              const displaySenderName = isCustomerMsg ? customerName : workerName;
+              const displaySenderPhoto = isCustomerMsg ? customerPhoto : workerPhoto;
+
               return (
                 <div
                   key={msg.id}
                   className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1 animate-in fade-in duration-200`}
                 >
                   <div className="flex items-center gap-1.5 text-[11px] text-slate-500 px-1 font-semibold">
-                    <span>{msg.senderName}</span>
-                    <span className="text-[10px] text-slate-400">
-                      ({msg.senderRole === 'customer' ? 'Customer' : 'Worker'})
+                    <span>{isMe ? 'You' : displaySenderName}</span>
+                    <span className="text-[10px] text-slate-400 font-normal">
+                      ({isCustomerMsg ? 'Customer' : 'Worker'})
                     </span>
                   </div>
 
-                  <div className="flex items-end gap-1.5 max-w-[85%] sm:max-w-[75%]">
-
+                  <div className={`flex items-end gap-2 max-w-[88%] sm:max-w-[78%] ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <img
+                      src={displaySenderPhoto}
+                      alt={displaySenderName}
+                      className="w-7 h-7 rounded-xl object-cover border border-slate-200 shrink-0 shadow-xs mb-0.5"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = isCustomerMsg
+                          ? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
+                          : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80';
+                      }}
+                    />
 
                     <div
                       className={`px-4 py-2.5 rounded-2xl shadow-xs text-sm leading-relaxed ${
                         isMe
                           ? activeRole === 'customer'
-                            ? 'bg-blue-600 text-white rounded-br-xs'
-                            : 'bg-emerald-600 text-white rounded-br-xs'
-                          : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs'
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-xs'
+                            : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-br-xs'
+                          : 'bg-white text-slate-800 border border-slate-200/90 rounded-bl-xs'
                       }`}
                     >
                       <p className="whitespace-pre-wrap wrap-break-word font-normal">{msg.text}</p>
@@ -474,30 +504,28 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
                         {isMe && (
                           <span>
                             {msg.read ? (
-                              <CheckCheck className="w-3 h-3 text-emerald-300 inline" />
+                              <CheckCheck className="w-3.5 h-3.5 text-emerald-300 inline" />
                             ) : (
-                              <Check className="w-3 h-3 inline" />
+                              <Check className="w-3.5 h-3.5 inline" />
                             )}
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Listen Audio Button for own messages */}
-                    {isMe && (
-                      <button
-                        type="button"
-                        onClick={() => handleSpeakMessage(msg)}
-                        className={`p-1.5 rounded-full border transition cursor-pointer mb-1 ${
-                          isSpeaking 
-                            ? 'bg-blue-600 text-white border-blue-600 animate-pulse' 
-                            : 'bg-white hover:bg-slate-100 text-slate-500 border-slate-200'
-                        }`}
-                        title="Listen to message (Text to Speech)"
-                      >
-                        {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                      </button>
-                    )}
+                    {/* Listen Audio Button for messages */}
+                    <button
+                      type="button"
+                      onClick={() => handleSpeakMessage(msg)}
+                      className={`p-1.5 rounded-full border transition cursor-pointer mb-0.5 shrink-0 ${
+                        isSpeaking 
+                          ? 'bg-blue-600 text-white border-blue-600 animate-pulse' 
+                          : 'bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-600 border-slate-200 shadow-2xs'
+                      }`}
+                      title="Listen to message (Text to Speech)"
+                    >
+                      {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                    </button>
                   </div>
                 </div>
               );
@@ -507,14 +535,17 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
           {/* Typing Indicator */}
           {isTyping && (
             <div className="flex items-center gap-2 text-slate-500 text-xs py-1 animate-in fade-in">
-              <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[10px]">
-                {activeRole === 'customer' ? '👷' : '👤'}
-              </div>
-              <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-full flex items-center gap-1 shadow-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.4s]"></span>
-                <span className="text-[11px] text-slate-500 ml-1.5">
+              <img
+                src={otherPartyPhoto}
+                alt={otherPartyName}
+                className="w-6 h-6 rounded-full object-cover border border-slate-200"
+                referrerPolicy="no-referrer"
+              />
+              <div className="bg-white border border-slate-200 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce [animation-delay:0.4s]"></span>
+                <span className="text-[11px] text-slate-600 font-semibold ml-1">
                   {otherPartyName} is typing...
                 </span>
               </div>
@@ -525,10 +556,10 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
         </div>
 
         {/* QUICK COORDINATION CHIPS TRAY */}
-        <div className="bg-white border-t border-slate-200 px-3 py-2">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-500" />
+        <div className="bg-white border-t border-slate-200/80 px-4 py-2.5 shrink-0">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               1-Tap Quick Coordination ({activeRole === 'customer' ? 'Customer phrases' : 'Worker phrases'}):
             </span>
             <button
@@ -547,7 +578,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
                   key={idx}
                   type="button"
                   onClick={() => handleSendMessage(chip.text, 'general')}
-                  className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer active:scale-95 border border-slate-200/80 hover:border-slate-300 flex items-center gap-1"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer active:scale-95 border border-slate-200 hover:border-blue-300 flex items-center gap-1"
                 >
                   <span>{chip.label}</span>
                 </button>
@@ -562,7 +593,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
             e.preventDefault();
             handleSendMessage();
           }}
-          className="bg-white border-t border-slate-200 px-3 py-3 sm:px-4 flex items-center gap-2"
+          className="bg-white border-t border-slate-200 px-4 py-3 sm:px-5 flex items-center gap-2.5 shrink-0"
         >
           {/* Voice Dictate Button */}
           <button
@@ -590,14 +621,14 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
                   ? 'Ask worker about ETA, gate access, parking...' 
                   : 'Update customer on arrival, spare parts...'
             }
-            className="flex-1 bg-slate-100 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-hidden transition"
+            className="flex-1 bg-slate-100 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-hidden transition shadow-2xs"
           />
 
           {/* Send Button */}
           <button
             type="submit"
             disabled={!inputText.trim()}
-            className={`px-4 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 ${
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 ${
               inputText.trim()
                 ? activeRole === 'customer'
                   ? 'bg-blue-600 hover:bg-blue-700 text-white'
