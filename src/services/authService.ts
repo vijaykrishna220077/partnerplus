@@ -112,10 +112,22 @@ class AuthService {
             if (signInData?.user) {
               authUser = signInData.user;
               authUserId = signInData.user.id;
+            } else {
+              return {
+                success: false,
+                message: 'This email is already registered. Please log in.'
+              };
             }
+          } else if (authError.message.includes('rate limit')) {
+            return {
+              success: false,
+              message: 'Supabase Email Rate Limit Exceeded (4 emails/hr). Please turn OFF "Confirm Email" in your Supabase Dashboard under Authentication -> Providers -> Email.'
+            };
           } else {
-            authUserId = authData?.user?.id || null;
-            authUser = authData?.user || null;
+            return {
+              success: false,
+              message: `Supabase Auth error: ${authError.message}`
+            };
           }
         } else {
           authUser = authData?.user || null;
@@ -258,12 +270,15 @@ class AuthService {
               authUserId = signInData.user.id;
             }
           } else if (authError.message.includes('rate limit')) {
-            authNotice = 'Supabase Email Rate Limit reached. User profile recorded in database.';
-            authUser = authData?.user || null;
-            authUserId = authData?.user?.id || null;
+            return {
+              success: false,
+              message: 'Supabase Email Rate Limit Exceeded (4 emails/hr). Please turn OFF "Confirm Email" in your Supabase Dashboard under Authentication -> Providers -> Email.'
+            };
           } else {
-            authUser = authData?.user || null;
-            authUserId = authData?.user?.id || null;
+            return {
+              success: false,
+              message: `Supabase Auth error: ${authError.message}`
+            };
           }
         } else {
           authUser = authData?.user || null;
