@@ -57,7 +57,7 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({ worker, compact = false 
             </div>
 
             <p className="text-xs font-semibold text-blue-600 mt-1">
-              {worker.primarySkillLabel}
+              {t("jobs." + worker.primarySkill + "Job") || worker.primarySkillLabel}
             </p>
 
             <div className="flex items-center gap-1 text-gray-500 text-xs mt-1">
@@ -94,7 +94,7 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({ worker, compact = false 
           <div className="bg-gray-50 rounded-2xl p-2">
             <div className="flex items-center justify-center gap-1 text-emerald-700 font-bold text-xs">
               <Award className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{worker.experienceYears}y exp</span>
+              <span>{worker.experienceYears} {t("jobs.duration") || "yrs exp"}</span>
             </div>
             <span className="text-[10px] text-gray-500 block leading-tight mt-0.5 font-light">
               {t("common.verified")}

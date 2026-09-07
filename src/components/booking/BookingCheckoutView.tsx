@@ -126,8 +126,11 @@ export const BookingCheckoutView: React.FC<BookingCheckoutViewProps> = ({
   const isCartEmpty = cartEntries.length === 0;
 
   const getTaskLabel = (task: TaskItem) => {
-    if (lang === 'hi') return task.nameHi || task.name;
-    if (lang === 'ta') return task.nameTa || task.name;
+    const key = `jobs.${task.id}`;
+    const translated = t(key);
+    if (translated && translated !== key) return translated;
+    if (lang === 'hi' && task.nameHi) return task.nameHi;
+    if (lang === 'ta' && task.nameTa) return task.nameTa;
     return task.name;
   };
 

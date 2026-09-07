@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { CooperativeWorkerProfile } from '../../data/cooperativeWorkers';
 import { soundAndSpeech } from '../../utils/soundAndSpeech';
+import { useApp } from '../../context/AppContext';
 
 interface AvailableWorkersViewProps {
   workers?: CooperativeWorkerProfile[];
@@ -36,6 +37,8 @@ export const AvailableWorkersView: React.FC<AvailableWorkersViewProps> = ({
   onProceedToCart = () => {},
   onProceedWithWorker
 }) => {
+  const { t } = useApp();
+
   const handleProceedWorker = (worker: CooperativeWorkerProfile) => {
     if (onProceedWithWorker) {
       onProceedWithWorker(worker);
@@ -52,10 +55,10 @@ export const AvailableWorkersView: React.FC<AvailableWorkersViewProps> = ({
           <div>
             <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
               <Users className="w-5 h-5 text-emerald-600" />
-              <span>2. Who is Available Nearby?</span>
+              <span>{t("booking.step2Available") || "2. Who is Available Nearby?"}</span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Verified cooperative members on active duty • GPS distance &amp; 15-25 min arrival guarantee • 100% Aadhaar &amp; Police Cleared
+              {t("landing.guaranteedCooperative") || "Verified cooperative members on active duty"} • {t("location.nearbyWorkers") || "GPS distance"}
             </p>
           </div>
 
@@ -63,19 +66,19 @@ export const AvailableWorkersView: React.FC<AvailableWorkersViewProps> = ({
           {selectedWorker ? (
             <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold flex items-center gap-2 shrink-0">
               <UserCheck className="w-4 h-4 text-emerald-600" />
-              <span>Preferred: <strong>{selectedWorker.name}</strong></span>
+              <span>{t("booking.assignedCoopPartner") || "Preferred"}: <strong>{selectedWorker.name}</strong></span>
               <button
                 type="button"
                 onClick={() => onSelectWorker(null)}
                 className="text-slate-400 hover:text-red-500 ml-1 text-xs underline cursor-pointer"
               >
-                Clear
+                {t("common.cancel") || "Clear"}
               </button>
             </div>
           ) : (
             <div className="px-3 py-1 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 flex items-center gap-1.5 shrink-0">
               <Zap className="w-3.5 h-3.5 text-blue-600" />
-              <span>Express Auto-Match Active</span>
+              <span>{t("booking.expressAutoMatch") || "Express Auto-Match Active"}</span>
             </div>
           )}
         </div>

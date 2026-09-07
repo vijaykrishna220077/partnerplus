@@ -21,6 +21,8 @@ import {
   LucideIcon 
 } from 'lucide-react';
 
+import { useApp } from '../context/AppContext';
+
 interface ServiceDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -242,10 +244,14 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
   serviceKey,
   onOpenQuote
 }) => {
+  const { t } = useApp();
+
   if (!isOpen || !serviceKey) return null;
   const key = SERVICE_DATA[serviceKey] ? serviceKey : 'electrical';
   const data = SERVICE_DATA[key];
   const IconComponent = data.icon;
+
+  const localizedTitle = t("jobs." + key + "Job") || data.title;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -262,13 +268,13 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
           
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1D68ED]/30 text-[#00D2FF] text-xs font-bold uppercase tracking-wider mb-2 border border-[#00D2FF]/30">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Cooperative Service Standard</span>
+            <span>{t("landing.guaranteedCooperative") || "Cooperative Service Standard"}</span>
           </div>
           <h2 className="text-2xl font-black font-display text-white flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-[#00D2FF] shrink-0">
               <IconComponent className="w-5 h-5" />
             </div>
-            <span>{data.title}</span>
+            <span>{localizedTitle}</span>
           </h2>
           <p className="text-xs text-cyan-200 mt-1">{data.tagline}</p>
         </div>
@@ -281,12 +287,12 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
                 <Banknote className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-xs font-bold text-emerald-900">Standard Rate Guide</div>
-                <div className="text-[11px] text-emerald-700">95% goes directly to worker hands</div>
+                <div className="text-xs font-bold text-emerald-900">{t("booking.baseLabourCharge") || "Standard Rate Guide"}</div>
+                <div className="text-[11px] text-emerald-700">{t("booking.welfareSubsidy") || "95% goes directly to worker hands"}</div>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-emerald-600 font-semibold">Starts from</div>
+              <div className="text-xs text-emerald-600 font-semibold">{t("landing.priceTagline") || "Starts from"}</div>
               <div className="text-xl font-black text-emerald-800">₹{data.startingRate}</div>
             </div>
           </div>
@@ -296,7 +302,7 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
           </p>
 
           <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">Service Capabilities &amp; Standards</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">{t("jobs.jobDetails") || "Service Capabilities & Standards"}</h4>
             <div className="space-y-2">
               {data.specs.map((spec, i) => (
                 <div key={i} className="flex items-start gap-2.5 text-xs text-gray-700">
@@ -315,14 +321,14 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-900 transition cursor-pointer"
           >
-            Close
+            {t("common.close") || "Close"}
           </button>
           <button
             type="button"
             onClick={() => { onClose(); onOpenQuote(key); }}
             className="px-6 py-2.5 bg-[#1D68ED] hover:bg-blue-700 text-white font-black rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer active:scale-98"
           >
-            <span>Check Transparent Price &amp; Book</span>
+            <span>{t("booking.bookNow") || "Book Service Now"}</span>
             <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
           </button>
         </div>

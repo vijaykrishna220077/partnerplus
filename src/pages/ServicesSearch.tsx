@@ -17,6 +17,7 @@ import {
 import { ServiceCategory } from '../types';
 import { ServiceIcon } from '../components/ServiceIcon';
 import { WorkerCard } from '../components/WorkerCard';
+import { getLocalizedServiceName, getLocalizedServiceDesc } from '../utils/localization';
 
 export const ServicesSearch: React.FC = () => {
   const { 
@@ -29,7 +30,8 @@ export const ServicesSearch: React.FC = () => {
     currentLocation, 
     openLocationPicker, 
     openBooking, 
-    t 
+    t,
+    lang 
   } = useApp();
 
   const [sortBy, setSortBy] = useState<'rating' | 'distance' | 'price_low' | 'experience'>('rating');
@@ -128,7 +130,7 @@ export const ServicesSearch: React.FC = () => {
                 : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             }`}
           >
-            All Categories ({workers.length})
+            {t("common.all") || "All Categories"} ({workers.length})
           </button>
 
           {services.map(srv => {
@@ -144,7 +146,7 @@ export const ServicesSearch: React.FC = () => {
                 }`}
               >
                 <ServiceIcon name={srv.icon} className="w-3.5 h-3.5" />
-                <span>{srv.name}</span>
+                <span>{getLocalizedServiceName(srv, lang, t)}</span>
               </button>
             );
           })}
@@ -160,20 +162,20 @@ export const ServicesSearch: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl sm:text-2xl font-black font-serif text-white">{activeServiceObj.name}</h2>
+                <h2 className="text-xl sm:text-2xl font-black font-serif text-white">{getLocalizedServiceName(activeServiceObj, lang, t)}</h2>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-900/60 text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-700/50">
-                  Standard Rate
+                  {t("landing.guaranteedCooperative") || "Standard Rate"}
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-gray-300 mt-1 font-light">
-                {activeServiceObj.description} • Standard visit duration ~{activeServiceObj.typicalDurationMinutes} mins
+                {getLocalizedServiceDesc(activeServiceObj, lang, t)} • {t("jobs.duration") || "Standard visit duration"} ~{activeServiceObj.typicalDurationMinutes || activeServiceObj.estimatedDuration || 60}
               </p>
             </div>
           </div>
 
           <div className="bg-neutral-800/80 px-5 py-3 rounded-2xl text-right shrink-0 border border-neutral-700 w-full md:w-auto">
-            <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider block">Guideline Base Rate</span>
-            <span className="text-xl font-black text-white font-serif">₹{activeServiceObj.startingPrice} {activeServiceObj.unit}</span>
+            <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider block">{t("booking.baseLabourCharge") || "Guideline Base Rate"}</span>
+            <span className="text-xl font-black text-white font-serif">₹{activeServiceObj.startingPrice} {t("landing.priceTagline") || activeServiceObj.unit}</span>
           </div>
         </div>
       )}
@@ -186,7 +188,7 @@ export const ServicesSearch: React.FC = () => {
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
               <div className="flex items-center gap-2 text-[#121212] font-bold text-xs uppercase tracking-wider">
                 <SlidersHorizontal className="w-4 h-4 text-blue-600" />
-                <span>Filter Workers</span>
+                <span>{t("worker.filterWorkers") || "Filter Workers"}</span>
               </div>
               {(onlyAvailableToday || onlyEmergencyReady || minRating > 0 || searchQuery) && (
                 <button

@@ -11,6 +11,7 @@ import {
   LucideIcon 
 } from 'lucide-react';
 import { soundAndSpeech } from '../../utils/soundAndSpeech';
+import { useApp } from '../../context/AppContext';
 
 export interface TaskItem {
   id: string;
@@ -90,15 +91,23 @@ export const WorksCatalogView: React.FC<WorksCatalogViewProps> = ({
     }
   };
 
+  const { t } = useApp();
+
   const getCategoryLabel = (cat: CategoryData) => {
-    if (lang === 'hi') return cat.nameHi || cat.name;
-    if (lang === 'ta') return cat.nameTa || cat.name;
+    const key = `jobs.${cat.id}Job`;
+    const translated = t(key);
+    if (translated && translated !== key) return translated;
+    if (lang === 'hi' && cat.nameHi) return cat.nameHi;
+    if (lang === 'ta' && cat.nameTa) return cat.nameTa;
     return cat.name;
   };
 
   const getTaskLabel = (task: TaskItem) => {
-    if (lang === 'hi') return task.nameHi || task.name;
-    if (lang === 'ta') return task.nameTa || task.name;
+    const key = `jobs.${task.id}`;
+    const translated = t(key);
+    if (translated && translated !== key) return translated;
+    if (lang === 'hi' && task.nameHi) return task.nameHi;
+    if (lang === 'ta' && task.nameTa) return task.nameTa;
     return task.name;
   };
 
