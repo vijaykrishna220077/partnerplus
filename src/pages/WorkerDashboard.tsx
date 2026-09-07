@@ -17,13 +17,16 @@ import {
   FileBadge, 
   Navigation, 
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  Camera,
+  QrCode
 } from 'lucide-react';
 import { Booking, BookingStatus, Worker } from '../types';
 import { apiService } from '../services/apiService';
 import { mockWorkers } from '../data/mockData';
 import { RuralWorkerPortal } from '../components/RuralWorkerPortal';
 import { NewJobAlertModal, JobAlertData, DEFAULT_SAMPLE_JOB } from '../components/NewJobAlertModal';
+import { WorkerQrScannerModal } from '../components/worker/WorkerQrScannerModal';
 
 export const WorkerDashboard: React.FC = () => {
   const { 
@@ -50,6 +53,7 @@ export const WorkerDashboard: React.FC = () => {
   const [isEmergencyReady, setIsEmergencyReady] = useState<boolean>(activeWorker?.isEmergencyReady ?? true);
   const [isJobAlertOpen, setIsJobAlertOpen] = useState<boolean>(false);
   const [currentJobAlert, setCurrentJobAlert] = useState<JobAlertData>(DEFAULT_SAMPLE_JOB);
+  const [scannerBooking, setScannerBooking] = useState<Booking | null>(null);
 
   // If in rural simple mode, render the low-literacy accessible companion
   if (viewMode === 'rural_simple') {
@@ -417,11 +421,30 @@ export const WorkerDashboard: React.FC = () => {
                         </button>
                       )}
                       {b.status === 'service_started' && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => setScannerBooking(b)}
+                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-full shadow-md cursor-pointer transition-all flex items-center gap-1.5 active:scale-95"
+                          >
+                            <Camera className="w-4 h-4" />
+                            <span>Scan Customer QR to Complete 📷</span>
+                          </button>
+                          <button
+                            onClick={() => setScannerBooking(b)}
+                            className="px-5 py-2.5 bg-black hover:bg-neutral-800 text-white font-bold text-xs rounded-full shadow-md cursor-pointer transition-all flex items-center gap-1"
+                          >
+                            <span>✓ Complete &amp; Verify</span>
+                          </button>
+                        </div>
+                      )}
+                      {['assigned', 'on_the_way', 'arrived'].includes(b.status) && (
                         <button
-                          onClick={() => handleAdvanceJobStatus(b, 'service_completed')}
-                          className="px-6 py-2.5 bg-black hover:bg-neutral-800 text-white font-bold text-xs rounded-full shadow-md cursor-pointer transition-all"
+                          onClick={() => setScannerBooking(b)}
+                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-full cursor-pointer transition-all flex items-center gap-1.5 border border-slate-300"
+                          title="Scan customer completion QR code"
                         >
-                          ✓ Complete Service & Trigger Receipt
+                          <QrCode className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Customer QR Code</span>
                         </button>
                       )}
                     </div>
@@ -485,6 +508,17 @@ export const WorkerDashboard: React.FC = () => {
             title: 'Order Passed (काम छोड़ा)',
             message: 'No penalty on PartnerPlus. Waiting for next nearby request.'
           });
+        }}
+      />
+
+      {/* Worker QR Code Scanner Modal for Customer Job Completion Verification */}
+      <WorkerQrScannerModal
+        isOpen={!!scannerBooking}
+        booking={scannerBooking}
+        onClose={() => setScannerBooking(null)}
+        onVerificationSuccess={() => {
+          setScannerBooking(null);
+          refreshData();
         }}
       />
     </div>
