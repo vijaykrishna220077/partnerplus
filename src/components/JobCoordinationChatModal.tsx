@@ -25,6 +25,7 @@ import { chatService } from '../services/chatService';
 import { realtimeHub } from '../services/db';
 import { soundAndSpeech } from '../utils/soundAndSpeech';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 
 interface JobCoordinationChatModalProps {
   isOpen: boolean;
@@ -64,7 +65,8 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
     (w) => w.id === booking?.workerId || w.name === booking?.workerName
   );
 
-  const customerName = booking?.customerName || 'Customer';
+  const { user } = useAuth();
+  const customerName = (user?.role === 'customer' ? user.name : booking?.customerName) || user?.name || booking?.customerName || 'Customer';
   const workerName = assignedWorker?.name || booking?.workerName || 'Cooperative Worker';
   const workerPhone = assignedWorker?.phone || '+91 98450 12345';
   const customerPhone = booking?.customerPhone || '+91 94432 67890';

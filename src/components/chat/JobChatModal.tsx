@@ -18,6 +18,7 @@ import {
 import { Booking, ChatMessage } from '../../types';
 import { chatService } from '../../services/chatService';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { soundAndSpeech } from '../../utils/soundAndSpeech';
 
 interface JobChatModalProps {
@@ -102,10 +103,13 @@ export const JobChatModal: React.FC<JobChatModalProps> = ({
     return booking.address.landmark || booking.address.area || 'Near main entrance';
   };
 
-  // Identity config
-  const mySenderId = isWorker ? (booking.workerId || 'wrk-1') : (booking.customerId || 'cust-1');
-  const mySenderName = isWorker ? (booking.workerName || 'Worker') : (booking.customerName || 'Customer');
-  const counterpartName = isWorker ? (booking.customerName || 'Customer') : (booking.workerName || 'Cooperative Artisan');
+  const { user } = useAuth();
+
+  // Identity config with active logged in user fallback
+  const activeCustomerName = (user?.role === 'customer' ? user.name : booking.customerName) || user?.name || booking.customerName || 'Customer';
+  const mySenderId = isWorker ? (booking.workerId || 'wrk-1') : (user?.id || booking.customerId || 'cust-1');
+  const mySenderName = isWorker ? (booking.workerName || 'Worker') : activeCustomerName;
+  const counterpartName = isWorker ? activeCustomerName : (booking.workerName || 'Cooperative Artisan');
   const counterpartRole = isWorker ? 'Customer' : 'Cooperative Artisan';
   const counterpartPhone = isWorker ? (booking.customerPhone || '9845012345') : (booking.workerPhone || '9845012345');
   const counterpartPhoto = isWorker 

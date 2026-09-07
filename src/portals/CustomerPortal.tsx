@@ -67,6 +67,7 @@ export const CustomerPortal: React.FC = () => {
     activeChatRole,
     openChat,
     closeChat,
+    addToast,
     t
   } = useApp();
   const { user, switchRole } = useAuth();
@@ -232,25 +233,31 @@ export const CustomerPortal: React.FC = () => {
                 <span className="truncate max-w-[70px] sm:max-w-[90px]">{user?.name?.split(' ')[0] || t("customer.profileSettings") || 'Profile'}</span>
               </button>
 
-              {bookings.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const active = bookings.find(b => !['service_completed', 'cancelled', 'rejected'].includes(b.status)) || bookings[0];
-                    if (active) openChat(active, 'customer');
-                  }}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition cursor-pointer shadow-2xs relative shrink-0"
-                  title="Real-time Chat with Assigned Worker"
-                >
-                  <MessageSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="hidden sm:inline">{t("chat.chat") || "Chat"}</span>
-                  {unreadChatCount > 0 && (
-                    <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center animate-pulse">
-                      {unreadChatCount}
-                    </span>
-                  )}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const activeBookedWorker = bookings.find(b => b.workerName && !['service_completed', 'cancelled', 'rejected'].includes(b.status));
+                  if (activeBookedWorker) {
+                    openChat(activeBookedWorker, 'customer');
+                  } else {
+                    addToast({
+                      type: 'info',
+                      title: 'No Active Worker Booked',
+                      message: 'Please book a service worker to enable live chat coordination.'
+                    });
+                  }
+                }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition cursor-pointer shadow-2xs relative shrink-0"
+                title="Real-time Chat with Assigned Worker"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="hidden sm:inline">{t("chat.chat") || "Chat"}</span>
+                {unreadChatCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center animate-pulse">
+                    {unreadChatCount}
+                  </span>
+                )}
+              </button>
 
               {bookings.length > 0 && (
                 <button
