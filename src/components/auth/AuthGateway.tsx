@@ -193,31 +193,31 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
       {/* ========================================================================= */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-sky-100 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
             
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div onClick={onBackToWelcome} className={onBackToWelcome ? "cursor-pointer" : ""}>
+            {/* Left: Brand Logo & Back to Home */}
+            <div className="flex items-center gap-3 shrink-0">
+              <div onClick={onBackToWelcome} className={onBackToWelcome ? "cursor-pointer shrink-0" : "shrink-0"}>
                 <PartnerPlusLogo />
               </div>
               {onBackToWelcome && (
                 <button
                   type="button"
                   onClick={onBackToWelcome}
-                  className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-[#1D68ED] hover:underline bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200 cursor-pointer ml-2"
+                  className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-[#1D68ED] hover:bg-blue-100/60 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200 cursor-pointer ml-1 whitespace-nowrap shrink-0 transition"
                 >
                   <span>← Back to Home</span>
                 </button>
               )}
             </div>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-7 text-sm font-bold text-gray-700">
-              <span className="text-gray-500 font-medium">Commercial Services:</span>
+            {/* Middle: Clean Services Navigation (Visible on XL screens to prevent clashing) */}
+            <nav className="hidden xl:flex items-center gap-5 text-xs font-bold text-gray-700 whitespace-nowrap shrink-0">
+              <span className="text-gray-400 font-medium">Services:</span>
               <button 
                 type="button" 
                 onClick={() => { setSelectedRole('customer'); }}
-                className="hover:text-[#1D68ED] transition cursor-pointer flex items-center gap-1.5"
+                className="hover:text-[#1D68ED] transition cursor-pointer flex items-center gap-1"
               >
                 <Droplets className="w-3.5 h-3.5 text-[#00D2FF]" />
                 <span>Power Wash</span>
@@ -225,7 +225,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
               <button 
                 type="button" 
                 onClick={() => { setSelectedRole('customer'); }}
-                className="hover:text-[#1D68ED] transition cursor-pointer flex items-center gap-1.5"
+                className="hover:text-[#1D68ED] transition cursor-pointer flex items-center gap-1"
               >
                 <Truck className="w-3.5 h-3.5 text-[#1D68ED]" />
                 <span>Fleet Wash</span>
@@ -233,42 +233,40 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
               <button 
                 type="button" 
                 onClick={() => { setSelectedRole('customer'); }}
-                className="hover:text-[#1D68ED] transition cursor-pointer flex items-center gap-1.5"
+                className="hover:text-[#1D68ED] transition cursor-pointer flex items-center gap-1"
               >
                 <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
                 <span>Window Wash</span>
               </button>
-              <span className="text-gray-300 font-normal">|</span>
-              <span className="text-xs text-gray-500">DFW &amp; North Texas</span>
             </nav>
 
-            {/* Right Action Controls */}
-            <div className="flex items-center gap-3 sm:gap-4">
+            {/* Right: Actions, Language & Navigation Controls */}
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0 whitespace-nowrap">
               {/* Phone Helpline */}
               <a 
                 href="tel:2145505563" 
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs md:text-sm font-extrabold text-gray-900 hover:text-[#1D68ED] transition"
+                className="hidden md:inline-flex items-center gap-1.5 text-xs font-extrabold text-gray-900 hover:text-[#1D68ED] transition bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200/80 shrink-0"
               >
-                <Phone className="w-4 h-4 text-[#1D68ED] fill-[#1D68ED]/20" />
+                <Phone className="w-3.5 h-3.5 text-[#1D68ED]" />
                 <span>214-550-5563</span>
               </a>
 
               {/* Language Selector */}
-              <div className="hidden md:flex items-center gap-1.5 bg-gray-50 py-1.5 px-2.5 rounded-full border border-gray-200 text-xs">
-                <Globe className="w-3.5 h-3.5 text-[#1D68ED]" />
+              <div className="hidden sm:flex items-center gap-1 bg-gray-50 py-1.5 px-2.5 rounded-full border border-gray-200 text-xs shrink-0">
+                <Globe className="w-3.5 h-3.5 text-[#1D68ED] shrink-0" />
                 <select
                   value={lang}
                   onChange={(e) => setLang(e.target.value as LanguageCode)}
                   className="bg-transparent text-gray-800 text-xs font-bold focus:outline-none cursor-pointer"
                   aria-label="Portal Language"
                 >
-                  <option value="en">English (US)</option>
-                  <option value="hi">हिन्दी (Hindi)</option>
-                  <option value="ta">தமிழ் (Tamil)</option>
-                  <option value="te">తెలుగు (Telugu)</option>
-                  <option value="bn">বাংলা (Bengali)</option>
-                  <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                  <option value="mr">मराठी (Marathi)</option>
+                  <option value="en">EN</option>
+                  <option value="hi">हिन्दी</option>
+                  <option value="ta">தமிழ்</option>
+                  <option value="te">తెలుగు</option>
+                  <option value="bn">বাংলা</option>
+                  <option value="kn">ಕನ್ನಡ</option>
+                  <option value="mr">मराठी</option>
                 </select>
               </div>
 
@@ -276,33 +274,33 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
               <button
                 type="button"
                 onClick={() => { setAuthMode('login'); setSelectedRole('worker'); handleRoleChange('worker'); }}
-                className={`text-xs sm:text-sm font-black transition px-3 py-1.5 rounded-full cursor-pointer ${
+                className={`text-xs font-bold transition px-3 py-1.5 rounded-full cursor-pointer shrink-0 ${
                   authMode === 'login' && selectedRole === 'worker'
-                    ? 'text-[#1D68ED] bg-blue-50 ring-2 ring-[#1D68ED]/20'
-                    : 'text-gray-800 hover:text-[#1D68ED]'
+                    ? 'text-[#1D68ED] bg-blue-50 ring-1 ring-[#1D68ED]/30'
+                    : 'text-gray-700 hover:text-[#1D68ED]'
                 }`}
               >
                 Worker Login
               </button>
 
-              {/* Register / Choose Account Type */}
+              {/* Register Button */}
               <button
                 type="button"
                 onClick={() => { setAuthMode('signup'); setSignupSubView('selector'); }}
-                className={`text-xs sm:text-sm font-black transition px-3 py-1.5 rounded-full cursor-pointer ${
-                  authMode === 'signup'
-                    ? 'text-[#1D68ED] bg-blue-50 ring-2 ring-[#1D68ED]/20'
-                    : 'text-gray-800 hover:text-[#1D68ED]'
+                className={`text-xs font-bold transition px-3 py-1.5 rounded-full cursor-pointer shrink-0 ${
+                  authMode === 'signup' && signupSubView === 'selector'
+                    ? 'text-[#1D68ED] bg-blue-50 ring-1 ring-[#1D68ED]/30'
+                    : 'text-gray-700 hover:text-[#1D68ED]'
                 }`}
               >
                 Register
               </button>
 
-              {/* Join As Worker Button */}
+              {/* Join As Worker Primary CTA */}
               <button
                 type="button"
                 onClick={() => { setAuthMode('signup'); setSignupSubView('worker'); }}
-                className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#00D2FF] hover:bg-[#33EBFF] text-black font-extrabold rounded-full text-xs sm:text-sm tracking-tight shadow-sm hover:shadow-md transition-all duration-200 active:scale-98 cursor-pointer flex items-center gap-1.5"
+                className="px-3.5 sm:px-4 py-1.5 sm:py-2 bg-[#00D2FF] hover:bg-[#33EBFF] text-black font-extrabold rounded-full text-xs tracking-tight shadow-xs hover:shadow-md transition-all duration-200 active:scale-98 cursor-pointer flex items-center gap-1 shrink-0"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 <span>Join As Worker</span>
