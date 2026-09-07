@@ -59,8 +59,8 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
 
   const { user } = useAuth();
   const customerName = (user?.role === 'customer' ? user.name : booking?.customerName) || user?.name || booking?.customerName || 'Customer';
-  const workerName = assignedWorker?.name || booking?.workerName || 'Murugan Thangaraj';
-  const workerPhone = assignedWorker?.phone || booking?.workerPhone || '+91 98412 34567';
+  const workerName = booking?.workerName || assignedWorker?.name || 'Cooperative Worker';
+  const workerPhone = booking?.workerPhone || assignedWorker?.phone || '+91 98412 34567';
   const customerPhone = booking?.customerPhone || user?.phone || '+91 94432 67890';
 
   // Customer photo priority: user avatar (if customer) -> booking customerPhoto -> default unsplash avatar
