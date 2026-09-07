@@ -782,6 +782,567 @@ export const mockWorkers: Worker[] = [
     isIdentityChecked: true,
     isPoliceClearanceVerified: true,
     bankAccountLinked: true
+  },
+  {
+    id: 'wrk-9',
+    name: 'Suresh Painter',
+    nameTa: 'சுரேஷ் பெயிண்டர்',
+    nameHi: 'सुरेश पेंटर',
+    photoUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 98422 10987',
+    primarySkill: 'painting',
+    primarySkillLabel: 'Master Painter & Damp Specialist',
+    otherSkills: ['masonry', 'cleaning'],
+    experienceYears: 10,
+    rating: 4.88,
+    jobsCompleted: 175,
+    distanceKm: 2.2,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: false,
+    startingPrice: 699,
+    cooperativeId: 'coop-1',
+    cooperativeName: 'Chennai Central Labour Cooperative Society',
+    cooperativeRegNo: 'TN-LCS-442/2014',
+    locationArea: 'Peelamedu',
+    city: 'Coimbatore',
+    latitude: 11.0267,
+    longitude: 77.0028,
+    languages: ['Tamil', 'English', 'Hindi'],
+    bio: 'Professional wall painter and dampness treatment expert. Specializes in Asian Paints Royale, Berger Silk, texture stencils, and waterproof primer application.',
+    certifications: [
+      {
+        title: 'Paints & Coatings Skill Council Certified Master Painter',
+        issuedBy: 'PCSC Skill India',
+        year: 2018,
+        certificateId: 'PCSC-PNT-2018-4491'
+      }
+    ],
+    skillsList: [
+      { name: 'Interior High-Gloss & Velvet Emulsion', experienceYears: 10, isCertified: true },
+      { name: 'Exterior Damp Shield Waterproofing', experienceYears: 8, isCertified: true },
+      { name: 'Wall Stencil & Accent Art Design', experienceYears: 6, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-110',
+        customerName: 'Karthik Subramanian',
+        rating: 5,
+        date: '2026-08-27',
+        comment: 'Suresh painted our 3BHK living hall with Asian Paints Royale. Spotless masking, complete floor sheet covering, and zero paint drips.',
+        tags: ['Clean finish', 'On time', 'Punctual', 'Skilled'],
+        serviceName: 'Living Hall Repaint'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-TN-442-9987',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
+  },
+  {
+    id: 'wrk-10',
+    name: 'Palani Subbiah',
+    nameTa: 'பழனி சுப்பையா',
+    nameHi: 'पलानी सुब्बैया',
+    photoUrl: 'https://images.unsplash.com/photo-1504257426300-57ef20237e15?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 97890 66432',
+    primarySkill: 'masonry',
+    primarySkillLabel: 'Master Mason & Tile Setter',
+    otherSkills: ['plumbing', 'carpentry'],
+    experienceYears: 15,
+    rating: 4.91,
+    jobsCompleted: 240,
+    distanceKm: 3.0,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: false,
+    startingPrice: 549,
+    cooperativeId: 'coop-1',
+    cooperativeName: 'Chennai Central Labour Cooperative Society',
+    cooperativeRegNo: 'TN-LCS-442/2014',
+    locationArea: 'KK Nagar',
+    city: 'Madurai',
+    latitude: 9.9252,
+    longitude: 78.1198,
+    languages: ['Tamil', 'English'],
+    bio: 'Veteran mason with 15 years experience in vitrified tile alignment, granite counter fitting, brick wall plastering, and bathroom leakproofing.',
+    certifications: [
+      {
+        title: 'Construction Skill Development Council - Senior Mason',
+        issuedBy: 'CSDC Govt of India',
+        year: 2015,
+        certificateId: 'CSDC-MSN-2015-8812'
+      }
+    ],
+    skillsList: [
+      { name: 'Vitrified & Anti-Skid Bathroom Tile Laying', experienceYears: 15, isCertified: true },
+      { name: 'Granite Sink Counter Cutting & Levelling', experienceYears: 12, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-111',
+        customerName: 'Narayanan M.',
+        rating: 5,
+        date: '2026-08-29',
+        comment: 'Rebuilt our cracked balcony ramp step cleanly in one morning. Very sturdy work with perfect slope for rainwater drainage.',
+        tags: ['Solid work', 'Fair price', 'Punctual'],
+        serviceName: 'Balcony Cement Step Repair'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-TN-442-6432',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
+  },
+  {
+    id: 'wrk-11',
+    name: 'Deepak Verma',
+    nameTa: 'தீபக் வர்மா',
+    nameHi: 'दीपक वर्मा',
+    photoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 98991 22345',
+    primarySkill: 'pest_control',
+    primarySkillLabel: 'Certified Eco Pest Exterminator',
+    otherSkills: ['cleaning', 'technician'],
+    experienceYears: 7,
+    rating: 4.85,
+    jobsCompleted: 152,
+    distanceKm: 2.8,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: false,
+    startingPrice: 499,
+    cooperativeId: 'coop-3',
+    cooperativeName: 'Delhi Shramik Sahakari Samiti Federation',
+    cooperativeRegNo: 'DL-LCU-102/2012',
+    locationArea: 'Rohini',
+    city: 'Delhi',
+    latitude: 28.7041,
+    longitude: 77.1025,
+    languages: ['Hindi', 'English', 'Punjabi'],
+    bio: 'Government-certified plant & pest specialist utilizing odorless Bayer herbal gels, termite barrier injections, and thermal fogging safely around pets and children.',
+    certifications: [
+      {
+        title: 'National Institute of Pest Management (NIPM) Advanced Certificate',
+        issuedBy: 'NIPM India',
+        year: 2019,
+        certificateId: 'NIPM-PST-2019-7731'
+      }
+    ],
+    skillsList: [
+      { name: 'Odorless Kitchen Cockroach Herbal Gel', experienceYears: 7, isCertified: true },
+      { name: 'Anti-Termite Drilling & Injection Barrier', experienceYears: 6, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-112',
+        customerName: 'Shalini Gupta',
+        rating: 5,
+        date: '2026-08-26',
+        comment: 'Deepak applied herbal gel in our kitchen drawers without having to empty all vessels! Completely cockroach free within 3 days.',
+        tags: ['Effective', 'No chemical odor', 'Courteous'],
+        serviceName: 'Kitchen Cockroach Control'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-DL-102-2345',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
+  },
+  {
+    id: 'wrk-12',
+    name: 'Arumugam Nadar',
+    nameTa: 'ஆறுமுகம் நாடார்',
+    nameHi: 'अरुमुगम नाडार',
+    photoUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 98408 77654',
+    primarySkill: 'technician',
+    primarySkillLabel: 'HVAC & AC Master Technician',
+    otherSkills: ['electrical', 'appliance_repair'],
+    experienceYears: 10,
+    rating: 4.90,
+    jobsCompleted: 195,
+    distanceKm: 1.5,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: true,
+    startingPrice: 349,
+    cooperativeId: 'coop-1',
+    cooperativeName: 'Chennai Central Labour Cooperative Society',
+    cooperativeRegNo: 'TN-LCS-442/2014',
+    locationArea: 'OMR Perungudi',
+    city: 'Chennai',
+    latitude: 12.9654,
+    longitude: 80.2481,
+    languages: ['Tamil', 'English'],
+    bio: 'Specialist AC technician skilled in high-pressure foam jet cleaning, R32/R410a eco-refrigerant gas charging, and inverter AC PCB diagnostics.',
+    certifications: [
+      {
+        title: 'Electronics Sector Skill Council - Air Conditioning Specialist',
+        issuedBy: 'ESSCI Skill India',
+        year: 2017,
+        certificateId: 'ESSCI-AC-2017-1092'
+      }
+    ],
+    skillsList: [
+      { name: 'Split & Inverter AC High-Pressure Jet Wash', experienceYears: 10, isCertified: true },
+      { name: 'Refrigerant Leak Detection & Pressure Refill', experienceYears: 9, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-113',
+        customerName: 'Venkatesh K.',
+        rating: 5,
+        date: '2026-08-31',
+        comment: 'Arumugam carried proper foam jacket wash equipment. Cleaned the coil thoroughly without letting a drop of water spill on wall.',
+        tags: ['Clean work', 'Expert', 'On time'],
+        serviceName: 'Split AC Jet Servicing'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-TN-442-7654',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
+  },
+  {
+    id: 'wrk-13',
+    name: 'Manikandan Pandian',
+    nameTa: 'மணிகண்டன் பாண்டியன்',
+    nameHi: 'मणिकंडन पांडियन',
+    photoUrl: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 94432 88102',
+    primarySkill: 'plumbing',
+    primarySkillLabel: 'Senior Drainage & Pipeline Expert',
+    otherSkills: ['masonry', 'appliance_repair'],
+    experienceYears: 11,
+    rating: 4.89,
+    jobsCompleted: 168,
+    distanceKm: 2.0,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: true,
+    startingPrice: 349,
+    cooperativeId: 'coop-1',
+    cooperativeName: 'Chennai Central Labour Cooperative Society',
+    cooperativeRegNo: 'TN-LCS-442/2014',
+    locationArea: 'RS Puram',
+    city: 'Coimbatore',
+    latitude: 11.0084,
+    longitude: 76.9536,
+    languages: ['Tamil', 'English', 'Malayalam'],
+    bio: 'Heavy drainage blockage specialist using motor auger snakes and high-pressure water nozzles. Trusted for emergency blockage clearings.',
+    certifications: [
+      {
+        title: 'Municipal Water Supply & Sewerage Board Certificate',
+        issuedBy: 'TWAD Board Tamil Nadu',
+        year: 2016,
+        certificateId: 'TWAD-PLB-2016-5521'
+      }
+    ],
+    skillsList: [
+      { name: 'Underground Sewer Line Auger De-clogging', experienceYears: 11, isCertified: true },
+      { name: 'Pressure Pump & Booster Installation', experienceYears: 8, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-114',
+        customerName: 'Durai Rajan',
+        rating: 5,
+        date: '2026-08-28',
+        comment: 'Cleared heavy roots blocking our main drain line in less than 45 minutes using motorized snake machine.',
+        tags: ['Emergency ready', 'Skilled', 'Fast response'],
+        serviceName: 'Main Drain Blockage Clearing'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-TN-442-8102',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
+  },
+  {
+    id: 'wrk-14',
+    name: 'Sunita Devi',
+    nameTa: 'சுனிதா தேவி',
+    nameHi: 'सुनिता देवी',
+    photoUrl: 'https://images.unsplash.com/photo-1580894732468-058f747280f2?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 98201 33456',
+    primarySkill: 'cleaning',
+    primarySkillLabel: 'Sanitization & Deep Cleaning Lead',
+    otherSkills: ['caregiving', 'gardening'],
+    experienceYears: 7,
+    rating: 4.90,
+    jobsCompleted: 192,
+    distanceKm: 2.6,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: false,
+    startingPrice: 449,
+    cooperativeId: 'coop-2',
+    cooperativeName: 'Bengaluru Urban Shramik Sahakari Sangha',
+    cooperativeRegNo: 'KA-BSS-891/2016',
+    locationArea: 'Andheri West',
+    city: 'Mumbai',
+    latitude: 19.1136,
+    longitude: 72.8295,
+    languages: ['Hindi', 'Marathi', 'English'],
+    bio: 'Team leader for full residential deep cleaning, sofa extraction shampooing, post-tenant move-in scrubbing, and kitchen degreasing.',
+    certifications: [
+      {
+        title: 'THSC Sanitation & Hygiene Excellence Award',
+        issuedBy: 'Tourism & Hospitality Skill Council',
+        year: 2021,
+        certificateId: 'THSC-CLN-2021-9982'
+      }
+    ],
+    skillsList: [
+      { name: 'Upholstery Fabric Steam Extraction Shampoo', experienceYears: 7, isCertified: true },
+      { name: 'Kitchen Exhaust Hood & Tile Degreasing', experienceYears: 6, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-115',
+        customerName: 'Priya Kulkarni',
+        rating: 5,
+        date: '2026-08-25',
+        comment: 'Sunita and her team did an unbelievable job cleaning our 2BHK flat before we moved in. Spotless tiles and grease-free kitchen!',
+        tags: ['Super clean', 'Punctual', 'Great value'],
+        serviceName: 'Full Home Deep Clean'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-KA-891-3456',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
+  },
+  {
+    id: 'wrk-15',
+    name: 'Vikram Singh',
+    nameTa: 'விக்ரம் சிங்',
+    nameHi: 'विक्रम सिंह',
+    photoUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 99160 44321',
+    primarySkill: 'hvac',
+    primarySkillLabel: 'HVAC & Ventilation Engineer',
+    otherSkills: ['electrical', 'technician'],
+    experienceYears: 12,
+    rating: 4.93,
+    jobsCompleted: 215,
+    distanceKm: 1.7,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: true,
+    startingPrice: 449,
+    cooperativeId: 'coop-2',
+    cooperativeName: 'Bengaluru Urban Shramik Sahakari Sangha',
+    cooperativeRegNo: 'KA-BSS-891/2016',
+    locationArea: 'HSR Layout',
+    city: 'Bengaluru',
+    latitude: 12.9121,
+    longitude: 77.6445,
+    languages: ['Hindi', 'Kannada', 'English'],
+    bio: 'Certified HVAC engineer specializing in cassette AC, ductable AC units, commercial cooling maintenance, and smart thermostat integrations.',
+    certifications: [
+      {
+        title: 'ISHRAE Certified Air Conditioning Professional',
+        issuedBy: 'Indian Society of Heating, Refrigerating and AC Engineers',
+        year: 2016,
+        certificateId: 'ISHRAE-HVAC-2016-1049'
+      }
+    ],
+    skillsList: [
+      { name: 'Commercial Duct & Cassette AC Servicing', experienceYears: 12, isCertified: true },
+      { name: 'Chiller & VRF System Diagnostics', experienceYears: 9, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-116',
+        customerName: 'Amitabh Joshi',
+        rating: 5,
+        date: '2026-08-30',
+        comment: 'Resolved cooling loss issue in our office cassette AC unit when two previous local mechanics failed. Outstanding technical knowledge.',
+        tags: ['Master technician', 'Reliable', 'On time'],
+        serviceName: 'Cassette AC Overhaul'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-KA-891-4321',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
+  },
+  {
+    id: 'wrk-16',
+    name: 'Ganesh Shinde',
+    nameTa: 'கணேஷ் ஷிண்டே',
+    nameHi: 'गणेश शिंदे',
+    photoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 97690 11982',
+    primarySkill: 'welding',
+    primarySkillLabel: 'Metal Fabricator & Gate Welder',
+    otherSkills: ['carpentry', 'masonry'],
+    experienceYears: 13,
+    rating: 4.87,
+    jobsCompleted: 144,
+    distanceKm: 3.2,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: true,
+    startingPrice: 499,
+    cooperativeId: 'coop-2',
+    cooperativeName: 'Bengaluru Urban Shramik Sahakari Sangha',
+    cooperativeRegNo: 'KA-BSS-891/2016',
+    locationArea: 'Bandra West',
+    city: 'Mumbai',
+    latitude: 19.0596,
+    longitude: 72.8295,
+    languages: ['Marathi', 'Hindi', 'English'],
+    bio: 'Skilled ARC & TIG welder specializing in main gate hinge repair, safety grill fabrication, stainless steel balcony railings, and emergency lock welding.',
+    certifications: [
+      {
+        title: 'Indian Institute of Welding - Qualified ARC Welder',
+        issuedBy: 'Indian Institute of Welding (IIW)',
+        year: 2014,
+        certificateId: 'IIW-WLD-2014-6631'
+      }
+    ],
+    skillsList: [
+      { name: 'ARC/MIG Safety Grill & Gate Fabrication', experienceYears: 13, isCertified: true },
+      { name: 'Stainless Steel Railing Joint Welding', experienceYears: 10, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-117',
+        customerName: 'Mahesh Deshmukh',
+        rating: 5,
+        date: '2026-08-23',
+        comment: 'Repaired our broken iron compound gate hinge on an urgent Sunday call. Strong weld seams and smoothed off all rough edges.',
+        tags: ['Emergency ready', 'Strong work', 'Prompt'],
+        serviceName: 'Iron Gate Hinge Welding'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-KA-891-1982',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
+  },
+  {
+    id: 'wrk-17',
+    name: 'Subramanian Swamy',
+    nameTa: 'சுப்ரமணியன் சுவாமி',
+    nameHi: 'सुब्रमण्यम स्वामी',
+    photoUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 94431 55643',
+    primarySkill: 'mechanic',
+    primarySkillLabel: 'Two-Wheeler & Auto Mechanic',
+    otherSkills: ['electrical', 'driving'],
+    experienceYears: 11,
+    rating: 4.88,
+    jobsCompleted: 180,
+    distanceKm: 1.3,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: true,
+    startingPrice: 399,
+    cooperativeId: 'coop-1',
+    cooperativeName: 'Chennai Central Labour Cooperative Society',
+    cooperativeRegNo: 'TN-LCS-442/2014',
+    locationArea: 'Saibaba Colony',
+    city: 'Coimbatore',
+    latitude: 11.0284,
+    longitude: 76.9421,
+    languages: ['Tamil', 'English'],
+    bio: 'Expert scooter and motorcycle mechanic providing door-step oil change, brake pad replacement, battery jumpstart, and carburetor tuning.',
+    certifications: [
+      {
+        title: 'Automotive Skill Development Council - Certified Automobile Technician',
+        issuedBy: 'ASDC Skill India',
+        year: 2017,
+        certificateId: 'ASDC-MCH-2017-8890'
+      }
+    ],
+    skillsList: [
+      { name: 'Doorstep Bike Oil Change & General Tune-up', experienceYears: 11, isCertified: true },
+      { name: 'Battery Breakdown Jumpstart & Wiring', experienceYears: 8, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-118',
+        customerName: 'Girish Kumar',
+        rating: 5,
+        date: '2026-08-29',
+        comment: 'Came to our apartment parking and serviced my Honda Activa doorstep. Replaced brake cables and engine oil efficiently.',
+        tags: ['Doorstep convenience', 'Fair price', 'Polite'],
+        serviceName: 'Scooter General Service'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-TN-442-5643',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
+  },
+  {
+    id: 'wrk-18',
+    name: 'Babu Ram',
+    nameTa: 'பாபு ராம்',
+    nameHi: 'बाबू राम',
+    photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+    phone: '+91 98188 44329',
+    primarySkill: 'daily_labor',
+    primarySkillLabel: 'General Construction & Material Handler',
+    otherSkills: ['masonry', 'painting'],
+    experienceYears: 8,
+    rating: 4.84,
+    jobsCompleted: 210,
+    distanceKm: 2.4,
+    isVerified: true,
+    verificationStatus: 'verified',
+    isAvailableToday: true,
+    isEmergencyReady: false,
+    startingPrice: 399,
+    cooperativeId: 'coop-3',
+    cooperativeName: 'Delhi Shramik Sahakari Samiti Federation',
+    cooperativeRegNo: 'DL-LCU-102/2012',
+    locationArea: 'Connaught Place',
+    city: 'Delhi',
+    latitude: 28.6315,
+    longitude: 77.2167,
+    languages: ['Hindi', 'Bhojpuri'],
+    bio: 'Reliable cooperative registered daily labor partner for heavy lifting, home shifting assistance, debris clearance, and renovation material handling.',
+    certifications: [
+      {
+        title: 'Delhi BOCW Welfare Board Registered Identity',
+        issuedBy: 'Building & Other Construction Workers Welfare Board',
+        year: 2018,
+        certificateId: 'DL-BOCW-2018-44120'
+      }
+    ],
+    skillsList: [
+      { name: 'Heavy Furniture & Appliance Loading/Unloading', experienceYears: 8, isCertified: true },
+      { name: 'Post-Renovation Debris Removal & Cleanup', experienceYears: 7, isCertified: true }
+    ],
+    reviews: [
+      {
+        id: 'rev-119',
+        customerName: 'Anil Malhotra',
+        rating: 5,
+        date: '2026-08-28',
+        comment: 'Babu Ram helped us move heavy wooden wardrobes down 3 floors with zero scratches. Honest, hardworking, and punctual.',
+        tags: ['Hardworking', 'Punctual', 'Great help'],
+        serviceName: 'Home Shifting Labor'
+      }
+    ],
+    welfareSchemeId: 'PMSBY-DL-102-4329',
+    isIdentityChecked: true,
+    isPoliceClearanceVerified: true,
+    bankAccountLinked: true
   }
 ];
 
