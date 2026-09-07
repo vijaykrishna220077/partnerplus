@@ -449,21 +449,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
                   </div>
 
                   <div className="flex items-end gap-1.5 max-w-[85%] sm:max-w-[75%]">
-                    {/* Listen Audio Button for incoming messages */}
-                    {!isMe && (
-                      <button
-                        type="button"
-                        onClick={() => handleSpeakMessage(msg)}
-                        className={`p-1.5 rounded-full border transition cursor-pointer mb-1 ${
-                          isSpeaking 
-                            ? 'bg-blue-600 text-white border-blue-600 animate-pulse' 
-                            : 'bg-white hover:bg-slate-100 text-slate-600 border-slate-300'
-                        }`}
-                        title="Listen to message (Text to Speech)"
-                      >
-                        {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                      </button>
-                    )}
+
 
                     <div
                       className={`px-4 py-2.5 rounded-2xl shadow-xs text-sm leading-relaxed ${

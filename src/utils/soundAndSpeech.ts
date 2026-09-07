@@ -205,71 +205,26 @@ class SoundAndSpeechService {
   /**
    * Primary Speak method: Synthesizes voice in the requested language
    */
-  public speak(text: string, lang?: LanguageCode | string): void {
-    if (this.isMuted) return;
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      console.warn('Speech synthesis not supported on this device');
-      return;
+  public speak(_text: string, _lang?: LanguageCode | string): void {
+    // Speech synthesis completely disabled per user requirement
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
     }
-
-    const effectiveLang = lang || this.currentLanguage;
-    const bcp47 = this.getBCP47LangCode(effectiveLang);
-
-    try {
-      window.speechSynthesis.cancel(); // Cancel any active speech utterance
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95; // Friendly, clear speech speed
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-      utterance.lang = bcp47;
-
-      const voice = this.getBestVoiceForLanguage(bcp47);
-      if (voice) {
-        utterance.voice = voice;
-      }
-
-      utterance.onstart = () => {
-        this.notifyListeners(true, text);
-      };
-
-      utterance.onend = () => {
-        this.notifyListeners(false);
-      };
-
-      utterance.onerror = (e) => {
-        console.warn('SpeechSynthesis error:', e);
-        this.notifyListeners(false);
-      };
-
-      window.speechSynthesis.speak(utterance);
-    } catch (err) {
-      console.warn('Speech synthesis execution failure:', err);
-      this.notifyListeners(false);
-    }
+    this.notifyListeners(false);
   }
 
   /**
-   * Update current language and automatically announce the language switch in the new language!
+   * Update current language without playing any voice audio
    */
-  public setLanguage(newLang: LanguageCode, announce: boolean = true): void {
+  public setLanguage(newLang: LanguageCode, _announce: boolean = false): void {
     this.currentLanguage = newLang;
-
-    if (!announce || this.isMuted) return;
-
-    const announcements: Record<LanguageCode, string> = {
-      ta: 'பார்ட்னர் பிளஸ் தமிழ் குரல் உதவி தயார்.',
-      hi: 'पार्टनरप्लस हिंदी वॉयस असिस्टेंट सक्रिय है।',
-      kn: 'ಪಾರ್ಟ್ನರ್ ಪ್ಲಸ್ ಕನ್ನಡ ಧ್ವನಿ ಸಹಾಯಕ ಸಕ್ರಿಯವಾಗಿದೆ.',
-      te: 'పార్ట్నర్ ప్లస్ తెలుగు వాయిస్ అసిస్టెంట్ సక్రియంగా ఉంది.',
-      ml: 'പാർട്ട്നർ പ്ലസ് മലയാളം വോയ്‌സ് അസിസ്റ്റന്റ് സജീവമാണ്.',
-      bn: 'পার্টনারপ্লাস বাংলা ভয়েস সহায়তা সক্রিয়।',
-      mr: 'पार्टनरप्लस मराठी व्हॉइस सहाय्यक सक्रिय आहे.',
-      en: 'PartnerPlus voice assistance active in English.'
-    };
-
-    const textToSpeak = announcements[newLang] || announcements.en;
-    this.speak(textToSpeak, newLang);
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+    }
   }
 
   public getActiveLanguage(): LanguageCode {

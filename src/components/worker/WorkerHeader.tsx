@@ -99,18 +99,7 @@ export const WorkerHeader: React.FC<WorkerHeaderProps> = ({
               <span className="sm:hidden">{isSimpleMode ? 'Simple: ON' : 'Simple'}</span>
             </button>
 
-            {/* Audio Readout Switch */}
-            <button
-              onClick={onToggleAudio}
-              className={`p-2 rounded-xl text-xs font-bold border transition cursor-pointer active:scale-95 ${
-                isAudioEnabled 
-                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                  : 'bg-gray-50 text-gray-400 border-gray-200'
-              }`}
-              title={isAudioEnabled ? 'Voice Guidance Active' : 'Voice Guidance Muted'}
-            >
-              {isAudioEnabled ? <Volume2 className="w-4 h-4 text-blue-600" /> : <VolumeX className="w-4 h-4 text-gray-400" />}
-            </button>
+
 
             {/* Real-time Job Chat */}
             {onOpenChat && (

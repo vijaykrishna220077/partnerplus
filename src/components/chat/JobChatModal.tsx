@@ -335,16 +335,7 @@ export const JobChatModal: React.FC<JobChatModalProps> = ({
                   </div>
 
                   <div className="flex items-end gap-1.5 max-w-[85%]">
-                    {/* Read Aloud Button for incoming messages */}
-                    {!isMine && (
-                      <button
-                        onClick={() => handleSpeakMessage(msg.text.replace(/🎙️ Voice Note: /g, ''))}
-                        className="p-1.5 rounded-lg bg-slate-200/60 hover:bg-slate-300 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition cursor-pointer shrink-0"
-                        title="Listen to voice readout"
-                      >
-                        <Volume2 className="w-3.5 h-3.5 text-blue-600 dark:text-emerald-400" />
-                      </button>
-                    )}
+
 
                     <div 
                       className={`px-4 py-2.5 rounded-2xl text-xs leading-relaxed shadow-2xs break-words ${
