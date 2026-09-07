@@ -76,28 +76,28 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-      <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-950/60 border border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-300 text-xs font-mono font-bold tracking-wide">
+      <div className="text-center space-y-3 max-w-2xl mx-auto mb-8">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-black tracking-wider uppercase shadow-xs">
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>PARTNERPLUS ONBOARDING</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-          How will you use PartnerPlus?
+        <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] tracking-tight font-display">
+          How will you use <span className="bg-gradient-to-r from-[#1D68ED] to-[#00D2FF] bg-clip-text text-transparent">PartnerPlus</span>?
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+        <p className="text-sm sm:text-base text-slate-700 font-medium leading-relaxed max-w-xl mx-auto">
           Choose the account profile that matches your role. Each portal is customized with specialized tools, verification workflows, and security standards.
         </p>
       </div>
 
       {/* Grid of 4 Role Choices */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {options.map((opt) => {
           const Icon = opt.icon;
           return (
             <div
               key={opt.id}
               onClick={() => onSelectRole(opt.id)}
-              className={`group relative p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 ${opt.borderHover} transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between`}
+              className="group relative p-6 rounded-3xl bg-[#0A1224] border-2 border-slate-800 hover:border-cyan-500/60 transition-all duration-200 shadow-xl hover:shadow-2xl cursor-pointer flex flex-col justify-between"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -110,28 +110,28 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
                 </div>
 
                 <div>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                  <h3 className="text-lg sm:text-xl font-black text-white font-display">
                     {opt.title}
                   </h3>
-                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
+                  <p className="text-xs font-bold text-cyan-300 mt-0.5">
                     {opt.headline}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">
                     {opt.description}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+                <div className="pt-3 border-t border-slate-800/80 space-y-1.5">
                   {opt.checkPoints.map((cp, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-300 font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <div key={idx} className="flex items-center gap-2 text-[11px] text-slate-300 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                       <span>{cp}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="pt-4 mt-2 flex items-center justify-between text-xs font-bold font-mono text-purple-700 dark:text-purple-400 group-hover:translate-x-1 transition-transform">
+              <div className="pt-4 mt-2 flex items-center justify-between text-xs font-bold text-[#00D2FF] group-hover:translate-x-1 transition-transform">
                 <span>Start {opt.title.split('/')[0].trim()} Registration</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
