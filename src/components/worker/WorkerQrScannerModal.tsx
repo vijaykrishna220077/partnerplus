@@ -39,11 +39,12 @@ export const WorkerQrScannerModal: React.FC<WorkerQrScannerModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string>('');
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Real WebCam camera stream initializer for mobile & desktop devices
   useEffect(() => {
-    let stream: MediaStream | null = null;
+    let activeStream: MediaStream | null = null;
 
     if (isOpen) {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -51,13 +52,10 @@ export const WorkerQrScannerModal: React.FC<WorkerQrScannerModalProps> = ({
           video: { facingMode: { ideal: 'environment' } }
         })
         .then((mediaStream) => {
-          stream = mediaStream;
+          activeStream = mediaStream;
+          setCameraStream(mediaStream);
           setIsCameraActive(true);
           setCameraError('');
-          if (videoRef.current) {
-            videoRef.current.srcObject = mediaStream;
-            videoRef.current.play().catch(() => {});
-          }
         })
         .catch((err) => {
           console.warn('Camera stream error:', err);
@@ -71,11 +69,22 @@ export const WorkerQrScannerModal: React.FC<WorkerQrScannerModalProps> = ({
     }
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
       }
+      setCameraStream(null);
+      setIsCameraActive(false);
     };
   }, [isOpen]);
+
+  // Bind camera stream to video element
+  useEffect(() => {
+    if (videoRef.current && cameraStream) {
+      videoRef.current.srcObject = cameraStream;
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(err => console.log('Video play catch:', err));
+    }
+  }, [cameraStream, isOpen]);
 
   if (!isOpen) return null;
 
@@ -231,16 +240,14 @@ export const WorkerQrScannerModal: React.FC<WorkerQrScannerModalProps> = ({
           {/* Live Camera Viewfinder */}
           <div className="relative bg-black rounded-2xl border-2 border-emerald-500/60 flex flex-col items-center justify-center min-h-[220px] overflow-hidden group shadow-inner">
             {/* Live Camera Video Feed */}
-            {isCameraActive && (
-              <video
-                ref={videoRef}
-                aria-label="Camera Video Stream"
-                autoPlay
-                playsInline
-                muted
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            )}
+            <video
+              ref={videoRef}
+              aria-label="Camera Video Stream"
+              autoPlay
+              playsInline
+              muted
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isCameraActive ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            />
 
             {/* Viewfinder Corner Reticles */}
             <div className="absolute top-3 left-3 w-6 h-6 border-t-3 border-l-3 border-emerald-400 rounded-tl z-10" />
