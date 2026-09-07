@@ -293,10 +293,22 @@ export const PartnerPlusCoreServices: React.FC<PartnerPlusCoreServicesProps> = (
   });
 
   const getLocalizedTitle = (item: ServiceItemDef) => {
-    if (item.id === 'electrical') return t("jobs.electricianJob");
-    if (item.id === 'plumbing') return t("jobs.plumbingJob");
-    if (item.id === 'carpentry') return t("jobs.carpentryJob");
-    if (item.id === 'cleaning') return t("jobs.cleaningJob");
+    const jobKeyMap: Record<string, string> = {
+      electrical: 'jobs.electricianJob',
+      plumbing: 'jobs.plumbingJob',
+      carpentry: 'jobs.carpentryJob',
+      cleaning: 'jobs.cleaningJob',
+      hvac: 'jobs.hvacJob',
+      masonry: 'jobs.masonryJob',
+      welding: 'jobs.weldingJob',
+      painting: 'jobs.paintingJob',
+      gardening: 'jobs.gardeningJob',
+      driving: 'jobs.drivingJob',
+      caregiving: 'jobs.caregivingJob',
+    };
+    if (jobKeyMap[item.id]) {
+      return t(jobKeyMap[item.id]);
+    }
     if (lang === 'hi') return item.titleHi;
     if (lang === 'ta') return item.titleTa;
     return item.title;
@@ -324,9 +336,9 @@ export const PartnerPlusCoreServices: React.FC<PartnerPlusCoreServicesProps> = (
             {[
               { id: 'all', label: t("common.all") },
               { id: 'trades', label: t("landing.exploreServices") },
-              { id: 'mechanical', label: t("organization.workers") },
-              { id: 'facility', label: t("jobs.cleaningJob") },
-              { id: 'digital', label: t("jobs.electricianJob") },
+              { id: 'mechanical', label: t("landing.coreServicesTitle") },
+              { id: 'facility', label: t("landing.guaranteedCooperative") },
+              { id: 'digital', label: t("landing.verifiedWorkers") },
               { id: 'helpers', label: t("worker.workerPortalTitle") }
             ].map((tab) => (
               <button

@@ -53,6 +53,15 @@ export type TranslationKey = keyof typeof translations['en'];
  *   t('en', 'common.bookNow') => "Book Now"
  *   t('ta', 'worker.availableCount', { count: 5 }) => "5 பணியாளர்கள் உள்ளனர்"
  */
+function humanizeKey(key: string): string {
+  const lastPart = key.includes('.') ? key.split('.').pop() || key : key;
+  return lastPart
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/[_-]/g, ' ')
+    .replace(/^\w/, (c) => c.toUpperCase())
+    .trim();
+}
+
 export function getTranslatedText(
   lang: LanguageCode,
   pathOrKey: string,
@@ -104,9 +113,12 @@ export function getTranslatedText(
     }
   }
 
-  // 3. Fallback to raw key if missing
+  // 3. Fallback to humanized text if missing (never render raw keys like 'jobs.cleaningJob')
   if (!text) {
-    text = pathOrKey;
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[i18n] Missing translation for key: "${pathOrKey}" in language "${lang}"`);
+    }
+    text = humanizeKey(pathOrKey);
   }
 
   // 4. Perform parameter interpolation e.g. { count: 5 }

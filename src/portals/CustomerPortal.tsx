@@ -66,7 +66,8 @@ export const CustomerPortal: React.FC = () => {
     activeChatBooking,
     activeChatRole,
     openChat,
-    closeChat
+    closeChat,
+    t
   } = useApp();
   const { user, switchRole } = useAuth();
 
@@ -147,7 +148,7 @@ export const CustomerPortal: React.FC = () => {
                 }`}
               >
                 <HomeIcon className="w-3.5 h-3.5" />
-                <span>Services</span>
+                <span>{t("navigation.services") || "Services"}</span>
               </button>
 
               <button
@@ -160,7 +161,7 @@ export const CustomerPortal: React.FC = () => {
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Book Service</span>
+                <span>{t("booking.bookNow") || "Book Service"}</span>
               </button>
 
               <button
@@ -173,7 +174,7 @@ export const CustomerPortal: React.FC = () => {
                 }`}
               >
                 <Clock className="w-3.5 h-3.5" />
-                <span>My Bookings</span>
+                <span>{t("customer.myBookings") || "My Bookings"}</span>
                 {activeBookingsCount > 0 && (
                   <span className="w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center -mr-1">
                     {activeBookingsCount}
@@ -191,7 +192,7 @@ export const CustomerPortal: React.FC = () => {
                 }`}
               >
                 <Receipt className="w-3.5 h-3.5" />
-                <span>Invoices</span>
+                <span>{t("invoices.invoices") || "Invoices"}</span>
               </button>
 
               <button
@@ -204,7 +205,7 @@ export const CustomerPortal: React.FC = () => {
                 }`}
               >
                 <Star className="w-3.5 h-3.5" />
-                <span>Reviews</span>
+                <span>{t("customer.reviews") || "Reviews"}</span>
               </button>
             </div>
 
@@ -240,7 +241,7 @@ export const CustomerPortal: React.FC = () => {
                   title="Real-time Chat with Assigned Worker"
                 >
                   <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Chat</span>
+                  <span>{t("chat.chat") || "Chat"}</span>
                   {unreadChatCount > 0 && (
                     <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center -ml-0.5 animate-pulse">
                       {unreadChatCount}
@@ -270,7 +271,7 @@ export const CustomerPortal: React.FC = () => {
                 title="Call Cooperative Helpline"
               >
                 <Phone className="w-3.5 h-3.5 text-blue-600" />
-                <span>Helpline</span>
+                <span>{t("common.helpline") || "Helpline"}</span>
               </button>
 
               <button

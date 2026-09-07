@@ -149,12 +149,12 @@ export const BookingFlowModal: React.FC = () => {
   };
 
   const stepsList = [
-    { num: 1, label: 'Service' },
-    { num: 2, label: 'Location' },
-    { num: 3, label: 'Date & Time' },
-    { num: 4, label: 'Details' },
-    { num: 5, label: 'Worker' },
-    { num: 6, label: 'Confirm' },
+    { num: 1, label: t("common.all") || 'Service' },
+    { num: 2, label: t("location.changeLocation") || 'Location' },
+    { num: 3, label: t("booking.chooseArrivalSlot") || 'Date & Time' },
+    { num: 4, label: t("jobs.jobDetails") || 'Details' },
+    { num: 5, label: t("organization.workers") || 'Worker' },
+    { num: 6, label: t("common.confirm") || 'Confirm' },
   ];
 
   // Matched workers for step 5 ranked using Proximity-First algorithm
@@ -172,10 +172,10 @@ export const BookingFlowModal: React.FC = () => {
         <div className="bg-slate-900 text-white p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between">
           <div>
             <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-400">
-              Cooperative Booking Wizard
+              {t("landing.guaranteedCooperative") || "Cooperative Booking Wizard"}
             </span>
             <h2 className="text-xl font-bold font-serif text-white">
-              Book a Verified Local Worker
+              {t("booking.bookNow") || "Book a Verified Local Worker"}
             </h2>
           </div>
           <button

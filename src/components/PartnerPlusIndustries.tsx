@@ -30,39 +30,39 @@ export const PartnerPlusIndustries: React.FC<PartnerPlusIndustriesProps> = ({ on
 
   const industries = [
     {
-      title: 'Residential Homes & Flats',
+      title: t("organization.residentialHomes") || 'Residential Homes & Flats',
       icon: <Home className="w-5 h-5 text-white" />,
-      description:
+      description: t("organization.residentialHomesDesc") ||
         'Immediate help for plumbing emergencies, tripping electrical circuits, room painting, bathroom scrubbing, and house furniture assembly.'
     },
     {
-      title: 'Warehouses & Logistics Hubs',
+      title: t("organization.warehousesLogistics") || 'Warehouses & Logistics Hubs',
       icon: <Truck className="w-5 h-5 text-white" />,
-      description:
+      description: t("organization.warehousesLogisticsDesc") ||
         'Reliable daily wage workers and helpers for heavy loading, container unloading, pallet packaging, and material movement shifts.'
     },
     {
-      title: 'Retail Stores & Showrooms',
+      title: t("organization.retailStores") || 'Retail Stores & Showrooms',
       icon: <Store className="w-5 h-5 text-white" />,
-      description:
+      description: t("organization.retailStoresDesc") ||
         'Keep customer spaces pristine and functional with certified electrical illumination, sparkling floor scrub, and rapid handyman fixes.'
     },
     {
-      title: 'Restaurants & Commercial Kitchens',
+      title: t("organization.restaurantsKitchens") || 'Restaurants & Commercial Kitchens',
       icon: <Hotel className="w-5 h-5 text-white" />,
-      description:
+      description: t("organization.restaurantsKitchensDesc") ||
         'Deep grease extraction, plumbing drainage unclogging, exhaust fan maintenance, and hygienic hospital-grade floor sanitation.'
     },
     {
-      title: 'Construction & Renovation Sites',
+      title: t("organization.constructionSites") || 'Construction & Renovation Sites',
       icon: <HardHat className="w-5 h-5 text-white" />,
-      description:
+      description: t("organization.constructionSitesDesc") ||
         'Skilled masons, painters, and reliable daily wage helpers for site debris clearing, mortar mixing, and surface plastering.'
     },
     {
-      title: 'Offices & Co-working Spaces',
+      title: t("organization.officesSpaces") || 'Offices & Co-working Spaces',
       icon: <Building2 className="w-5 h-5 text-white" />,
-      description:
+      description: t("organization.officesSpacesDesc") ||
         'Comprehensive maintenance: workstation data/power cabling, desk carpentry repairs, washroom upkeep, and emergency repair technicians.'
     }
   ];
