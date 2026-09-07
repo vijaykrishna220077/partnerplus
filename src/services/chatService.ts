@@ -102,10 +102,71 @@ function saveAllMessages(data: Record<string, ChatMessage[]>): void {
 }
 
 export const chatService = {
-  // Retrieve all messages for a specific booking
-  getMessages(bookingId: string): ChatMessage[] {
+  // Retrieve all messages for a specific booking, with dynamic worker and customer name formatting
+  getMessages(bookingId: string, workerName?: string, customerName?: string): ChatMessage[] {
     const all = getAllMessages();
-    return all[bookingId] || [];
+    let list = all[bookingId];
+
+    // If no messages exist yet for this booking, generate realistic initial conversation
+    if (!list || list.length === 0) {
+      const activeWorkerName = workerName || 'Assigned Artisan';
+      const activeCustomerName = customerName || 'Customer';
+
+      const dynamicInitial: ChatMessage[] = [
+        {
+          id: `msg-seed-1-${bookingId}`,
+          bookingId,
+          senderId: 'wrk-active',
+          senderName: activeWorkerName,
+          senderRole: 'worker',
+          text: `Vanakkam! I am ${activeWorkerName}. I have accepted your service request. Carrying insulation tools and digital equipment.`,
+          timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+          read: true,
+          quickReplyType: 'eta'
+        },
+        {
+          id: `msg-seed-2-${bookingId}`,
+          bookingId,
+          senderId: 'cust-active',
+          senderName: activeCustomerName,
+          senderRole: 'customer',
+          text: `Thanks ${activeWorkerName.split(' ')[0]}! Looking forward to your arrival. Please let me know when you reach near the main entrance.`,
+          timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+          read: true,
+          quickReplyType: 'direction'
+        },
+        {
+          id: `msg-seed-3-${bookingId}`,
+          bookingId,
+          senderId: 'wrk-active',
+          senderName: activeWorkerName,
+          senderRole: 'worker',
+          text: `Understood! I am on the way and will arrive in approximately 10 minutes.`,
+          timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+          read: true,
+          quickReplyType: 'eta'
+        }
+      ];
+
+      all[bookingId] = dynamicInitial;
+      saveAllMessages(all);
+      list = dynamicInitial;
+    }
+
+    // Format sender names dynamically if custom names are passed
+    if (workerName || customerName) {
+      return list.map(msg => {
+        if (msg.senderRole === 'worker' && workerName) {
+          return { ...msg, senderName: workerName };
+        }
+        if (msg.senderRole === 'customer' && customerName) {
+          return { ...msg, senderName: customerName };
+        }
+        return msg;
+      });
+    }
+
+    return list;
   },
 
   // Send a new message

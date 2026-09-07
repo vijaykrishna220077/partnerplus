@@ -61,8 +61,8 @@ export const JobChatModal: React.FC<JobChatModalProps> = ({
   useEffect(() => {
     if (!isOpen || !booking || !booking.id) return;
 
-    // Load initial messages
-    const initial = chatService.getMessages(booking.id);
+    // Load initial messages with dynamic worker and customer names
+    const initial = chatService.getMessages(booking.id, booking.workerName, booking.customerName);
     setMessages(initial);
     chatService.markAllAsRead(booking.id, currentRole);
 

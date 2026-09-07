@@ -388,9 +388,23 @@ export const db = {
   getMessages(bookingId?: string): ChatMessage[] {
     const list = readTable<ChatMessage[]>(DB_KEYS.MESSAGES, []);
     if (bookingId) {
-      return list
+      const booking = this.getBookingById(bookingId);
+      const filtered = list
         .filter(m => m.bookingId === bookingId)
         .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      if (booking && filtered.length > 0) {
+        return filtered.map(msg => {
+          if (msg.senderRole === 'worker' && booking.workerName) {
+            return { ...msg, senderName: booking.workerName };
+          }
+          if (msg.senderRole === 'customer' && booking.customerName) {
+            return { ...msg, senderName: booking.customerName };
+          }
+          return msg;
+        });
+      }
+      return filtered;
     }
     return list;
   },

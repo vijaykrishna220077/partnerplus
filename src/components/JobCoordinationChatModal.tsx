@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Booking, ChatMessage, Worker } from '../types';
 import { apiService } from '../services/apiService';
+import { chatService } from '../services/chatService';
 import { realtimeHub } from '../services/db';
 import { soundAndSpeech } from '../utils/soundAndSpeech';
 import { useApp } from '../context/AppContext';
@@ -72,7 +73,7 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
   const loadMessages = async () => {
     if (!booking) return;
     try {
-      const chatList = await apiService.getMessages(booking.id);
+      const chatList = chatService.getMessages(booking.id, workerName, customerName);
       setMessages(chatList);
       await apiService.markMessagesAsRead(booking.id, activeRole);
     } catch (err) {
