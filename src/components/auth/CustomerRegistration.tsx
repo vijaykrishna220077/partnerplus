@@ -14,7 +14,8 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  Sparkles
+  Sparkles,
+  Navigation
 } from 'lucide-react';
 import { onboardingService } from '../../services/onboardingService';
 import { useAuth } from '../../context/AuthContext';
@@ -48,6 +49,54 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
   const [city, setCity] = useState<string>('Chennai');
   const [state, setState] = useState<string>('Tamil Nadu');
   const [postalCode, setPostalCode] = useState<string>('600090');
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      addToast('Geolocation is not supported by your browser', 'error');
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const addr = data.address || {};
+            const road = addr.road || addr.suburb || addr.neighbourhood || '';
+            const houseNumber = addr.house_number ? `${addr.house_number}, ` : '';
+            const fullStreet = `${houseNumber}${road}`.trim() || `Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+            const detectedCity = addr.city || addr.town || addr.village || addr.county || city;
+            const detectedState = addr.state || state;
+            const detectedPostcode = addr.postcode || postalCode;
+
+            setAddress(fullStreet);
+            setCity(detectedCity);
+            setState(detectedState);
+            setPostalCode(detectedPostcode);
+            addToast('Location detected successfully!', 'success');
+          } else {
+            setAddress(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+            addToast('Location coordinates set!', 'success');
+          }
+        } catch {
+          addToast('Location coordinates retrieved!', 'info');
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      () => {
+        setIsLocating(false);
+        addToast('Unable to retrieve location. Please check permissions.', 'error');
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
 
   // Step 3: Preferences
   const [preferredLanguage, setPreferredLanguage] = useState<string>('en');
@@ -199,7 +248,7 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
             CUSTOMER SIGN UP
           </span>
           <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
-            Register for Sahakari Services
+            Register for PartnerPlus Services
           </h2>
         </div>
 
@@ -358,9 +407,20 @@ export const CustomerRegistration: React.FC<CustomerRegistrationProps> = ({
       {step === 2 && (
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Premises Street Address / House / Flat No. <span className="text-rose-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Premises Street Address / House / Flat No. <span className="text-rose-500">*</span>
+              </label>
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={isLocating}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/80 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
+                <span>{isLocating ? 'Detecting Location...' : 'Use My Current Location'}</span>
+              </button>
+            </div>
             <div className="relative">
               <MapPin className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
               <textarea
