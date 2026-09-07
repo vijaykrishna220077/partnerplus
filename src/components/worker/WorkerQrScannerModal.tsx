@@ -39,19 +39,24 @@ export const WorkerQrScannerModal: React.FC<WorkerQrScannerModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Resolve target booking: explicit booking prop > matching booking from job > first booking fallback
+  // Safely resolve target booking: explicit booking prop > matching booking from job > first available booking fallback
   const matchedBooking = booking || (job 
-    ? (bookings.find(b => 
-        b.customerName.toLowerCase().includes(job.customerName.toLowerCase()) ||
-        b.serviceName.toLowerCase().includes(job.trade.toLowerCase())
-      ) || bookings[0])
-    : bookings[0]);
+    ? (bookings?.find(b => {
+        const cNameB = (b?.customerName || '').toLowerCase();
+        const cNameJ = (job?.customerName || '').toLowerCase();
+        const sNameB = (b?.serviceName || '').toLowerCase();
+        const tradeJ = (job?.trade || '').toLowerCase();
+
+        return (cNameJ && cNameB.includes(cNameJ)) || (tradeJ && sNameB.includes(tradeJ));
+      }) || (bookings && bookings.length > 0 ? bookings[0] : null))
+    : (bookings && bookings.length > 0 ? bookings[0] : null));
 
   const customerName = booking?.customerName || job?.customerName || matchedBooking?.customerName || 'Customer';
   const serviceTitle = booking?.serviceCategory || booking?.serviceName || job?.specificTask || job?.trade || 'Service Task';
   const expectedEarning = booking?.pricing?.workerEarnings || booking?.pricing?.totalAmount || job?.workerExpectedEarning || 450;
 
-  const numericCode = matchedBooking ? matchedBooking.bookingCode.replace(/\D/g, '') : '842109';
+  const rawBookingCode = matchedBooking?.bookingCode || 'BK-842109';
+  const numericCode = rawBookingCode.replace(/\D/g, '') || '842109';
   const targetPin = numericCode.length >= 6 ? numericCode.slice(-6) : `${numericCode}8421`.slice(0, 6);
 
   const handleSimulatedScan = async () => {
