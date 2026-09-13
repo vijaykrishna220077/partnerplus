@@ -112,6 +112,41 @@ export const RuralWorkerPortal: React.FC<RuralWorkerPortalProps> = ({ onSwitchTo
     }));
   }, [isOnline, isEmergencyReady]);
 
+  // Synchronize live bookings created by customer into worker jobs list
+  useEffect(() => {
+    if (!bookings || bookings.length === 0) return;
+    const activeCustomerBookings = bookings.filter(b => 
+      !['service_completed', 'cancelled', 'rejected'].includes(b.status)
+    );
+    if (activeCustomerBookings.length > 0) {
+      setJobs(prevJobs => {
+        const mappedJobs: WorkerJobOpening[] = activeCustomerBookings.map(b => ({
+          id: b.id,
+          title: b.serviceName,
+          serviceCategory: b.serviceCategory,
+          customerName: b.customerName,
+          customerPhone: b.customerPhone,
+          address: `${b.address.street}, ${b.address.area}, ${b.address.city}`,
+          distanceKm: 1.8,
+          payoutAmount: b.pricing?.workerEarnings || 330,
+          cooperativeShare: b.pricing?.cooperativeWelfareFund || 19,
+          estimatedDuration: '45 - 60 mins',
+          urgency: b.isEmergency ? 'emergency' : 'normal',
+          scheduledDate: b.scheduledDate || 'Today',
+          scheduledTimeSlot: b.scheduledTimeSlot || 'Immediate',
+          problemDescription: b.problemDescription || 'Live Customer Request',
+          workerTier: 'skilled',
+          workersRequired: 1,
+          status: (b.status === 'confirmed' || b.status === 'on_the_way') ? 'open' : 'accepted'
+        }));
+
+        const existingJobIds = new Set(mappedJobs.map(j => j.id));
+        const untouchedPrevJobs = prevJobs.filter(j => !existingJobIds.has(j.id));
+        return [...mappedJobs, ...untouchedPrevJobs];
+      });
+    }
+  }, [bookings]);
+
   // Dynamic 10-step eligibility calculation for all current jobs
   const eligibilityMap = React.useMemo(() => {
     const map = new Map<string, WorkerJobEligibilityResult>();

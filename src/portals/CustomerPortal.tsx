@@ -214,6 +214,18 @@ export const CustomerPortal: React.FC = () => {
 
             {/* Right Side Actions & User Profile */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Quick Role Switcher for Live Demo Flow */}
+              <button
+                type="button"
+                onClick={() => switchRole('worker')}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-xs border border-slate-700 active:scale-95 shrink-0"
+                title="Switch to Worker Portal to Accept & Process Jobs Live"
+              >
+                <User className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="hidden sm:inline">Worker Portal →</span>
+                <span className="sm:hidden">Worker →</span>
+              </button>
+
               {/* User Profile Pill Button */}
               <button
                 type="button"

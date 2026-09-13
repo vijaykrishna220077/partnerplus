@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Worker } from '../types';
 import { useApp } from '../context/AppContext';
+import { matchingService } from '../services/matchingService';
 import { 
   Star, 
   ShieldCheck, 
@@ -10,20 +11,107 @@ import {
   Building2, 
   CheckCircle, 
   Zap, 
-  ArrowRight 
+  ArrowRight,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Sliders
 } from 'lucide-react';
 
 interface WorkerCardProps {
   worker: Worker;
   compact?: boolean;
+  matchScore?: number;
+  matchReasons?: string[];
+  scoreBreakdown?: {
+    skillScore: number;
+    distanceScore: number;
+    ratingScore: number;
+    experienceScore: number;
+    availabilityScore: number;
+    emergencyScore: number;
+    workloadScore: number;
+  };
 }
 
-export const WorkerCard: React.FC<WorkerCardProps> = ({ worker, compact = false }) => {
-  const { t, openWorkerProfile, openBooking } = useApp();
+export const WorkerCard: React.FC<WorkerCardProps> = ({ 
+  worker, 
+  compact = false,
+  matchScore: explicitMatchScore,
+  matchReasons: explicitMatchReasons,
+  scoreBreakdown: explicitScoreBreakdown
+}) => {
+  const { t, openWorkerProfile, openBooking, currentLocation } = useApp();
+  const [showScoreBreakdown, setShowScoreBreakdown] = useState(false);
+
+  // Compute AI Match Score dynamically if not passed explicitly
+  const computedMatch = React.useMemo(() => {
+    if (explicitMatchScore !== undefined) {
+      return {
+        matchScore: explicitMatchScore,
+        reasons: explicitMatchReasons || ['Primary trade expert', 'Available in area'],
+        scoreBreakdown: explicitScoreBreakdown || {
+          skillScore: 30,
+          distanceScore: 30,
+          ratingScore: 15,
+          experienceScore: 10,
+          availabilityScore: 15,
+          emergencyScore: 5,
+          workloadScore: 8
+        }
+      };
+    }
+
+    const rankRes = matchingService.rankWorkers({
+      category: worker.primarySkill,
+      customerArea: currentLocation,
+      isEmergency: worker.isEmergencyReady
+    });
+    const found = rankRes.find(r => r.worker.id === worker.id);
+    return found || {
+      matchScore: Math.round(85 + (worker.rating - 4) * 10 + (worker.isAvailableToday ? 5 : 0)),
+      reasons: [
+        `Primary expert in ${worker.primarySkillLabel}`,
+        `Within ${worker.distanceKm || 1.8} km distance`,
+        `Top rated ${worker.rating} ★`
+      ],
+      scoreBreakdown: {
+        skillScore: 30,
+        distanceScore: Math.max(10, 35 - Math.round((worker.distanceKm || 2) * 5)),
+        ratingScore: Math.round((worker.rating / 5) * 15),
+        experienceScore: Math.min(10, worker.experienceYears),
+        availabilityScore: worker.isAvailableToday ? 15 : 0,
+        emergencyScore: worker.isEmergencyReady ? 10 : 0,
+        workloadScore: 8
+      }
+    };
+  }, [explicitMatchScore, explicitMatchReasons, explicitScoreBreakdown, worker, currentLocation]);
+
+  const score = computedMatch.matchScore;
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-200 hover:border-black hover:shadow-xl transition-all duration-200 flex flex-col justify-between overflow-hidden group">
-      <div className="p-6 space-y-4">
+    <div className="bg-white rounded-3xl border border-gray-200 hover:border-blue-600 hover:shadow-xl transition-all duration-200 flex flex-col justify-between overflow-hidden group relative">
+      
+      {/* AI Match Score Badge (Top Right Pill) */}
+      <div className="px-6 pt-5 pb-0 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 border border-emerald-200/80 rounded-full font-black text-xs shadow-2xs">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+          <span>{score}% AI Match Score</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowScoreBreakdown(!showScoreBreakdown)}
+          className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100 hover:bg-blue-100 transition"
+          title="View AI Matching Breakdown"
+        >
+          <Sliders className="w-3 h-3 text-blue-600" />
+          <span>Breakdown</span>
+          {showScoreBreakdown ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        </button>
+      </div>
+
+      <div className="p-6 pt-3 space-y-4">
         {/* Top Header: Avatar + Info */}
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
@@ -45,7 +133,7 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({ worker, compact = false 
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h3 className="font-bold text-[#121212] text-base leading-tight truncate font-sans">
+              <h3 className="font-extrabold text-[#121212] text-base leading-tight truncate font-sans">
                 {worker.name}
               </h3>
               {worker.isVerified && (
@@ -56,8 +144,14 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({ worker, compact = false 
               )}
             </div>
 
-            <p className="text-xs font-semibold text-blue-600 mt-1">
-              {t("jobs." + worker.primarySkill + "Job") || worker.primarySkillLabel}
+            {/* Subheader summary line matching user example: 1.8 km • Electrician • 4.8 ⭐ • Available now */}
+            <p className="text-xs font-medium text-slate-600 mt-1 truncate">
+              <span className="font-bold text-blue-600">{worker.distanceKm} km</span> •{' '}
+              <span className="font-bold text-slate-900">{t("jobs." + worker.primarySkill + "Job") || worker.primarySkillLabel}</span> •{' '}
+              <span className="font-bold text-amber-600">{worker.rating} ⭐</span> •{' '}
+              <span className={`font-bold ${worker.isAvailableToday ? 'text-emerald-600' : 'text-slate-500'}`}>
+                {worker.isAvailableToday ? 'Available now' : 'Offline'}
+              </span>
             </p>
 
             <div className="flex items-center gap-1 text-gray-500 text-xs mt-1">
@@ -68,6 +162,53 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({ worker, compact = false 
             </div>
           </div>
         </div>
+
+        {/* Collapsible AI Match Score Factor Breakdown */}
+        {showScoreBreakdown && (
+          <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200 text-xs space-y-2 animate-in fade-in duration-150">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+              <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">AI Algorithm Factors</span>
+              <span className="font-black text-emerald-700">{score}% Score</span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">📍 Proximity ({worker.distanceKm} km):</span>
+                <span className="font-bold text-slate-900">+{computedMatch.scoreBreakdown.distanceScore} pts</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">🛠️ Skill Match:</span>
+                <span className="font-bold text-slate-900">+{computedMatch.scoreBreakdown.skillScore} pts</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">⭐ Rating ({worker.rating}):</span>
+                <span className="font-bold text-slate-900">+{computedMatch.scoreBreakdown.ratingScore} pts</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">🕐 Availability:</span>
+                <span className="font-bold text-slate-900">+{computedMatch.scoreBreakdown.availabilityScore} pts</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">💰 Rate ({worker.startingPrice}):</span>
+                <span className="font-bold text-emerald-700">Co-op Standard</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">🚨 Emergency Priority:</span>
+                <span className="font-bold text-slate-900">+{computedMatch.scoreBreakdown.emergencyScore} pts</span>
+              </div>
+            </div>
+
+            {computedMatch.reasons && computedMatch.reasons.length > 0 && (
+              <div className="pt-1.5 border-t border-slate-200 text-[10px] text-slate-600 space-y-0.5">
+                {computedMatch.reasons.map((r, i) => (
+                  <p key={i} className="flex items-center gap-1 font-medium text-emerald-800">
+                    <span>✓</span> <span>{r}</span>
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Stats Row: Rating, Distance, Experience */}
         <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 text-center">
@@ -162,3 +303,4 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({ worker, compact = false 
     </div>
   );
 };
+
