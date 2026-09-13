@@ -400,6 +400,20 @@ export interface NotificationRecord {
   createdAt: string;
 }
 
+export interface JobIssuePhoto {
+  id: string;
+  bookingId: string;
+  customerId: string;
+  workerId?: string;
+  storagePath: string;
+  fileName: string;
+  publicUrl: string;
+  description?: string;
+  fileSize?: number;
+  mimeType?: string;
+  createdAt: string;
+}
+
 export interface Booking {
   id: string;
   bookingCode: string;
@@ -419,6 +433,7 @@ export interface Booking {
   taskUnit?: string;
   problemDescription: string;
   photoAttachmentUrl?: string;
+  issuePhotos?: JobIssuePhoto[];
   address: {
     street: string;
     area: string;

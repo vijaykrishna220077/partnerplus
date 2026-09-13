@@ -21,6 +21,9 @@ import {
 import { Booking, BookingStatus } from '../types';
 import { apiService } from '../services/apiService';
 import { LiveRouteMapTracker } from './common/LiveRouteMapTracker';
+import { IssuePhotosGallery } from './IssuePhotosGallery';
+import { JobIssuePhotoUploaderModal } from './JobIssuePhotoUploaderModal';
+import { issuePhotoService } from '../services/issuePhotoService';
 
 export const BookingTrackerModal: React.FC = () => {
   const { 
@@ -37,6 +40,7 @@ export const BookingTrackerModal: React.FC = () => {
 
   const [booking, setBooking] = useState<Booking | null>(activeTrackerBooking);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [isPhotoUploaderOpen, setIsPhotoUploaderOpen] = useState<boolean>(false);
 
   if (!activeTrackerBooking) return null;
   const curBooking = booking || activeTrackerBooking;
@@ -250,6 +254,25 @@ export const BookingTrackerModal: React.FC = () => {
             </div>
           </div>
 
+          {/* Issue Photos Section */}
+          <div className="p-4 bg-white border border-slate-200 rounded-2xl space-y-3">
+            <IssuePhotosGallery
+              photos={curBooking.issuePhotos || issuePhotoService.getIssuePhotosForBooking(curBooking.id)}
+              bookingId={curBooking.id}
+              isCustomer={true}
+              onOpenUploader={() => setIsPhotoUploaderOpen(true)}
+              onDeletePhoto={async (photoId) => {
+                await issuePhotoService.deleteIssuePhoto(photoId, curBooking.id);
+                await refreshData();
+                addToast({
+                  type: 'info',
+                  title: 'Photo Removed',
+                  message: 'Issue photo deleted from booking.'
+                });
+              }}
+            />
+          </div>
+
           {/* Service Completion QR Verification Card */}
           <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -352,6 +375,15 @@ export const BookingTrackerModal: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {isPhotoUploaderOpen && (
+        <JobIssuePhotoUploaderModal
+          isOpen={isPhotoUploaderOpen}
+          onClose={() => setIsPhotoUploaderOpen(false)}
+          booking={curBooking}
+          onPhotosUploaded={() => refreshData()}
+        />
+      )}
     </div>
   );
 };

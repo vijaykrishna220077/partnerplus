@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { WorkerJobOpening } from '../../data/workerJobData';
 import { WorkerJobEligibilityResult } from '../../types/workerSkillRegistry';
+import { IssuePhotosGallery } from '../IssuePhotosGallery';
+import { issuePhotoService } from '../../services/issuePhotoService';
 
 interface WorkerJobDetailModalProps {
   job: WorkerJobOpening | null;
@@ -160,6 +162,15 @@ export const WorkerJobDetailModal: React.FC<WorkerJobDetailModalProps> = ({
                 <div className="text-gray-600">{job.materialsProvided}</div>
               </div>
             </div>
+          </div>
+
+          {/* Customer Issue Photos Section */}
+          <div className="p-4 bg-white border border-slate-200 rounded-2xl">
+            <IssuePhotosGallery
+              photos={job.issuePhotos || issuePhotoService.getIssuePhotosForBooking(job.bookingId || job.id)}
+              bookingId={job.bookingId || job.id}
+              isWorker={true}
+            />
           </div>
 
           {/* Why This Job Matches You (Section 37: Job Fairness & Skill Matching) */}

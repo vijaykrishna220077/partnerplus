@@ -43,6 +43,8 @@ export interface WorkerJobOpening {
   createdAt: string;
   photos?: string[];
   expiresAt?: string;
+  bookingId?: string;
+  issuePhotos?: any[];
 }
 
 export interface WorkerEarningRecord {

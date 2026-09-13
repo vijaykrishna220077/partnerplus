@@ -26,7 +26,8 @@ const DB_KEYS = {
   WORKERS: 'sahakari_db_workers_v2',
   SERVICES: 'sahakari_db_services_v2',
   COOPERATIVES: 'sahakari_db_cooperatives_v2',
-  MESSAGES: 'sahakari_db_messages_v2'
+  MESSAGES: 'sahakari_db_messages_v2',
+  ISSUE_PHOTOS: 'sahakari_db_issue_photos_v2'
 };
 
 // Default Cooperative Rules (95% to worker, 5% to welfare, ₹49 emergency fee, max 25 mins ETA)
@@ -448,5 +449,36 @@ export const db = {
   getUnreadMessagesCount(bookingId: string, forRole: 'customer' | 'worker'): number {
     const list = readTable<ChatMessage[]>(DB_KEYS.MESSAGES, []);
     return list.filter(m => m.bookingId === bookingId && m.senderRole !== forRole && !m.read).length;
+  },
+
+  // Job Issue Photos Store
+  getIssuePhotosByBookingId(bookingId: string): any[] {
+    const list = readTable<any[]>(DB_KEYS.ISSUE_PHOTOS || 'sahakari_db_issue_photos_v2', []);
+    return list
+      .filter(p => p.bookingId === bookingId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  },
+
+  addIssuePhoto(photo: any): any {
+    const key = DB_KEYS.ISSUE_PHOTOS || 'sahakari_db_issue_photos_v2';
+    const list = readTable<any[]>(key, []);
+    const existingIndex = list.findIndex(p => p.id === photo.id);
+    if (existingIndex >= 0) {
+      list[existingIndex] = photo;
+    } else {
+      list.push(photo);
+    }
+    writeTable(key, list);
+    realtimeHub.emit('sahakari:issue_photo_added', photo);
+    return photo;
+  },
+
+  deleteIssuePhoto(photoId: string): boolean {
+    const key = DB_KEYS.ISSUE_PHOTOS || 'sahakari_db_issue_photos_v2';
+    const list = readTable<any[]>(key, []);
+    const filtered = list.filter(p => p.id !== photoId);
+    writeTable(key, filtered);
+    realtimeHub.emit('sahakari:issue_photo_deleted', { id: photoId });
+    return true;
   }
 };

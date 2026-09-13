@@ -16,9 +16,13 @@ import {
   Zap,
   Phone,
   QrCode,
-  MessageSquare
+  MessageSquare,
+  Camera
 } from 'lucide-react';
 import { Booking } from '../types';
+import { IssuePhotosGallery } from '../components/IssuePhotosGallery';
+import { JobIssuePhotoUploaderModal } from '../components/JobIssuePhotoUploaderModal';
+import { issuePhotoService } from '../services/issuePhotoService';
 
 export const CustomerBookings: React.FC = () => {
   const { 
@@ -30,8 +34,12 @@ export const CustomerBookings: React.FC = () => {
     openCompletionQr,
     openChat,
     setActiveTab,
+    addToast,
+    refreshData,
     t 
   } = useApp();
+
+  const [uploadTargetBooking, setUploadTargetBooking] = React.useState<Booking | null>(null);
 
   const activeBookings = bookings.filter(b => b.status !== 'service_completed' && b.status !== 'cancelled');
   const pastBookings = bookings.filter(b => b.status === 'service_completed' || b.status === 'cancelled');
@@ -220,6 +228,25 @@ export const CustomerBookings: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Issue Photos Gallery Section */}
+                <div className="pt-2">
+                  <IssuePhotosGallery
+                    photos={b.issuePhotos || issuePhotoService.getIssuePhotosForBooking(b.id)}
+                    bookingId={b.id}
+                    isCustomer={true}
+                    onOpenUploader={() => setUploadTargetBooking(b)}
+                    onDeletePhoto={async (photoId) => {
+                      await issuePhotoService.deleteIssuePhoto(photoId, b.id);
+                      await refreshData();
+                      addToast({
+                        type: 'info',
+                        title: 'Photo Removed',
+                        message: 'Issue photo deleted from booking.'
+                      });
+                    }}
+                  />
+                </div>
+
                 {/* Bottom Action Buttons: Open Completion QR & Live Tracker */}
                 <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <span className="text-xs text-blue-600 font-medium flex items-center gap-1.5">
@@ -228,6 +255,16 @@ export const CustomerBookings: React.FC = () => {
                   </span>
 
                   <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setUploadTargetBooking(b)}
+                      className="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-full font-bold text-xs shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                      title="Upload photos of the issue for assigned worker"
+                    >
+                      <Camera className="w-4 h-4 text-indigo-600" />
+                      <span>Add Issue Photo</span>
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => openChat(b, 'customer')}
@@ -339,6 +376,15 @@ export const CustomerBookings: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {uploadTargetBooking && (
+        <JobIssuePhotoUploaderModal
+          isOpen={!!uploadTargetBooking}
+          onClose={() => setUploadTargetBooking(null)}
+          booking={uploadTargetBooking}
+          onPhotosUploaded={() => refreshData()}
+        />
+      )}
     </div>
   );
 };

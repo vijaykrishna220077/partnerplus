@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { WorkerJobOpening } from '../../data/workerJobData';
 import { LiveRouteMapTracker } from '../common/LiveRouteMapTracker';
+import { IssuePhotosGallery } from '../IssuePhotosGallery';
+import { issuePhotoService } from '../../services/issuePhotoService';
 
 export type ActiveStepStatus = 'accepted' | 'on_the_way' | 'arrived' | 'in_progress' | 'completed';
 
@@ -190,6 +192,15 @@ export const WorkerActiveJobScreen: React.FC<WorkerActiveJobScreenProps> = ({
 
           <div className="text-xs text-gray-600 bg-white p-3 rounded-xl border border-gray-200">
             <span className="font-bold text-gray-800">Customer Instructions:</span> {job.description}
+          </div>
+
+          {/* Customer Issue Photos */}
+          <div className="p-4 bg-white border border-slate-200 rounded-2xl">
+            <IssuePhotosGallery
+              photos={job.issuePhotos || issuePhotoService.getIssuePhotosForBooking(job.bookingId || job.id)}
+              bookingId={job.bookingId || job.id}
+              isWorker={true}
+            />
           </div>
         </div>
 

@@ -9,10 +9,12 @@ import {
   Wrench, 
   ShieldCheck, 
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Camera
 } from 'lucide-react';
 import { WorkerJobOpening } from '../../data/workerJobData';
 import { WorkerJobEligibilityResult } from '../../types/workerSkillRegistry';
+import { issuePhotoService } from '../../services/issuePhotoService';
 
 interface WorkerJobCardProps {
   job: WorkerJobOpening;
@@ -86,6 +88,14 @@ export const WorkerJobCard: React.FC<WorkerJobCardProps> = ({
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
               <Sparkles className="w-3 h-3 text-emerald-600" />
               <span>{eligibility.suitabilityScore}% Match</span>
+            </span>
+          )}
+
+          {/* Issue Photo Badge */}
+          {((job.issuePhotos && job.issuePhotos.length > 0) || issuePhotoService.getIssuePhotosForBooking(job.bookingId || job.id).length > 0) && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+              <Camera className="w-3 h-3 text-indigo-600" />
+              <span>Photo Attached</span>
             </span>
           )}
         </div>

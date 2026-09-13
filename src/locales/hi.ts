@@ -437,5 +437,26 @@ export const hiLocales = {
     SUSPENDED: "खाता निलंबित",
     ONLINE_AVAILABLE: "ऑनलाइन उपलब्ध",
     OFFLINE: "ऑफ़लाइन"
+  },
+  issuePhotos: {
+    addPhoto: "समस्या की फोटो जोड़ें",
+    sendIssuePhoto: "फोटो भेजें",
+    managePhotos: "फोटो प्रबंधित करें",
+    takePhoto: "कैमरे से फोटो लें",
+    chooseFromGallery: "गैलरी से चुनें",
+    previewTitle: "फोटो पूर्वावलोकन",
+    addDescription: "छोटा विवरण जोड़ें (जैसे सिंक के नीचे पाइप लीक)",
+    maxPhotosLimit: "प्रति बुकिंग अधिकतम 5 फोटो की अनुमति है।",
+    uploading: "फोटो अपलोड हो रही है...",
+    uploadSuccess: "समस्या की फोटो सफलतापूर्वक भेजी गई!",
+    uploadError: "फोटो अपलोड करने में विफल। कृपया पुनः प्रयास करें।",
+    noPhotosYet: "अभी तक कोई फोटो साझा नहीं की गई",
+    sharedByCustomer: "ग्राहक द्वारा साझा की गई",
+    photoReceivedBadge: "फोटो प्राप्त हुई",
+    zoomPhoto: "बड़ा करके देखने के लिए क्लिक करें",
+    removePhoto: "फोटो हटाएं",
+    issuePhotosTitle: "ग्राहक समस्या फोटो",
+    issuePhotosSubtitle: "काम शुरू करने से पहले समस्या समझने के लिए ग्राहक द्वारा साझा फोटो।"
   }
 };
+

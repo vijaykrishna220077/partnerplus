@@ -437,5 +437,26 @@ export const enLocales = {
     SUSPENDED: "Account Suspended",
     ONLINE_AVAILABLE: "Online & Available",
     OFFLINE: "Offline"
+  },
+  issuePhotos: {
+    addPhoto: "Add Issue Photo",
+    sendIssuePhoto: "Send Issue Photo",
+    managePhotos: "Manage Issue Photos",
+    takePhoto: "Take Photo (Camera)",
+    chooseFromGallery: "Select from Gallery",
+    previewTitle: "Issue Photo Preview",
+    addDescription: "Add short description (e.g. Pipe leak under sink)",
+    maxPhotosLimit: "Maximum 5 issue photos allowed per booking.",
+    uploading: "Uploading issue photo(s)...",
+    uploadSuccess: "Issue photos uploaded successfully and sent to assigned worker!",
+    uploadError: "Failed to upload issue photo. Please try again.",
+    noPhotosYet: "No issue photos shared yet",
+    sharedByCustomer: "Shared by Customer",
+    photoReceivedBadge: "Photo Received",
+    zoomPhoto: "Click to Zoom / View Fullscreen",
+    removePhoto: "Remove Photo",
+    issuePhotosTitle: "Customer Issue Photos",
+    issuePhotosSubtitle: "Photos shared by customer to help diagnose the issue beforehand."
   }
 };
+
