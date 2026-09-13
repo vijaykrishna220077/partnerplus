@@ -7,6 +7,8 @@ import { CooperativePendingApprovalView } from './components/cooperative/auth/Co
 import { locationService } from './services/locationService';
 import { VoiceAssistantBanner } from './components/common/VoiceAssistantBanner';
 import { UserRole } from './types';
+import { capacitorBridge } from './services/native/capacitorBridge';
+import { notificationAdapter } from './services/native/notificationAdapter';
 
 // Code-split heavy routes and portals using React.lazy for optimized initial bundle loading
 const CustomerPortal = lazy(() => import('./portals/CustomerPortal').then(m => ({ default: m.CustomerPortal })));
@@ -45,6 +47,12 @@ const MainPlatformRouter: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return window.location.pathname.toLowerCase();
   });
+
+  // Initialize native Capacitor capabilities (Status bar, splash screen, Android back button, push notifications)
+  useEffect(() => {
+    capacitorBridge.initializeNativeApp();
+    notificationAdapter.registerPushNotifications();
+  }, []);
 
   // Automatically detect user location upon logging in
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { GeoPoint, LocationPermissionState, WorkerLocationRecord, CustomerLocationRecord } from '../types';
 import { realtimeHub } from './db';
 import { logger } from '../utils/logger';
+import { locationAdapter } from './native/locationAdapter';
 
 // Known landmark coordinates across Tamil Nadu (Coimbatore, Chennai, Madurai, Salem)
 export const KNOWN_AREAS_COORDINATES = [
@@ -61,50 +62,36 @@ class LocationService {
    * with accuracy indicator so user can continue safely without hard blocker.
    */
   public async getCurrentLocation(): Promise<{ coords: GeoPoint; isSimulated: boolean; accuracyWarning?: string }> {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+    try {
+      const pos = await locationAdapter.getCurrentPosition();
+      this.permissionStatus = 'granted';
+      const coords: GeoPoint = {
+        latitude: Number(pos.latitude.toFixed(5)),
+        longitude: Number(pos.longitude.toFixed(5)),
+        accuracy: Math.round(pos.accuracy),
+        heading: pos.heading || undefined,
+        speed: pos.speed || undefined,
+        timestamp: Date.now()
+      };
+      this.currentCoords = coords;
+
+      let accuracyWarning: string | undefined;
+      if (coords.accuracy && coords.accuracy > 75) {
+        accuracyWarning = `Location accuracy is low (~${coords.accuracy}m). Adjust map pin if needed.`;
+      }
+
+      return { coords, isSimulated: false, accuracyWarning };
+    } catch (err: any) {
+      console.warn('Geolocation acquisition warning, using fallback pin:', err);
+      this.permissionStatus = 'prompt';
       const fallback = this.getDeterministicFallback();
       this.currentCoords = fallback;
-      return { coords: fallback, isSimulated: true, accuracyWarning: 'Browser geolocation not supported' };
+      return {
+        coords: fallback,
+        isSimulated: true,
+        accuracyWarning: 'GPS unavailable. Using selected cooperative service pin.'
+      };
     }
-
-    return new Promise((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          this.permissionStatus = 'granted';
-          const coords: GeoPoint = {
-            latitude: Number(position.coords.latitude.toFixed(5)),
-            longitude: Number(position.coords.longitude.toFixed(5)),
-            accuracy: Math.round(position.coords.accuracy),
-            heading: position.coords.heading || undefined,
-            speed: position.coords.speed || undefined,
-            timestamp: position.timestamp
-          };
-          this.currentCoords = coords;
-          
-          let accuracyWarning: string | undefined;
-          if (coords.accuracy && coords.accuracy > 75) {
-            accuracyWarning = `Location accuracy is low (~${coords.accuracy}m). Adjust map pin if needed.`;
-          }
-
-          resolve({ coords, isSimulated: false, accuracyWarning });
-        },
-        (error) => {
-          console.warn('Geolocation prompt error or denied:', error.message);
-          this.permissionStatus = error.code === 1 ? 'denied' : 'prompt';
-          // Graceful fallback coordinate for Coimbatore / Chennai
-          const fallback = this.getDeterministicFallback();
-          this.currentCoords = fallback;
-          resolve({
-            coords: fallback,
-            isSimulated: true,
-            accuracyWarning: error.code === 1 
-              ? 'GPS permission denied. Using selected service area pin.' 
-              : 'GPS unavailable. Using default cooperative service pin.'
-          });
-        },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
-      );
-    });
   }
 
   /**
