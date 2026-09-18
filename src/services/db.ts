@@ -13,6 +13,7 @@ import {
   ChatMessage
 } from '../types';
 import { mockServices, mockWorkers, mockBookings, mockCooperatives } from '../data/mockData';
+import { supabase } from './supabaseClient';
 
 // Local storage tables
 const DB_KEYS = {
@@ -264,6 +265,38 @@ export const db = {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })
     });
 
+    // Supabase PostgreSQL Persistence
+    if (supabase) {
+      supabase.from('bookings').insert([{
+        booking_number: booking.bookingCode,
+        customer_name: booking.customerName,
+        customer_phone: booking.customerPhone,
+        service_category: booking.serviceCategory,
+        service_name: booking.serviceName,
+        worker_name: booking.workerName,
+        worker_phone: booking.workerPhone,
+        cooperative_name: booking.cooperativeName,
+        scheduled_date: booking.scheduledDate || new Date().toISOString().split('T')[0],
+        start_time: booking.scheduledTimeSlot || '10:00 AM',
+        problem_description: booking.problemDescription,
+        street_address: booking.address.street,
+        area: booking.address.area,
+        city: booking.address.city || 'Chennai',
+        pincode: booking.address.pincode,
+        is_emergency: booking.isEmergency,
+        status: (booking.status || 'REQUESTED').toUpperCase(),
+        service_charge: booking.pricing.serviceCharge,
+        worker_expected_earning: booking.pricing.workerEarnings,
+        cooperative_welfare_fund: booking.pricing.cooperativeWelfareFund,
+        tax_gst: booking.pricing.taxGST,
+        total_amount: booking.pricing.totalAmount,
+        payment_method: booking.payment.method,
+        payment_status: booking.payment.status
+      }]).then(({ error }) => {
+        if (error) console.warn('[DB] Supabase booking insert notice:', error.message);
+      });
+    }
+
     realtimeHub.emit('sahakari:booking_created', booking);
     return booking;
   },
@@ -273,6 +306,18 @@ export const db = {
     if (idx !== -1) {
       list[idx] = booking;
       writeTable(DB_KEYS.BOOKINGS, list);
+
+      if (supabase) {
+        supabase.from('bookings').update({
+          status: (booking.status || 'UPDATED').toUpperCase(),
+          payment_status: booking.payment?.status,
+          payment_method: booking.payment?.method,
+          transaction_id: booking.payment?.transactionId
+        }).eq('booking_number', booking.bookingCode).then(({ error }) => {
+          if (error) console.warn('[DB] Supabase booking update notice:', error.message);
+        });
+      }
+
       realtimeHub.emit('sahakari:booking_updated', booking);
     }
   },
@@ -414,6 +459,22 @@ export const db = {
     const list = readTable<ChatMessage[]>(DB_KEYS.MESSAGES, []);
     list.push(msg);
     writeTable(DB_KEYS.MESSAGES, list);
+
+    // Supabase PostgreSQL Chat Messages Persistence
+    if (supabase) {
+      supabase.from('chat_messages').insert([{
+        booking_id: msg.bookingId,
+        sender_id: msg.senderId,
+        sender_name: msg.senderName,
+        sender_role: msg.senderRole,
+        message_text: msg.text,
+        quick_reply_type: msg.quickReplyType,
+        is_read: msg.read || false
+      }]).then(({ error }) => {
+        if (error) console.warn('[DB] Supabase message insert notice:', error.message);
+      });
+    }
+
     realtimeHub.emit('sahakari:message_sent', msg);
     
     // Broadcast across browser tabs if supported

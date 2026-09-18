@@ -1,5 +1,6 @@
 import { ChatMessage } from '../types';
 import { realtimeHub } from './db';
+import { supabase } from './supabaseClient';
 
 const CHAT_STORAGE_KEY = 'sahakari_live_chat_messages_v2';
 const CHAT_CHANNEL_NAME = 'sahakari_live_chat_broadcast';
@@ -203,6 +204,21 @@ export const chatService = {
 
     all[params.bookingId] = [...bookingList, newMessage];
     saveAllMessages(all);
+
+    // Supabase PostgreSQL Real-Time Persistence
+    if (supabase) {
+      supabase.from('chat_messages').insert([{
+        booking_id: params.bookingId,
+        sender_id: params.senderId,
+        sender_name: params.senderName,
+        sender_role: params.senderRole,
+        message_text: params.text.trim(),
+        quick_reply_type: params.quickReplyType,
+        is_read: false
+      }]).then(({ error }) => {
+        if (error) console.warn('[ChatService] Supabase message insert notice:', error.message);
+      });
+    }
 
     // 1. Emit via local in-memory event bus
     realtimeHub.emit(`chat:${params.bookingId}`, all[params.bookingId]);

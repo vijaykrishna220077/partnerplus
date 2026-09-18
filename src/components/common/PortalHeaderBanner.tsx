@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth, DEMO_ACCOUNTS } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { UserRole, LanguageCode } from '../../types';
+import { WhatsAppMessagingModal } from './WhatsAppMessagingModal';
 import { 
   LogOut, 
   User, 
@@ -20,6 +21,7 @@ export const PortalHeaderBanner: React.FC = () => {
   const { user, logout, switchRole } = useAuth();
   const { t, lang, setLang } = useApp();
   const [isSwitchMenuOpen, setIsSwitchMenuOpen] = useState(false);
+  const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
 
   if (!user) return null;
 
@@ -168,6 +170,17 @@ export const PortalHeaderBanner: React.FC = () => {
             )}
           </div>
 
+          {/* WhatsApp Instant Hub Launcher */}
+          <button
+            type="button"
+            onClick={() => setIsWhatsAppOpen(true)}
+            className="flex items-center gap-1.5 bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 px-2.5 py-1 rounded-lg font-black text-xs transition cursor-pointer shadow-xs active:scale-95"
+            title="Launch WhatsApp Direct Communication Hub"
+          >
+            <span className="text-sm">💬</span>
+            <span className="hidden sm:inline">WhatsApp</span>
+          </button>
+
           {/* Regional Language Selector */}
           <div className="flex items-center gap-1.5 bg-slate-900/90 py-1 px-2.5 rounded-lg border border-slate-700">
             <Globe className="w-3 h-3 text-[#00D2FF]" />
@@ -211,6 +224,15 @@ export const PortalHeaderBanner: React.FC = () => {
         </div>
 
       </div>
+
+      {isWhatsAppOpen && (
+        <WhatsAppMessagingModal
+          isOpen={isWhatsAppOpen}
+          onClose={() => setIsWhatsAppOpen(false)}
+          recipientName={user.name}
+          recipientPhone={user.phone}
+        />
+      )}
     </div>
   );
 };

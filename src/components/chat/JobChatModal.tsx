@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Booking, ChatMessage } from '../../types';
 import { chatService } from '../../services/chatService';
+import { whatsappService } from '../../services/whatsappService';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { soundAndSpeech } from '../../utils/soundAndSpeech';
@@ -237,6 +238,16 @@ export const JobChatModal: React.FC<JobChatModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => whatsappService.shareBookingOnWhatsApp(counterpartPhone, booking.bookingCode || booking.id.slice(0, 8), booking.serviceName, counterpartName)}
+              className="px-2.5 py-2 rounded-xl text-xs font-black transition flex items-center gap-1 cursor-pointer bg-[#25D366] text-slate-950 hover:bg-[#20ba5a] shadow-xs shrink-0"
+              title={`Chat with ${counterpartName} on WhatsApp`}
+            >
+              <span className="text-sm">💬</span>
+              <span>WhatsApp</span>
+            </button>
+
             <a
               href={`tel:${counterpartPhone}`}
               className="px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-xs shrink-0"

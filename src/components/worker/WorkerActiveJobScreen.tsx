@@ -22,6 +22,7 @@ import { WorkerJobOpening } from '../../data/workerJobData';
 import { LiveRouteMapTracker } from '../common/LiveRouteMapTracker';
 import { IssuePhotosGallery } from '../IssuePhotosGallery';
 import { issuePhotoService } from '../../services/issuePhotoService';
+import { whatsappService } from '../../services/whatsappService';
 
 export type ActiveStepStatus = 'accepted' | 'on_the_way' | 'arrived' | 'in_progress' | 'completed';
 
@@ -204,8 +205,19 @@ export const WorkerActiveJobScreen: React.FC<WorkerActiveJobScreenProps> = ({
           </div>
         </div>
 
-        {/* Quick Action Bar: Call Customer, Directions, Listen */}
+        {/* Quick Action Bar: Call Customer, WhatsApp, Chat, Directions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* WhatsApp Direct Chat */}
+          <button
+            type="button"
+            onClick={() => whatsappService.shareBookingOnWhatsApp(job.customerPhone, job.id.slice(0, 8), job.specificTask, job.customerName)}
+            className="py-3 px-3 bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 rounded-2xl font-black text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+            title="Chat on WhatsApp"
+          >
+            <span className="text-base">💬</span>
+            <span>WhatsApp</span>
+          </button>
+
           {/* Call Customer (Masked Call) */}
           <button
             type="button"

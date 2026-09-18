@@ -292,6 +292,24 @@ export const whatsappService = {
   },
 
   /**
+   * Launch direct WhatsApp chat in new window/app with optional message text
+   */
+  openWhatsAppChat(phone: string, text: string = '', recipientName: string = 'User'): void {
+    if (!phone) return;
+    const url = this.generateWhatsAppWebLink(phone, text);
+    this.sendDirectMessage(phone, text || 'WhatsApp Click-to-Chat initiated', recipientName);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  },
+
+  /**
+   * Share pre-filled booking details to WhatsApp recipient
+   */
+  shareBookingOnWhatsApp(phone: string, bookingCode: string, serviceName: string, recipientName: string = 'User'): void {
+    const text = `Hello ${recipientName}, regarding PartnerPlus Booking #${bookingCode} (${serviceName}). Let's connect!`;
+    this.openWhatsAppChat(phone, text, recipientName);
+  },
+
+  /**
    * Fetch all recorded WhatsApp message logs
    */
   getMessageLogs(): WhatsAppMessageRecord[] {

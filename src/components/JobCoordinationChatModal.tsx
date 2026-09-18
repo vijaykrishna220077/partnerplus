@@ -20,6 +20,7 @@ import {
 import { Booking, ChatMessage, Worker } from '../types';
 import { apiService } from '../services/apiService';
 import { chatService } from '../services/chatService';
+import { whatsappService } from '../services/whatsappService';
 import { realtimeHub } from '../services/db';
 import { soundAndSpeech } from '../utils/soundAndSpeech';
 import { useApp } from '../context/AppContext';
@@ -362,6 +363,17 @@ export const JobCoordinationChatModal: React.FC<JobCoordinationChatModalProps> =
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
+            {/* WhatsApp Direct Chat */}
+            <button
+              type="button"
+              onClick={() => whatsappService.shareBookingOnWhatsApp(otherPartyPhone, booking.bookingCode || booking.id.slice(0, 8), booking.serviceName, otherPartyName)}
+              className="px-3 py-2 bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-xs font-black shadow-xs active:scale-95 shrink-0"
+              title={`Chat with ${otherPartyName} on WhatsApp`}
+            >
+              <span className="text-sm">💬</span>
+              <span>WhatsApp</span>
+            </button>
+
             {/* Call Shortcut */}
             <a
               href={`tel:${otherPartyPhone}`}

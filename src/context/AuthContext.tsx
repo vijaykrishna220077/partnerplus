@@ -378,13 +378,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     role: UserRole,
     customUserData?: Partial<AuthUser>
   ): Promise<{ success: boolean; message?: string }> => {
-    await new Promise(r => setTimeout(r, 400));
-
     if (!identifier || identifier.trim().length < 3) {
       return { success: false, message: 'Please provide a valid email or 10-digit mobile number' };
     }
 
-    // Role specific login
+    const cleanIdentifier = identifier.trim();
+    const isEmail = cleanIdentifier.includes('@');
+
+    // Attempt Supabase Auth Sign In if password provided
+    if (supabase && isEmail && _passwordOrOtp && _passwordOrOtp.length >= 6) {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email: cleanIdentifier,
+          password: _passwordOrOtp
+        });
+
+        if (!authError && authData?.user) {
+          const authUser = authData.user;
+          const meta = authUser.user_metadata || {};
+
+          // Query public.users or profile table
+          let userRole = (meta.role?.toLowerCase() as UserRole) || role;
+          let fullName = meta.full_name || customUserData?.name;
+
+          const { data: dbUsers } = await supabase
+            .from('users')
+            .select('*')
+            .eq('auth_user_id', authUser.id)
+            .maybeSingle();
+
+          if (dbUsers) {
+            userRole = (dbUsers.role?.toLowerCase() as UserRole) || userRole;
+          }
+
+          const loggedUser: AuthUser = {
+            id: authUser.id,
+            name: fullName || (isEmail ? cleanIdentifier.split('@')[0] : 'PartnerPlus User'),
+            email: authUser.email || cleanIdentifier,
+            phone: meta.phone || customUserData?.phone || '',
+            role: userRole,
+            joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            ...customUserData
+          };
+
+          setUser(loggedUser);
+          return { success: true };
+        }
+      } catch (e) {
+        console.warn('[AuthContext] Supabase password auth check:', e);
+      }
+    }
+
+    // Role specific login fallback
     if (role === 'cooperative_admin' || role === 'cooperative_staff') {
       return loginCooperative(identifier, _passwordOrOtp, 'coop-1', role === 'cooperative_admin' ? 'COOPERATIVE_ADMIN' : 'COOPERATIVE_STAFF');
     }
@@ -395,10 +440,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const matchedDemo = DEMO_ACCOUNTS.find(d => d.role === role) || DEMO_ACCOUNTS[0];
     const derivedName = customUserData?.name || (
-      identifier.includes('@')
-        ? identifier.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-        : (identifier.replace(/\D/g, '').length >= 4
-            ? `Customer (${identifier.replace(/\D/g, '').slice(-4)})`
+      isEmail
+        ? cleanIdentifier.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+        : (cleanIdentifier.replace(/\D/g, '').length >= 4
+            ? `Customer (${cleanIdentifier.replace(/\D/g, '').slice(-4)})`
             : 'Valued Customer')
     );
 
@@ -406,8 +451,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...matchedDemo.user,
       id: customUserData?.id || `usr-${Date.now()}`,
       name: derivedName,
-      email: customUserData?.email || (identifier.includes('@') ? identifier : `${identifier.replace(/\D/g, '')}@partnerplus.org`),
-      phone: customUserData?.phone || identifier,
+      email: customUserData?.email || (isEmail ? cleanIdentifier : `${cleanIdentifier.replace(/\D/g, '')}@partnerplus.org`),
+      phone: customUserData?.phone || cleanIdentifier,
       role: role,
       avatar: customUserData?.avatar ? customUserData.avatar : undefined,
       ...customUserData
@@ -472,6 +517,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    if (supabase) {
+      supabase.auth.signOut().catch(e => console.warn('[AuthContext] signOut notice:', e));
+    }
     setUser(null);
   };
 
