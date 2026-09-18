@@ -166,11 +166,16 @@ export const issuePhotoService = {
       // Send secure WhatsApp notification without public image URL
       if (booking.workerPhone) {
         try {
-          await whatsappService.sendDirectMessage(
-            booking.workerPhone,
-            `Customer ${booking.customerName} shared ${items.length} new issue photo(s) for booking #${booking.bookingCode}. Log in to PartnerPlus to inspect detail photos securely.`,
-            booking.workerName
-          );
+          await notificationService.dispatchNotification({
+            event: 'WORKER_ASSIGNED',
+            recipientId: assignedWorkerId,
+            recipientType: 'worker',
+            recipientName: booking.workerName || 'Worker',
+            recipientPhone: booking.workerPhone,
+            bookingId: booking.id,
+            bookingCode: booking.bookingCode,
+            serviceName: booking.serviceName
+          });
         } catch (waErr) {
           console.warn('WhatsApp issue photo dispatch failed:', waErr);
         }

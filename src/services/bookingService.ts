@@ -10,6 +10,7 @@ import {
 import { db, realtimeHub } from './db';
 import { matchingService } from './matchingService';
 import { pricingService } from './pricingService';
+import { notificationService } from './notificationService';
 
 export interface CreateBookingFromCalculatorParams {
   categoryId: string;
@@ -188,30 +189,34 @@ export const bookingService = {
     };
     db.insertInvoice(invoiceRecord);
 
-    // 7. Dispatch Notifications
-    db.insertNotification({
-      id: `notif-${Date.now()}-1`,
+    // 7. Dispatch Transactional Event Notifications across channels
+    notificationService.dispatchNotification({
+      event: 'WORKER_ASSIGNED',
       recipientId: newBooking.customerId,
       recipientType: 'customer',
-      title: 'Worker Assigned!',
-      message: `${matchedWorker.name} (${matchedWorker.rating} ★, ${matchedWorker.distanceKm} km away) has been assigned to your booking.`,
-      type: 'status_update',
+      recipientName: newBooking.customerName,
+      recipientPhone: newBooking.customerPhone,
       bookingId: newBooking.id,
-      isRead: false,
-      createdAt: nowTime
-    });
+      bookingCode: newBooking.bookingCode,
+      serviceName: newBooking.serviceName,
+      customerAddress: newBooking.address.street,
+      workerName: matchedWorker.name,
+      workerPhone: matchedWorker.phone,
+      totalAmount: pricing.totalCustomerAmount
+    }).catch(err => console.warn('Notification dispatch exception:', err));
 
-    db.insertNotification({
-      id: `notif-${Date.now()}-2`,
+    notificationService.dispatchNotification({
+      event: 'NEW_JOB_WORKER',
       recipientId: matchedWorker.id,
       recipientType: 'worker',
-      title: params.isEmergency ? '🚨 Urgent 15-Min Booking Dispatch' : 'New Cooperative Booking Request',
-      message: `${params.taskName} (${params.quantity} ${params.taskUnit}) for ${params.customerName}. Direct worker payout: ₹${pricing.workerEarnings}.`,
-      type: params.isEmergency ? 'emergency' : 'booking',
+      recipientName: matchedWorker.name,
+      recipientPhone: matchedWorker.phone,
       bookingId: newBooking.id,
-      isRead: false,
-      createdAt: nowTime
-    });
+      bookingCode: newBooking.bookingCode,
+      serviceName: newBooking.serviceName,
+      customerAddress: newBooking.address.street,
+      totalAmount: pricing.workerEarnings
+    }).catch(err => console.warn('Worker notification dispatch exception:', err));
 
     return { booking: newBooking, match, invoice: invoiceRecord };
   },
@@ -256,6 +261,32 @@ export const bookingService = {
       timestamp: timeStr
     });
 
+    // Map status transition to transactional notification event
+    let eventType: any = null;
+    if (newStatus === 'worker_accepted') eventType = 'WORKER_ACCEPTED';
+    if (newStatus === 'on_the_way') eventType = 'WORKER_EN_ROUTE';
+    if (newStatus === 'arrived') eventType = 'WORKER_ARRIVED';
+    if (newStatus === 'service_started') eventType = 'SERVICE_STARTED';
+    if (newStatus === 'service_completed') eventType = 'JOB_COMPLETED';
+    if (newStatus === 'cancelled') eventType = 'JOB_CANCELLED';
+
+    if (eventType && booking.customerPhone) {
+      notificationService.dispatchNotification({
+        event: eventType,
+        recipientId: booking.customerId,
+        recipientType: 'customer',
+        recipientName: booking.customerName,
+        recipientPhone: booking.customerPhone,
+        bookingId: booking.id,
+        bookingCode: booking.bookingCode,
+        serviceName: booking.serviceName,
+        workerName: booking.workerName,
+        workerPhone: booking.workerPhone,
+        etaMinutes: booking.etaMinutes || 15,
+        totalAmount: booking.pricing?.totalAmount
+      }).catch(err => console.warn('Status change notification error:', err));
+    }
+
     return booking;
   },
 
@@ -292,6 +323,21 @@ export const bookingService = {
       invoice.paymentStatus = 'Paid';
       invoice.transactionId = txId;
       db.insertInvoice(invoice);
+    }
+
+    // Dispatch PAYMENT_SUCCESSFUL transactional event notification
+    if (booking.customerPhone) {
+      notificationService.dispatchNotification({
+        event: 'PAYMENT_SUCCESSFUL',
+        recipientId: booking.customerId,
+        recipientType: 'customer',
+        recipientName: booking.customerName,
+        recipientPhone: booking.customerPhone,
+        bookingId: booking.id,
+        bookingCode: booking.bookingCode,
+        serviceName: booking.serviceName,
+        totalAmount: amount
+      }).catch(err => console.warn('Payment notification error:', err));
     }
 
     return payment;

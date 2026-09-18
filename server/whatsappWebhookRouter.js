@@ -12,8 +12,18 @@ const supabase = (supabaseUrl && supabaseServiceKey)
   : null;
 
 /**
+ * Format raw phone number into clean E.164 format for India
+ */
+function formatE164Phone(phone) {
+  if (!phone) return '';
+  const digits = String(phone).replace(/\D/g, '');
+  if (digits.length === 10) return `91${digits}`;
+  if (digits.startsWith('91') && digits.length === 12) return digits;
+  return digits;
+}
+
+/**
  * 1. GET /api/whatsapp/webhook — Meta Webhook Verification Handshake
- * Meta sends hub.mode, hub.verify_token, and hub.challenge
  */
 whatsappWebhookRouter.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
@@ -33,7 +43,7 @@ whatsappWebhookRouter.get('/webhook', (req, res) => {
 
 /**
  * 2. POST /api/whatsapp/webhook — Meta Incoming Webhook Events Receiver
- * Receives incoming messages (text, image, location) and status receipts from Meta Graph API
+ * Ingests incoming status receipts (sent, delivered, read, failed) & inbound user messages into Supabase whatsapp_notifications
  */
 whatsappWebhookRouter.post('/webhook', async (req, res) => {
   try {
@@ -43,7 +53,7 @@ whatsappWebhookRouter.post('/webhook', async (req, res) => {
       return res.status(404).json({ error: 'Not a WhatsApp Business Account event' });
     }
 
-    // Acknowledge Meta immediately to avoid retries
+    // Acknowledge Meta immediately (200 OK)
     res.status(200).send('EVENT_RECEIVED');
 
     const entries = body.entry || [];
@@ -55,9 +65,9 @@ whatsappWebhookRouter.post('/webhook', async (req, res) => {
           const messages = value.messages || [];
           const statuses = value.statuses || [];
 
-          // A. Process Inbound Messages from User's WhatsApp
+          // A. Process Inbound Messages from User's Real WhatsApp
           for (const msg of messages) {
-            const fromPhone = msg.from; // Sender phone number in E.164
+            const fromPhone = formatE164Phone(msg.from);
             const wamid = msg.id;
             const timestamp = new Date(parseInt(msg.timestamp) * 1000).toISOString();
             let textBody = '';
@@ -74,49 +84,13 @@ whatsappWebhookRouter.post('/webhook', async (req, res) => {
 
             console.log(`[Meta Webhook] Inbound message from +${fromPhone}: ${textBody}`);
 
-            // Insert into whatsapp_webhook_events audit log
             if (supabase) {
               await supabase.from('whatsapp_webhook_events').insert({
                 event_type: 'incoming_message',
                 wamid,
                 phone_number: fromPhone,
                 raw_event: body
-              }).catch(err => console.warn('Audit log insert err:', err));
-
-              // Map contact or user profile
-              const { data: contact } = await supabase
-                .from('whatsapp_contacts')
-                .select('*')
-                .eq('phone_number', fromPhone)
-                .single();
-
-              const senderName = contact?.display_name || value.contacts?.[0]?.profile?.name || `+${fromPhone}`;
-              const senderRole = contact?.user_role || 'customer';
-
-              // Store into whatsapp_messages table
-              await supabase.from('whatsapp_messages').insert({
-                wamid,
-                sender_phone: fromPhone,
-                recipient_phone: process.env.WHATSAPP_PHONE_NUMBER_ID || 'SYSTEM_PLATFORM',
-                sender_name: senderName,
-                recipient_name: 'PartnerPlus System',
-                sender_role: senderRole,
-                recipient_role: 'cooperative',
-                direction: 'INBOUND',
-                message_body: textBody,
-                status: 'delivered',
-                mode: 'REAL_MODE',
-                sent_at: timestamp,
-                payload_json: msg
-              }).catch(err => console.warn('Inbound msg DB insert err:', err));
-
-              // Also mirror to main messages table for real-time UI chat feed
-              await supabase.from('messages').insert({
-                sender_name: senderName,
-                sender_role: senderRole,
-                message_type: msg.type === 'image' ? 'image' : msg.type === 'location' ? 'location' : 'text',
-                content: `[WhatsApp] ${textBody}`
-              }).catch(() => {});
+              }).catch(err => console.warn('Webhook event audit log err:', err));
             }
           }
 
@@ -124,15 +98,22 @@ whatsappWebhookRouter.post('/webhook', async (req, res) => {
           for (const statusObj of statuses) {
             const wamid = statusObj.id;
             const newStatus = statusObj.status; // 'sent' | 'delivered' | 'read' | 'failed'
+            const timestamp = new Date(parseInt(statusObj.timestamp) * 1000).toISOString();
 
-            console.log(`[Meta Webhook] Status update for ${wamid}: ${newStatus}`);
+            console.log(`[Meta Webhook] Status receipt for ${wamid}: ${newStatus}`);
 
             if (supabase) {
+              const updatePayload = { status: newStatus };
+              if (newStatus === 'sent') updatePayload.sent_at = timestamp;
+              if (newStatus === 'delivered') updatePayload.delivered_at = timestamp;
+              if (newStatus === 'read') updatePayload.read_at = timestamp;
+              if (newStatus === 'failed') updatePayload.failed_at = timestamp;
+
               await supabase
-                .from('whatsapp_messages')
-                .update({ status: newStatus })
-                .eq('wamid', wamid)
-                .catch(err => console.warn('Status update err:', err));
+                .from('whatsapp_notifications')
+                .update(updatePayload)
+                .eq('whatsapp_message_id', wamid)
+                .catch(err => console.warn('Notification status update err:', err));
             }
           }
         }
@@ -144,40 +125,69 @@ whatsappWebhookRouter.post('/webhook', async (req, res) => {
 });
 
 /**
- * 3. POST /api/whatsapp/send — Outbound Meta WhatsApp Graph API Dispatcher
+ * 3. POST /api/notifications/dispatch — Transactional Event Notification Dispatcher
+ * Checks idempotency_key, sends via Meta Cloud API, logs to whatsapp_notifications
  */
-whatsappWebhookRouter.post('/send', async (req, res) => {
+whatsappWebhookRouter.post('/dispatch', async (req, res) => {
   try {
-    const { recipientPhone, recipientName, messageText, templateName = 'CUSTOM_TEXT', bookingCode } = req.body;
+    const { 
+      eventType, 
+      recipientPhone, 
+      recipientName = 'User', 
+      recipientRole = 'customer', 
+      bookingId, 
+      messageText, 
+      templateName = 'CUSTOM_TEXT',
+      userId,
+      parameters = {} 
+    } = req.body;
 
-    if (!recipientPhone || !messageText) {
-      return res.status(400).json({ error: 'recipientPhone and messageText are required' });
+    if (!recipientPhone || !eventType) {
+      return res.status(400).json({ error: 'recipientPhone and eventType are required' });
     }
 
-    const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.VITE_WHATSAPP_PHONE_NUMBER_ID;
-    const token = process.env.WHATSAPP_ACCESS_TOKEN || process.env.VITE_WHATSAPP_ACCESS_TOKEN;
+    const cleanPhone = formatE164Phone(recipientPhone);
+    const idempotencyKey = `${eventType}_${bookingId || 'global'}_${cleanPhone}`;
+
+    // 1. Idempotency check in Supabase
+    if (supabase) {
+      const { data: existing } = await supabase
+        .from('whatsapp_notifications')
+        .select('*')
+        .eq('idempotency_key', idempotencyKey)
+        .maybeSingle();
+
+      if (existing) {
+        console.log(`[Idempotency Safeguard] Notification ${idempotencyKey} already dispatched. Skipping duplicate.`);
+        return res.status(200).json({ 
+          success: true, 
+          skipped: true, 
+          message: 'Duplicate event notification skipped by idempotency key.',
+          notification: existing 
+        });
+      }
+    }
+
+    // 2. Prepare WhatsApp Cloud API credentials
+    const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+    const token = process.env.WHATSAPP_ACCESS_TOKEN;
     const isRealConfigured = Boolean(phoneId && token && phoneId.length > 5 && token.length > 10);
 
-    const formattedPhone = recipientPhone.replace(/\D/g, '');
-    const toPhone = formattedPhone.startsWith('91') ? formattedPhone : `91${formattedPhone}`;
-
     const record = {
-      id: `wa-msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      wamid: null,
-      sender_phone: phoneId || 'SYSTEM_PLATFORM',
-      recipient_phone: toPhone,
-      sender_name: 'PartnerPlus System',
-      recipient_name: recipientName || 'User',
-      sender_role: 'system',
-      recipient_role: 'user',
-      direction: 'OUTBOUND',
-      template_name: templateName,
-      message_body: messageText,
-      status: isRealConfigured ? 'sent' : 'demo_simulated',
-      mode: isRealConfigured ? 'REAL_MODE' : 'DEMO_ONLY',
-      sent_at: new Date().toISOString()
+      user_id: userId || null,
+      booking_id: bookingId || null,
+      recipient_phone: `+${cleanPhone}`,
+      recipient_name: recipientName,
+      recipient_role: recipientRole,
+      notification_type: eventType,
+      whatsapp_message_id: null,
+      idempotency_key: idempotencyKey,
+      status: isRealConfigured ? 'pending' : 'simulated',
+      payload_json: { messageText, templateName, parameters },
+      created_at: new Date().toISOString()
     };
 
+    // 3. Dispatch to Meta WhatsApp Graph API if configured
     if (isRealConfigured) {
       try {
         const metaRes = await fetch(`https://graph.facebook.com/v20.0/${phoneId}/messages`, {
@@ -188,7 +198,7 @@ whatsappWebhookRouter.post('/send', async (req, res) => {
           },
           body: JSON.stringify({
             messaging_product: 'whatsapp',
-            to: toPhone,
+            to: cleanPhone,
             type: 'text',
             text: { body: messageText }
           })
@@ -196,26 +206,50 @@ whatsappWebhookRouter.post('/send', async (req, res) => {
 
         const metaData = await metaRes.json();
         if (metaRes.ok && metaData.messages?.[0]?.id) {
-          record.wamid = metaData.messages[0].id;
+          record.whatsapp_message_id = metaData.messages[0].id;
           record.status = 'sent';
+          record.sent_at = new Date().toISOString();
         } else {
           console.warn('[Meta Graph API Error]:', metaData);
-          record.status = 'demo_simulated';
+          record.status = 'failed';
+          record.error_message = metaData.error?.message || 'Meta API delivery error';
+          record.failed_at = new Date().toISOString();
         }
       } catch (graphErr) {
         console.error('[Meta Graph API Fetch Exception]:', graphErr);
-        record.status = 'demo_simulated';
+        record.status = 'failed';
+        record.error_message = graphErr.message || 'Fetch failed';
+        record.failed_at = new Date().toISOString();
       }
     }
 
-    // Insert into DB if configured
+    // 4. Save record into Supabase whatsapp_notifications table
+    let savedRecord = record;
     if (supabase) {
-      await supabase.from('whatsapp_messages').insert(record).catch(err => console.warn('Outbound DB log err:', err));
+      const { data, error } = await supabase
+        .from('whatsapp_notifications')
+        .insert(record)
+        .select()
+        .single();
+
+      if (!error && data) {
+        savedRecord = data;
+      } else if (error) {
+        console.warn('DB whatsapp_notifications insert warning:', error);
+      }
     }
 
-    return res.status(200).json({ success: true, record });
+    return res.status(200).json({ success: true, notification: savedRecord });
   } catch (err) {
-    console.error('[Outbound Send Error]:', err);
-    return res.status(500).json({ error: err.message || 'Failed to dispatch WhatsApp message' });
+    console.error('[Notification Dispatch Exception]:', err);
+    return res.status(500).json({ error: err.message || 'Internal notification dispatch error' });
   }
+});
+
+/**
+ * 4. POST /api/whatsapp/send — Backward compatibility alias to /dispatch
+ */
+whatsappWebhookRouter.post('/send', async (req, res, next) => {
+  req.url = '/dispatch';
+  return whatsappWebhookRouter.handle(req, res, next);
 });

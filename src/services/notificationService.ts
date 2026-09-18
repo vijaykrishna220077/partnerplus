@@ -4,6 +4,7 @@ import { whatsappService, WhatsAppTemplateType } from './whatsappService';
 
 export type SystemEventType = 
   | 'BOOKING_CREATED'
+  | 'BOOKING_CONFIRMED'
   | 'WORKER_ASSIGNED'
   | 'WORKER_ACCEPTED'
   | 'WORKER_EN_ROUTE'
@@ -11,13 +12,17 @@ export type SystemEventType =
   | 'SERVICE_STARTED'
   | 'JOB_COMPLETED'
   | 'INVOICE_GENERATED'
-  | 'PAYMENT_RECEIVED'
-  | 'EMERGENCY_DISPATCH';
+  | 'PAYMENT_SUCCESSFUL'
+  | 'NEW_JOB_WORKER'
+  | 'JOB_CANCELLED'
+  | 'EMERGENCY_DISPATCH'
+  | 'ORGANIZATION_JOB_CREATED'
+  | 'WORKFORCE_ALERT';
 
 export interface SystemNotificationEventPayload {
   event: SystemEventType;
   recipientId: string;
-  recipientType: 'customer' | 'worker' | 'cooperative';
+  recipientType: 'customer' | 'worker' | 'cooperative' | 'organization';
   recipientName: string;
   recipientPhone?: string;
   language?: 'en' | 'ta' | 'hi' | 'kn' | 'te';
@@ -35,8 +40,8 @@ export interface SystemNotificationEventPayload {
 
 export const notificationService = {
   /**
-   * Primary entry point for triggering multi-channel notifications across PartnerPlus
-   */
+    * Primary entry point for triggering multi-channel transactional notifications across PartnerPlus
+    */
   async dispatchNotification(payload: SystemNotificationEventPayload): Promise<NotificationRecord> {
     const { 
       event, 
@@ -56,7 +61,7 @@ export const notificationService = {
     const inAppRecord: NotificationRecord = {
       id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       recipientId,
-      recipientType,
+      recipientType: recipientType === 'organization' ? 'customer' : recipientType,
       title,
       message,
       type: this.mapEventTypeToNotificationType(event),
@@ -69,18 +74,19 @@ export const notificationService = {
       db.insertNotification(inAppRecord);
     }
 
-    // 3. Dispatch to WhatsApp Service if recipient phone exists & channel included
+    // 3. Dispatch Transactional WhatsApp Notification via Backend Endpoint
     if (channels.includes('whatsapp') && recipientPhone && whatsappTemplate) {
       try {
         await whatsappService.sendTemplateNotification({
           template: whatsappTemplate,
           recipientPhone,
           recipientName,
+          recipientRole: recipientType,
           language,
           parameters: {
             bookingCode: payload.bookingCode || bookingId || 'BK-100',
             serviceName: payload.serviceName || 'Service',
-            customerName: payload.recipientType === 'customer' ? recipientName : 'Customer',
+            customerName: recipientType === 'customer' ? recipientName : 'Customer',
             customerAddress: payload.customerAddress,
             workerName: payload.workerName,
             workerPhone: payload.workerPhone,
@@ -101,16 +107,17 @@ export const notificationService = {
   },
 
   /**
-   * Helper to format notification title and text per event
-   */
+    * Format notification title, message, and select appropriate WhatsApp template
+    */
   formatEventMessage(payload: SystemNotificationEventPayload): { title: string; message: string; whatsappTemplate?: WhatsAppTemplateType } {
-    const { event, recipientName, bookingCode, serviceName, workerName, etaMinutes, totalAmount, invoiceNumber } = payload;
+    const { event, bookingCode, serviceName, workerName, etaMinutes, totalAmount, invoiceNumber } = payload;
 
     switch (event) {
       case 'BOOKING_CREATED':
+      case 'BOOKING_CONFIRMED':
         return {
           title: 'Booking Request Received',
-          message: `Your booking #${bookingCode || 'BK-100'} for ${serviceName || 'service'} has been registered. Matching nearby cooperative technicians...`,
+          message: `Your booking #${bookingCode || 'BK-100'} for ${serviceName || 'service'} has been registered. Matching nearby certified technicians...`,
           whatsappTemplate: 'BOOKING_CONFIRMED'
         };
 
@@ -118,6 +125,13 @@ export const notificationService = {
         return {
           title: 'Technician Assigned',
           message: `Worker ${workerName || 'Artisan'} has been assigned to your booking #${bookingCode || 'BK-100'}.`,
+          whatsappTemplate: 'WORKER_ASSIGNED'
+        };
+
+      case 'WORKER_ACCEPTED':
+        return {
+          title: 'Worker Accepted Job',
+          message: `Technician ${workerName || 'Artisan'} accepted booking #${bookingCode || 'BK-100'} and is preparing to travel.`,
           whatsappTemplate: 'WORKER_ASSIGNED'
         };
 
@@ -142,11 +156,46 @@ export const notificationService = {
           whatsappTemplate: 'INVOICE_CREATED'
         };
 
+      case 'PAYMENT_SUCCESSFUL':
+        return {
+          title: 'Payment Successful',
+          message: `Payment of ₹${totalAmount || 0} for booking #${bookingCode || ''} was successfully verified.`,
+          whatsappTemplate: 'PAYMENT_SUCCESSFUL'
+        };
+
+      case 'NEW_JOB_WORKER':
+        return {
+          title: 'New Service Job Available',
+          message: `New job alert: ${serviceName || 'Service'} in your operational zone. Open app to accept!`,
+          whatsappTemplate: 'NEW_JOB_WORKER'
+        };
+
+      case 'JOB_CANCELLED':
+        return {
+          title: 'Booking Cancelled',
+          message: `Booking #${bookingCode || ''} has been cancelled.`,
+          whatsappTemplate: 'JOB_CANCELLED'
+        };
+
       case 'EMERGENCY_DISPATCH':
         return {
           title: '🚨 Emergency SOS Dispatch',
           message: `Emergency response unit dispatched for ${serviceName || 'Emergency Support'}. Technician ${workerName || ''} arriving urgently!`,
           whatsappTemplate: 'WORKER_ON_THE_WAY'
+        };
+
+      case 'ORGANIZATION_JOB_CREATED':
+        return {
+          title: 'Enterprise Shift Posted',
+          message: `Enterprise service shift for ${serviceName || 'Project'} posted successfully.`,
+          whatsappTemplate: 'BOOKING_CONFIRMED'
+        };
+
+      case 'WORKFORCE_ALERT':
+        return {
+          title: 'Cooperative Workforce Alert',
+          message: `Workforce alert issued for ${serviceName || 'Demand Area'}.`,
+          whatsappTemplate: 'NEW_JOB_WORKER'
         };
 
       default:
@@ -158,8 +207,8 @@ export const notificationService = {
   },
 
   mapEventTypeToNotificationType(event: SystemEventType): NotificationRecord['type'] {
-    if (event === 'PAYMENT_RECEIVED' || event === 'INVOICE_GENERATED') return 'payment';
-    if (event === 'EMERGENCY_DISPATCH') return 'emergency';
+    if (event === 'PAYMENT_SUCCESSFUL' || event === 'INVOICE_GENERATED') return 'payment';
+    if (event === 'EMERGENCY_DISPATCH' || event === 'WORKFORCE_ALERT') return 'emergency';
     return 'booking';
   },
 
