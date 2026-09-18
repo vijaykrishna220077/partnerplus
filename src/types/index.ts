@@ -599,3 +599,7 @@ export interface ChatMessage {
   };
 }
 
+export * from './workerSkillRegistry';
+export * from '../data/workerJobData';
+
+

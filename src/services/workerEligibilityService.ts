@@ -1,23 +1,9 @@
-import { 
-  StructuredWorkerProfile, 
-  WorkerJobEligibilityResult 
-} from '../types/workerSkillRegistry';
-import { WorkerJobOpening } from '../data/workerJobData';
+import { StructuredWorkerProfile, WorkerJobOpening, WorkerJobEligibilityResult } from '../types';
 import { skillRegistry } from './cooperativeSkillRegistry';
 
 /**
- * Skill-Based Worker Eligibility & Fair Opportunity Matching Engine
- * Evaluates candidate workers against job openings in strictly defined 10-step hierarchy:
- * 1. Required Skill Match
- * 2. Worker Type Compatibility
- * 3. Required Experience
- * 4. Availability
- * 5. Emergency Availability (if emergency job)
- * 6. Verification Status
- * 7. Distance & Service Radius
- * 8. Current Workload
- * 9. Rating
- * 10. Fair Distribution of Opportunities
+ * Worker Eligibility Engine for PartnerPlus Federation
+ * Safely evaluates worker suitability against job requirements with 100% null safety.
  */
 export const workerEligibilityService = {
   /**
@@ -29,6 +15,11 @@ export const workerEligibilityService = {
     job: WorkerJobOpening,
     isCurrentlyOccupied: boolean = false
   ): WorkerJobEligibilityResult {
+    // Null safety guard
+    if (!worker || !job) {
+      return this.createRejectionResult('Worker profile or job opening details missing', 0);
+    }
+
     const reasons: string[] = [];
     let eligible = true;
     let rejectionReason: string | undefined = undefined;
@@ -45,24 +36,37 @@ export const workerEligibilityService = {
     let ratingScore = 0;
     let fairDistributionScore = 0;
 
-    // Normalize category / skill tags
-    const jobCategory = job.serviceCategory.toLowerCase();
+    // Normalize category / skill tags with full null-safety
+    const rawCategory = job.serviceCategory || (job as any).category || '';
+    const jobCategory = String(rawCategory).toLowerCase();
+
+    const rawSpecificTask = job.specificTask || (job as any).title || job.serviceName || '';
+    const jobSpecificTask = String(rawSpecificTask).toLowerCase();
+
     const jobSkillId = job.requiredSkillId || '';
-    const jobSpecificTask = job.specificTask.toLowerCase();
+    const expRequiredStr = job.experienceRequired || '';
     const minExpRequired = job.minimumExperienceYears ?? (
-      job.experienceRequired.includes('2+') ? 2 : job.experienceRequired.includes('1+') ? 1 : 0
+      expRequiredStr.includes('2+') ? 2 : expRequiredStr.includes('1+') ? 1 : 0
     );
+
+    // Normalize worker skills
+    const workerSkills = Array.isArray(worker.skills) ? worker.skills : [];
 
     // =========================================================================
     // 1. REQUIRED SKILL MATCH
     // =========================================================================
-    // Check if worker has matching skill in their registered skills
-    const matchingSkill = worker.skills.find((ws) => {
+    const matchingSkill = workerSkills.find((ws) => {
+      if (!ws) return false;
       if (jobSkillId && ws.skill_id === jobSkillId) return true;
-      const wsName = ws.skill_name.toLowerCase();
-      if (wsName.includes(jobCategory) || jobCategory.includes(wsName)) return true;
-      if (job.requiredSkills && job.requiredSkills.some(rs => ws.tasks.some(t => t.toLowerCase().includes(rs.toLowerCase())))) return true;
-      // Also check general worker broad compatibility
+      const wsName = String(ws.skill_name || ws.category || '').toLowerCase();
+      if (jobCategory && wsName && (wsName.includes(jobCategory) || jobCategory.includes(wsName))) return true;
+      if (job.requiredSkills && Array.isArray(job.requiredSkills)) {
+        if (job.requiredSkills.some(rs => {
+          const rsLower = String(rs || '').toLowerCase();
+          const tasks = Array.isArray(ws.tasks) ? ws.tasks : [];
+          return tasks.some(t => typeof t === 'string' && t.toLowerCase().includes(rsLower));
+        })) return true;
+      }
       if (job.workerTier === 'general' && ws.category === 'general') return true;
       return false;
     });
@@ -71,57 +75,54 @@ export const workerEligibilityService = {
       jobCategory === 'electrical' || 
       jobCategory === 'plumbing' || 
       jobCategory === 'appliance_repair' ||
-      job.specificTask.toLowerCase().includes('wiring') ||
-      job.specificTask.toLowerCase().includes('mcb') ||
-      job.specificTask.toLowerCase().includes('short circuit');
+      jobSpecificTask.includes('wiring') ||
+      jobSpecificTask.includes('mcb') ||
+      jobSpecificTask.includes('short circuit');
 
     if (!matchingSkill) {
-      // General worker exception: If job is a GENERAL job (moving, cleaning, loading),
-      // and worker is GENERAL or has household helper, allow it.
-      if (job.workerTier === 'general' && (worker.worker_type === 'general' || worker.skills.some(s => s.category === 'general'))) {
+      if (job.workerTier === 'general' && (worker.worker_type === 'general' || workerSkills.some(s => s?.category === 'general'))) {
         skillMatchScore = 15;
         reasons.push('✓ General Labour & Assistance eligible');
       } else {
         eligible = false;
-        rejectionReason = `Requires registered skill in ${job.serviceName}. Not found in worker's registered trades.`;
+        rejectionReason = `Requires registered skill in ${job.serviceName || 'required trade'}. Not found in worker's registered trades.`;
         return this.createRejectionResult(rejectionReason, 0);
       }
     } else {
       if (matchingSkill.is_primary) {
         skillMatchScore = 30;
-        reasons.push(`✓ Your primary trade: ${matchingSkill.skill_name} (${matchingSkill.skill_level.toUpperCase()})`);
+        reasons.push(`✓ Your primary trade: ${matchingSkill.skill_name || 'Trade'} (${(matchingSkill.skill_level || 'verified').toUpperCase()})`);
       } else {
         skillMatchScore = 22;
-        reasons.push(`✓ Your verified additional trade: ${matchingSkill.skill_name}`);
+        reasons.push(`✓ Your verified additional trade: ${matchingSkill.skill_name || 'Trade'}`);
       }
 
       // Check task-level specific proficiency
-      const hasSpecificTask = matchingSkill.tasks.some((t) => 
-        jobSpecificTask.includes(t.toLowerCase()) || t.toLowerCase().includes(jobSpecificTask)
-      );
+      const tasks = Array.isArray(matchingSkill.tasks) ? matchingSkill.tasks : [];
+      const hasSpecificTask = tasks.some((t) => {
+        const tLower = typeof t === 'string' ? t.toLowerCase() : '';
+        return Boolean(tLower && jobSpecificTask && (jobSpecificTask.includes(tLower) || tLower.includes(jobSpecificTask)));
+      });
       if (hasSpecificTask) {
         skillMatchScore += 5;
-        reasons.push(`✓ Specific competency confirmed: ${job.specificTask}`);
+        reasons.push(`✓ Specific competency confirmed: ${job.specificTask || job.serviceName || 'Task'}`);
       }
     }
 
     // =========================================================================
     // 2. WORKER TYPE COMPATIBILITY
     // =========================================================================
-    // Rule: General worker MUST NOT receive regulated skilled work without verified skill
     if (job.workerTier === 'skilled') {
       if (worker.worker_type === 'general' && (!matchingSkill || !matchingSkill.verified)) {
         eligible = false;
-        rejectionReason = `Specialized skilled trade (${job.serviceName}) requires certified artisan. General workers cannot take independent regulated work.`;
+        rejectionReason = `Specialized skilled trade (${job.serviceName || 'Service'}) requires certified artisan. General workers cannot take independent regulated work.`;
         return this.createRejectionResult(rejectionReason, 10);
       }
       workerTypeScore = 15;
     } else if (job.workerTier === 'semi_skilled') {
-      // Semi-skilled helper jobs are open to semi-skilled and skilled artisans
       workerTypeScore = 15;
       reasons.push('✓ Compatible worker tier (Helper / Assistant)');
     } else {
-      // General jobs are open to general workers and anyone willing to do manual assistance
       workerTypeScore = 15;
       reasons.push('✓ General cooperative opportunity open to all members');
     }
@@ -136,7 +137,7 @@ export const workerEligibilityService = {
     // =========================================================================
     // 3. REQUIRED EXPERIENCE
     // =========================================================================
-    const workerSkillExp = matchingSkill ? matchingSkill.years_experience : worker.experience_years;
+    const workerSkillExp = matchingSkill ? (matchingSkill.years_experience || 0) : (worker.experience_years || 0);
     if (minExpRequired > 0 && workerSkillExp < minExpRequired) {
       eligible = false;
       rejectionReason = `Requires ${minExpRequired}+ years experience. Worker has ${workerSkillExp} years.`;
@@ -177,7 +178,7 @@ export const workerEligibilityService = {
     // =========================================================================
     // 6. VERIFICATION STATUS
     // =========================================================================
-    const skillDef = skillRegistry.getSkillByName(job.serviceName);
+    const skillDef = job.serviceName ? skillRegistry.getSkillByName(job.serviceName) : null;
     const verificationMandatory = skillDef ? skillDef.verification_required : isRegulatedTrade;
 
     if (verificationMandatory) {
@@ -198,21 +199,21 @@ export const workerEligibilityService = {
     // 7. DISTANCE & SERVICE RADIUS
     // =========================================================================
     const workerRadius = worker.service_radius_km || 10;
-    if (job.distanceKm > workerRadius) {
+    const jobDist = typeof job.distanceKm === 'number' ? job.distanceKm : 3.5;
+    if (jobDist > workerRadius) {
       eligible = false;
-      rejectionReason = `Job distance (${job.distanceKm} km) exceeds worker's service radius (${workerRadius} km)`;
+      rejectionReason = `Job distance (${jobDist} km) exceeds worker's service radius (${workerRadius} km)`;
       return this.createRejectionResult(rejectionReason, 40);
     } else {
-      // Closer jobs get higher points
-      if (job.distanceKm <= 2.0) {
+      if (jobDist <= 2.0) {
         distanceScore = 15;
-        reasons.push(`✓ Immediate neighbourhood (${job.distanceKm} km away)`);
-      } else if (job.distanceKm <= 5.0) {
+        reasons.push(`✓ Immediate neighbourhood (${jobDist} km away)`);
+      } else if (jobDist <= 5.0) {
         distanceScore = 12;
-        reasons.push(`✓ Nearby cluster (${job.distanceKm} km, within ${workerRadius} km radius)`);
+        reasons.push(`✓ Nearby cluster (${jobDist} km, within ${workerRadius} km radius)`);
       } else {
         distanceScore = 8;
-        reasons.push(`✓ Within service radius (${job.distanceKm} km)`);
+        reasons.push(`✓ Within service radius (${jobDist} km)`);
       }
     }
 
@@ -239,7 +240,6 @@ export const workerEligibilityService = {
     // =========================================================================
     // 10. FAIR DISTRIBUTION OF OPPORTUNITIES
     // =========================================================================
-    // Members with fewer recent jobs get a priority boost to prevent work monopoly!
     const opportunities = worker.opportunities_received_count || 30;
     if (opportunities < 25) {
       fairDistributionScore = 10;
@@ -317,12 +317,14 @@ export const workerEligibilityService = {
     allJobs: WorkerJobOpening[],
     isCurrentlyOccupied: boolean = false
   ): Array<{ job: WorkerJobOpening; eligibility: WorkerJobEligibilityResult }> {
+    if (!worker || !Array.isArray(allJobs)) return [];
     const results: Array<{ job: WorkerJobOpening; eligibility: WorkerJobEligibilityResult }> = [];
 
     for (const job of allJobs) {
+      if (!job) continue;
       // Skip already filled jobs
       if (job.status === 'completed' || job.status === 'cancelled') continue;
-      if (job.workersAssigned >= job.workersRequired) continue;
+      if (typeof job.workersAssigned === 'number' && typeof job.workersRequired === 'number' && job.workersAssigned >= job.workersRequired) continue;
 
       const eligibility = this.evaluateWorkerEligibility(worker, job, isCurrentlyOccupied);
       if (eligibility.eligible) {
