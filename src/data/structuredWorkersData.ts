@@ -370,3 +370,128 @@ export const STRUCTURED_WORKER_PROFILES: StructuredWorkerProfile[] = [
 ];
 
 export const DEFAULT_ACTIVE_WORKER = STRUCTURED_WORKER_PROFILES[0]; // Ramesh Kumar (Skilled Electrician)
+
+export function getAllStructuredWorkers(): StructuredWorkerProfile[] {
+  const dynamicWorkers: StructuredWorkerProfile[] = [];
+
+  // 1. Read from onboardingService local storage 'sahakari_worker_profiles_v2'
+  try {
+    const rawOnboarding = localStorage.getItem('sahakari_worker_profiles_v2');
+    if (rawOnboarding) {
+      const parsed = JSON.parse(rawOnboarding);
+      parsed.forEach((w: any, index: number) => {
+        if (w.full_name || w.name) {
+          dynamicWorkers.push({
+            id: w.id || `wrk-struct-${index}`,
+            name: w.full_name || w.name,
+            phone: w.phone || '+91 98412 34567',
+            worker_type: w.worker_type || 'skilled',
+            primary_skill_id: w.primary_skill_id || 'skill-electrician',
+            primary_skill_label: w.primary_skill_label || 'Certified Artisan',
+            experience_years: w.experience_years || 5,
+            verification_status: w.verification_status || 'verified',
+            availability_status: true,
+            emergency_available: w.emergency_available ?? true,
+            rating: 4.9,
+            completed_jobs: 32,
+            current_location: w.city ? `${w.city} Metro Zone` : 'Chennai Central',
+            service_radius_km: w.service_radius || 10,
+            skills: w.skills || [
+              {
+                id: `ws-${w.id}`,
+                worker_id: w.id,
+                skill_id: w.primary_skill_id || 'skill-electrician',
+                skill_name: w.primary_skill_label || 'Certified Trade Worker',
+                category: w.worker_type || 'skilled',
+                skill_level: 'expert',
+                years_experience: w.experience_years || 5,
+                is_primary: true,
+                verified: true,
+                tasks: ['House Wiring', 'General Maintenance', 'Appliance Repair'],
+                created_at: new Date().toISOString()
+              }
+            ],
+            certifications: w.certifications || [],
+            preferences: {
+              preferred_job_types: [w.primary_skill_label || 'General Trade'],
+              preferred_areas: [w.city || 'Chennai'],
+              max_travel_distance_km: 12,
+              preferred_shifts: ['Morning (6 AM – 12 PM)', 'Afternoon (12 PM – 5 PM)'],
+              active_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+            },
+            opportunities_received_count: 8,
+            cooperative_id: w.cooperative_id || 'COOP-TN-8891',
+            cooperative_name: w.cooperative_name || 'Labour Cooperative Society',
+            created_at: w.created_at || new Date().toISOString()
+          });
+        }
+      });
+    }
+  } catch {}
+
+  // 2. Read from active auth session 'partnerplus_session_public' (e.g. Vijay)
+  try {
+    const sessionRaw = localStorage.getItem('partnerplus_session_public');
+    if (sessionRaw) {
+      const u = JSON.parse(sessionRaw);
+      if (u && u.role === 'worker' && u.name) {
+        const alreadyExists = dynamicWorkers.some(w => w.name.toLowerCase() === u.name.toLowerCase()) ||
+                              STRUCTURED_WORKER_PROFILES.some(w => w.name.toLowerCase() === u.name.toLowerCase());
+        if (!alreadyExists) {
+          dynamicWorkers.unshift({
+            id: u.id || `wrk-user-${u.name.toLowerCase().replace(/\s+/g, '-')}`,
+            name: u.name,
+            phone: u.phone || '+91 98412 34567',
+            worker_type: 'skilled',
+            primary_skill_id: 'skill-electrician',
+            primary_skill_label: u.primaryTrade || 'Certified Electrician & Multi-Trade Artisan',
+            experience_years: u.experienceYears || 5,
+            verification_status: 'verified',
+            availability_status: true,
+            emergency_available: true,
+            rating: 4.95,
+            completed_jobs: 48,
+            current_location: u.city ? `${u.city} Central` : 'Chennai Metro',
+            service_radius_km: 12,
+            skills: [
+              {
+                id: `ws-${u.id}`,
+                worker_id: u.id,
+                skill_id: 'skill-electrician',
+                skill_name: u.primaryTrade || 'Electrician & Trade Artisan',
+                category: 'skilled',
+                skill_level: 'expert',
+                years_experience: u.experienceYears || 5,
+                is_primary: true,
+                verified: true,
+                tasks: ['House Wiring', 'Appliance Fixes', 'Circuit Testing'],
+                created_at: new Date().toISOString()
+              }
+            ],
+            certifications: [],
+            preferences: {
+              preferred_job_types: ['Electrical', 'Maintenance'],
+              preferred_areas: [u.city || 'Chennai'],
+              max_travel_distance_km: 15,
+              preferred_shifts: ['Morning (6 AM – 12 PM)', 'Afternoon (12 PM – 5 PM)'],
+              active_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+            },
+            opportunities_received_count: 12,
+            cooperative_id: u.cooperativeId || 'COOP-TN-8891',
+            cooperative_name: u.cooperativeName || 'Labour Cooperative Society',
+            created_at: new Date().toISOString()
+          });
+        }
+      }
+    }
+  } catch {}
+
+  const result = [...dynamicWorkers];
+  STRUCTURED_WORKER_PROFILES.forEach(p => {
+    if (!result.some(r => r.id === p.id || r.name.toLowerCase() === p.name.toLowerCase())) {
+      result.push(p);
+    }
+  });
+
+  return result;
+}

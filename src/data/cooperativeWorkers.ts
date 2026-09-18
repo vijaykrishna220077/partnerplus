@@ -381,3 +381,88 @@ export const ALL_COOPERATIVE_WORKERS: CooperativeWorkerProfile[] = [
     languages: ['Tamil', 'English', 'Hindi']
   }
 ];
+
+export function getAllCooperativeWorkers(): CooperativeWorkerProfile[] {
+  const dynamicWorkers: CooperativeWorkerProfile[] = [];
+
+  // 1. Read from onboardingService local storage 'sahakari_worker_profiles_v2'
+  try {
+    const rawOnboarding = localStorage.getItem('sahakari_worker_profiles_v2');
+    if (rawOnboarding) {
+      const parsed = JSON.parse(rawOnboarding);
+      parsed.forEach((w: any, index: number) => {
+        if (w.full_name || w.name) {
+          const name = w.full_name || w.name;
+          const tradeLabel = w.primary_skill_label || 'Cooperative Certified Trade Specialist';
+          const trade = (tradeLabel + ' ' + (w.primary_skill_id || '')).toLowerCase().includes('plumb') ? 'plumbing' 
+                      : (tradeLabel + ' ' + (w.primary_skill_id || '')).toLowerCase().includes('carp') ? 'carpentry'
+                      : (tradeLabel + ' ' + (w.primary_skill_id || '')).toLowerCase().includes('hvac') || tradeLabel.toLowerCase().includes('ac') ? 'hvac'
+                      : 'electrical';
+
+          dynamicWorkers.push({
+            id: w.id || `wrk-onb-${index}`,
+            name,
+            trade,
+            tradeLabel,
+            photo: w.profile_photo_url || w.avatar || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=400&auto=format&fit=crop&q=80',
+            rating: 4.9,
+            jobs: 28,
+            distanceKm: 1.1,
+            etaMinutes: 14,
+            cooperativeName: w.cooperative_name || 'Chennai Central Labour Cooperative Society',
+            coopId: w.cooperative_id || 'TN-LCS-442/2014',
+            badge: 'Govt. Verified • Cooperative Member',
+            experience: `${w.experience_years || 5} Years`,
+            tools: 'Standard Professional Toolset',
+            rateStarting: 249,
+            phone: w.phone || '+91 98412 34567',
+            languages: ['Tamil', 'English']
+          });
+        }
+      });
+    }
+  } catch {}
+
+  // 2. Read from active auth session 'partnerplus_session_public' (e.g. Vijay)
+  try {
+    const sessionRaw = localStorage.getItem('partnerplus_session_public');
+    if (sessionRaw) {
+      const u = JSON.parse(sessionRaw);
+      if (u && u.role === 'worker' && u.name) {
+        const alreadyExists = dynamicWorkers.some(w => w.name.toLowerCase() === u.name.toLowerCase()) ||
+                              ALL_COOPERATIVE_WORKERS.some(w => w.name.toLowerCase() === u.name.toLowerCase());
+        if (!alreadyExists) {
+          dynamicWorkers.unshift({
+            id: u.id || `wrk-active-${u.name.toLowerCase().replace(/\s+/g, '-')}`,
+            name: u.name,
+            trade: 'electrical',
+            tradeLabel: u.primaryTrade || 'Certified Multi-Trade Artisan',
+            photo: u.avatar || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80',
+            rating: 4.95,
+            jobs: 46,
+            distanceKm: 0.9,
+            etaMinutes: 12,
+            cooperativeName: u.cooperativeName || 'Chennai Central Labour Cooperative Society',
+            coopId: u.cooperativeRegNo || 'TN-LCS-442/2014',
+            badge: 'Govt. Licensed Wireman • Verified Member',
+            experience: `${u.experienceYears || 6} Years`,
+            tools: 'Digital Multimeter, Electrical Repair Kit',
+            rateStarting: 299,
+            phone: u.phone || '+91 98412 34567',
+            languages: ['Tamil', 'English', 'Hindi']
+          });
+        }
+      }
+    }
+  } catch {}
+
+  // Combine dynamic workers first, then default static workers without duplicates
+  const result = [...dynamicWorkers];
+  ALL_COOPERATIVE_WORKERS.forEach(w => {
+    if (!result.some(r => r.id === w.id || r.name.toLowerCase() === w.name.toLowerCase())) {
+      result.push(w);
+    }
+  });
+
+  return result;
+}

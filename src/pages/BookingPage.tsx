@@ -46,7 +46,8 @@ import { initializeRazorpayPayment } from '../services/razorpayService';
 import { Booking, WorkerMatchResult } from '../types';
 import { 
   CooperativeWorkerProfile, 
-  ALL_COOPERATIVE_WORKERS 
+  ALL_COOPERATIVE_WORKERS,
+  getAllCooperativeWorkers 
 } from '../data/cooperativeWorkers';
 import { WorksCatalogView, TaskItem, CategoryData } from '../components/booking/WorksCatalogView';
 import { AvailableWorkersView } from '../components/booking/AvailableWorkersView';
@@ -176,7 +177,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
 
   // Filtered workers list
   const filteredWorkersList = useMemo(() => {
-    let list = ALL_COOPERATIVE_WORKERS;
+    let list = getAllCooperativeWorkers();
     if (workerCategoryFilter !== 'all') {
       list = list.filter((w) => w.trade === workerCategoryFilter);
     }

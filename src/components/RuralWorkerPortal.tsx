@@ -16,7 +16,7 @@ import {
   WorkerSkillRecord, 
   WorkerJobEligibilityResult 
 } from '../types/workerSkillRegistry';
-import { STRUCTURED_WORKER_PROFILES } from '../data/structuredWorkersData';
+import { STRUCTURED_WORKER_PROFILES, getAllStructuredWorkers } from '../data/structuredWorkersData';
 import { workerEligibilityService } from '../services/workerEligibilityService';
 import { cooperativeBackendService } from '../services/cooperativeBackendService';
 import { WorkerHeader } from './worker/WorkerHeader';
@@ -63,7 +63,14 @@ export const RuralWorkerPortal: React.FC<RuralWorkerPortalProps> = ({ onSwitchTo
   const { user, updateUserProfile } = useAuth();
 
   // Cooperative Worker Persona State (Structured profile with skill registry)
-  const [activeWorker, setActiveWorker] = useState<StructuredWorkerProfile>(STRUCTURED_WORKER_PROFILES[0]);
+  const [activeWorker, setActiveWorker] = useState<StructuredWorkerProfile>(() => {
+    const all = getAllStructuredWorkers();
+    if (user && user.role === 'worker' && user.name) {
+      const match = all.find(w => w.name.toLowerCase() === user.name.toLowerCase());
+      if (match) return match;
+    }
+    return all[0] || STRUCTURED_WORKER_PROFILES[0];
+  });
 
   // Synchronize activeWorker profile with authenticated user state
   useEffect(() => {
@@ -71,7 +78,7 @@ export const RuralWorkerPortal: React.FC<RuralWorkerPortalProps> = ({ onSwitchTo
       setActiveWorker((prev) => ({
         ...prev,
         name: user.name,
-        phone: user.phone || prev.phone,
+        phone: (user.phone && !user.phone.includes('@')) ? user.phone : prev.phone,
         avatar: user.avatar || prev.avatar
       }));
     }
