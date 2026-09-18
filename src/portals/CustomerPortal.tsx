@@ -112,9 +112,9 @@ export const CustomerPortal: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-[#0F172A] flex flex-col justify-between selection:bg-cyan-400 selection:text-black">
       {/* Customer Portal Top Navigation Header */}
-      <nav className="bg-white border-b border-gray-200 sticky top-9 z-40 shadow-xs">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-18 gap-2">
+      <nav className="bg-white border-b border-gray-200 sticky top-[32px] sm:top-[34px] z-40 shadow-xs">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-1.5 overflow-x-auto scrollbar-none">
             
             {/* Logo & Location Identity */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -125,26 +125,26 @@ export const CustomerPortal: React.FC = () => {
                 <PartnerPlusLogo />
               </button>
 
-              <div className="h-5 w-px bg-slate-200 hidden md:block" />
+              <div className="h-5 w-px bg-slate-200 hidden lg:block" />
 
               {/* Location indicator button */}
               <button
                 type="button"
                 onClick={openLocationPicker}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer border border-slate-200/80"
+                className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer border border-slate-200/80 shrink-0"
                 title="Change Service Area"
               >
                 <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span className="truncate max-w-[100px] xl:max-w-[140px] text-[11px] font-bold">{currentLocation}</span>
+                <span className="truncate max-w-[100px] xl:max-w-[130px] text-[11px] font-bold">{currentLocation}</span>
               </button>
             </div>
 
             {/* Portal Tab Navigation */}
-            <div className="hidden lg:flex items-center gap-0.5 bg-slate-100/90 p-1 rounded-2xl border border-slate-200/80 shrink">
+            <div className="hidden lg:flex items-center gap-0.5 bg-slate-100/90 p-1 rounded-2xl border border-slate-200/80 shrink-0">
               <button
                 type="button"
                 onClick={() => setActiveCustomerTab('services')}
-                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`px-2 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer whitespace-nowrap ${
                   activeCustomerTab === 'services'
                     ? 'bg-white text-blue-600 shadow-xs font-black'
                     : 'text-slate-600 hover:text-slate-900'
@@ -157,7 +157,7 @@ export const CustomerPortal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveCustomerTab('booking')}
-                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`px-2 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer whitespace-nowrap ${
                   activeCustomerTab === 'booking'
                     ? 'bg-white text-blue-600 shadow-xs font-black'
                     : 'text-slate-600 hover:text-slate-900'
@@ -170,7 +170,7 @@ export const CustomerPortal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveCustomerTab('tracking')}
-                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer relative whitespace-nowrap ${
+                className={`px-2 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer relative whitespace-nowrap ${
                   activeCustomerTab === 'tracking'
                     ? 'bg-white text-blue-600 shadow-xs font-black'
                     : 'text-slate-600 hover:text-slate-900'
@@ -188,7 +188,7 @@ export const CustomerPortal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveCustomerTab('invoices')}
-                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`px-2 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer whitespace-nowrap ${
                   activeCustomerTab === 'invoices'
                     ? 'bg-white text-blue-600 shadow-xs font-black'
                     : 'text-slate-600 hover:text-slate-900'
@@ -201,7 +201,7 @@ export const CustomerPortal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveCustomerTab('reviews')}
-                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`px-2 xl:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer whitespace-nowrap ${
                   activeCustomerTab === 'reviews'
                     ? 'bg-white text-blue-600 shadow-xs font-black'
                     : 'text-slate-600 hover:text-slate-900'
@@ -213,24 +213,24 @@ export const CustomerPortal: React.FC = () => {
             </div>
 
             {/* Right Side Actions & User Profile */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
               {/* Quick Role Switcher for Live Demo Flow */}
               <button
                 type="button"
                 onClick={() => switchRole('worker')}
-                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-xs border border-slate-700 active:scale-95 shrink-0"
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black transition flex items-center gap-1 cursor-pointer shadow-xs border border-slate-700 active:scale-95 shrink-0"
                 title="Switch to Worker Portal to Accept & Process Jobs Live"
               >
                 <User className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="hidden sm:inline">Worker Portal →</span>
-                <span className="sm:hidden">Worker →</span>
+                <span className="hidden xl:inline">Worker Portal →</span>
+                <span className="xl:hidden hidden md:inline">Worker →</span>
               </button>
 
               {/* User Profile Pill Button */}
               <button
                 type="button"
                 onClick={() => setActiveCustomerTab('profile')}
-                className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0 ${
+                className={`px-2 sm:px-2.5 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-2xs shrink-0 ${
                   activeCustomerTab === 'profile'
                     ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                     : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200'
@@ -238,11 +238,11 @@ export const CustomerPortal: React.FC = () => {
                 title={t("customer.profileSettings") || "View & Edit Customer Profile"}
               >
                 {user?.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="w-5 h-5 rounded-full object-cover shrink-0 border border-slate-200" />
+                  <img src={user.avatar} alt={user.name} className="w-4 h-4 sm:w-5 sm:h-5 rounded-full object-cover shrink-0 border border-slate-200" />
                 ) : (
                   <User className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 )}
-                <span className="truncate max-w-[70px] sm:max-w-[90px]">{user?.name?.split(' ')[0] || t("customer.profileSettings") || 'Profile'}</span>
+                <span className="truncate max-w-[60px] xl:max-w-[85px]">{user?.name?.split(' ')[0] || t("customer.profileSettings") || 'Profile'}</span>
               </button>
 
               <button
@@ -259,11 +259,11 @@ export const CustomerPortal: React.FC = () => {
                     });
                   }
                 }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition cursor-pointer shadow-2xs relative shrink-0"
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition cursor-pointer shadow-2xs relative shrink-0"
                 title="Real-time Chat with Assigned Worker"
               >
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="hidden sm:inline">{t("chat.chat") || "Chat"}</span>
+                <span className="hidden xl:inline">{t("chat.chat") || "Chat"}</span>
                 {unreadChatCount > 0 && (
                   <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center animate-pulse">
                     {unreadChatCount}
@@ -278,26 +278,26 @@ export const CustomerPortal: React.FC = () => {
                     const active = bookings.find(b => !['service_completed', 'cancelled', 'rejected'].includes(b.status)) || bookings[0];
                     if (active) openCompletionQr(active);
                   }}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition cursor-pointer shadow-2xs shrink-0"
+                  className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition cursor-pointer shadow-2xs shrink-0"
                   title="Show Service Completion QR Code"
                 >
                   <QrCode className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span className="hidden sm:inline">QR Code</span>
+                  <span className="hidden xl:inline">QR Code</span>
                 </button>
               )}
 
               <button
                 onClick={() => setIsPhoneModalOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer shrink-0"
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer shrink-0"
                 title="Call 24/7 Helpline"
               >
                 <Phone className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span className="hidden xl:inline">{t("common.helpline") || "Helpline"}</span>
+                <span className="hidden 2xl:inline">{t("common.helpline") || "Helpline"}</span>
               </button>
 
               <button
                 onClick={openEmergency}
-                className="px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-black rounded-xl shadow-xs shadow-red-500/20 flex items-center gap-1 transition cursor-pointer active:scale-95 shrink-0"
+                className="px-2 sm:px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-black rounded-xl shadow-xs shadow-red-500/20 flex items-center gap-1 transition cursor-pointer active:scale-95 shrink-0"
                 title="15-min Urgent Emergency Household SOS"
               >
                 <Zap className="w-3.5 h-3.5 fill-white text-white animate-pulse shrink-0" />

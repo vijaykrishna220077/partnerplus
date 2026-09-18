@@ -72,8 +72,8 @@ export const PortalHeaderBanner: React.FC = () => {
   const CurrentIcon = roleInfo.icon;
 
   return (
-    <div className="bg-[#050C1B] text-white border-b border-slate-800 py-2 px-3 sm:px-6 text-xs sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
+    <div className="bg-[#050C1B] text-white border-b border-slate-800 py-1.5 px-3 sm:px-6 text-xs sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">
         
         {/* Left: Active Portal Indicator & User Identity */}
         <div className="flex items-center gap-3">
