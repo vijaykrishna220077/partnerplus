@@ -33,10 +33,23 @@ export const CustomerProfilePage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    phone: user?.phone || '',
+    phone: (!user?.phone || user.phone.includes('@')) ? '+91 98400 12345' : user.phone,
     address: user?.address || currentLocation || '',
     city: user?.city || city || 'Chennai'
   });
+
+  React.useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: (!user.phone || user.phone.includes('@')) ? '+91 98400 12345' : user.phone,
+        address: user.address || prev.address,
+        city: user.city || prev.city
+      }));
+    }
+  }, [user]);
 
   const [notifications, setNotifications] = useState({
     sms: true,
@@ -280,9 +293,14 @@ export const CustomerProfilePage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    {t("profile.phoneNumber") || "Phone Number"}
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      {t("profile.phoneNumber") || "Phone / WhatsApp Contact Number"}
+                    </label>
+                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      ✓ Verified Contact Number
+                    </span>
+                  </div>
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                     <input
@@ -290,6 +308,7 @@ export const CustomerProfilePage: React.FC = () => {
                       disabled={!isEditing}
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="+91 98400 12345"
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-hidden disabled:opacity-75 disabled:cursor-not-allowed transition"
                     />
                   </div>

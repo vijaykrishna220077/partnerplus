@@ -226,6 +226,11 @@ export const WorkerProfileTab: React.FC<WorkerProfileTabProps> = ({
             <span className="text-blue-700 font-extrabold">{currentWorker.primary_skill_label}</span>
             <span>•</span>
             <span className="text-emerald-700 font-bold">{currentWorker.experience_years} Years Experience</span>
+            <span>•</span>
+            <span className="inline-flex items-center gap-1 text-slate-900 font-extrabold bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
+              <Phone className="w-3 h-3 text-emerald-600" />
+              <span>Contact: {currentWorker.phone || user?.phone || '+91 98412 34567'}</span>
+            </span>
           </div>
         </div>
       </div>

@@ -244,11 +244,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const parsed = JSON.parse(saved);
         const storedCustomName = localStorage.getItem('partnerplus_user_name');
         const storedCustomAvatar = localStorage.getItem('partnerplus_user_avatar');
+        const storedCustomPhone = localStorage.getItem('partnerplus_user_phone');
         if (storedCustomName && parsed) {
           parsed.name = storedCustomName;
         }
         if (storedCustomAvatar && parsed) {
           parsed.avatar = storedCustomAvatar;
+        }
+        if (storedCustomPhone && parsed) {
+          parsed.phone = storedCustomPhone;
+        }
+        if (parsed && (!parsed.phone || parsed.phone.includes('@'))) {
+          parsed.phone = parsed.role === 'worker' ? '+91 98412 34567' : '+91 98400 12345';
         }
         if (parsed && parsed.name !== 'Ananya Sharma' && parsed.avatar?.includes('photo-1544005313')) {
           delete parsed.avatar;
@@ -283,11 +290,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const meta = session.user.user_metadata || {};
         setUser(prev => {
           if (prev && prev.email === session.user.email) return prev;
+          const rawPhone = meta.phone || '';
+          const phone = (rawPhone && !rawPhone.includes('@')) ? rawPhone : '+91 98400 12345';
           return {
             id: session.user.id,
             name: meta.full_name || session.user.email?.split('@')[0] || 'User',
             email: session.user.email || '',
-            phone: meta.phone || '',
+            phone,
             role: (meta.role?.toLowerCase() as UserRole) || 'customer',
             joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
           };
@@ -303,7 +312,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const updateUserProfile = (updatedFields: Partial<AuthUser>) => {
-    setUser(prev => prev ? { ...prev, ...updatedFields } : null);
+    setUser(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updatedFields };
+      if (updated.phone) {
+        localStorage.setItem('partnerplus_user_phone', updated.phone);
+      }
+      if (updated.name) {
+        localStorage.setItem('partnerplus_user_name', updated.name);
+      }
+      if (updated.avatar) {
+        localStorage.setItem('partnerplus_user_avatar', updated.avatar);
+      }
+      return updated;
+    });
   };
 
   const loginWithDemo = (role: UserRole, specificAccountIndex?: number) => {
@@ -452,7 +474,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: customUserData?.id || `usr-${Date.now()}`,
       name: derivedName,
       email: customUserData?.email || (isEmail ? cleanIdentifier : `${cleanIdentifier.replace(/\D/g, '')}@partnerplus.org`),
-      phone: customUserData?.phone || cleanIdentifier,
+      phone: (customUserData?.phone && !customUserData.phone.includes('@'))
+        ? customUserData.phone
+        : (!cleanIdentifier.includes('@') ? cleanIdentifier : (role === 'worker' ? '+91 98412 34567' : '+91 98400 12345')),
       role: role,
       avatar: customUserData?.avatar ? customUserData.avatar : undefined,
       ...customUserData
