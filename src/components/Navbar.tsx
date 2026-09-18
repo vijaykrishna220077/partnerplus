@@ -115,7 +115,7 @@ export const Navbar: React.FC = () => {
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
+      <div className="w-full px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
         {/* Left Side: Brand Logo */}
         <div className="flex items-center gap-3.5 sm:gap-4">
           {/* Brand Logo in Editorial Aesthetic */}
