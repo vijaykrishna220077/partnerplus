@@ -1150,37 +1150,37 @@ export const WorkerRegistration: React.FC<WorkerRegistrationProps> = ({
             </p>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-xs font-bold cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white cursor-pointer">
                 <input
                   type="radio"
                   name="payout_method"
                   checked={payoutMethod === 'upi'}
                   onChange={() => setPayoutMethod('upi')}
-                  className="text-emerald-600"
+                  className="text-emerald-600 focus:ring-emerald-500"
                 />
-                <span>Instant UPI Virtual Payment Address (VPA)</span>
+                <span className="text-slate-900 dark:text-white">Instant UPI Virtual Payment Address (VPA)</span>
               </label>
 
-              <label className="flex items-center gap-2 text-xs font-bold cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white cursor-pointer">
                 <input
                   type="radio"
                   name="payout_method"
                   checked={payoutMethod === 'bank_account'}
                   onChange={() => setPayoutMethod('bank_account')}
-                  className="text-emerald-600"
+                  className="text-emerald-600 focus:ring-emerald-500"
                 />
-                <span>Bank Account (Account Number &amp; IFSC)</span>
+                <span className="text-slate-900 dark:text-white">Bank Account (Account Number &amp; IFSC)</span>
               </label>
 
-              <label className="flex items-center gap-2 text-xs font-bold cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white cursor-pointer">
                 <input
                   type="radio"
                   name="payout_method"
                   checked={payoutMethod === 'cooperative_passbook'}
                   onChange={() => setPayoutMethod('cooperative_passbook')}
-                  className="text-emerald-600"
+                  className="text-emerald-600 focus:ring-emerald-500"
                 />
-                <span>Cooperative Society Member Passbook Account</span>
+                <span className="text-slate-900 dark:text-white">Cooperative Society Member Passbook Account</span>
               </label>
             </div>
 
