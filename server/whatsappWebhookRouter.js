@@ -25,7 +25,7 @@ function formatE164Phone(phone) {
 /**
  * 1. GET /api/whatsapp/webhook — Meta Webhook Verification Handshake
  */
-whatsappWebhookRouter.get('/webhook', (req, res) => {
+whatsappWebhookRouter.get(['/webhook', '/whatsapp/webhook', '/api/whatsapp/webhook'], (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
@@ -45,7 +45,7 @@ whatsappWebhookRouter.get('/webhook', (req, res) => {
  * 2. POST /api/whatsapp/webhook — Meta Incoming Webhook Events Receiver
  * Ingests incoming status receipts (sent, delivered, read, failed) & inbound user messages into Supabase whatsapp_notifications
  */
-whatsappWebhookRouter.post('/webhook', async (req, res) => {
+whatsappWebhookRouter.post(['/webhook', '/whatsapp/webhook', '/api/whatsapp/webhook'], async (req, res) => {
   try {
     const body = req.body;
 
@@ -128,7 +128,7 @@ whatsappWebhookRouter.post('/webhook', async (req, res) => {
  * 3. POST /api/notifications/dispatch — Transactional Event Notification Dispatcher
  * Checks idempotency_key, sends via Meta Cloud API, logs to whatsapp_notifications
  */
-whatsappWebhookRouter.post('/dispatch', async (req, res) => {
+whatsappWebhookRouter.post(['/dispatch', '/notifications/dispatch', '/api/notifications/dispatch', '/send', '/whatsapp/send', '/api/whatsapp/send'], async (req, res) => {
   try {
     const { 
       eventType, 
