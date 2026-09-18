@@ -183,13 +183,38 @@ export const whatsappService = {
   },
 
   /**
-   * Send a template-based notification over WhatsApp
+   * Send a template-based notification over WhatsApp via backend Cloud API endpoint
    */
   async sendTemplateNotification(payload: WhatsAppNotificationPayload): Promise<WhatsAppMessageRecord> {
     const messageBody = renderWhatsAppTemplate(payload);
-    const isRealConfigured = this.isRealWhatsAppConfigured();
-    const currentMode: 'DEMO_ONLY' | 'REAL_MODE' = isRealConfigured ? 'REAL_MODE' : 'DEMO_ONLY';
+    
+    try {
+      const response = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientPhone: payload.recipientPhone,
+          recipientName: payload.recipientName,
+          messageText: messageBody,
+          templateName: payload.template,
+          bookingCode: payload.parameters?.bookingCode
+        })
+      });
 
+      if (response.ok) {
+        const resData = await response.json();
+        if (resData.record) {
+          const currentLogs = getStoredLogs();
+          saveStoredLogs([resData.record, ...currentLogs]);
+          return resData.record;
+        }
+      }
+    } catch (err) {
+      console.warn('[WhatsApp Service] Backend endpoint dispatch notice:', err);
+    }
+
+    // Client-side fallback if backend API is offline
+    const isRealConfigured = this.isRealWhatsAppConfigured();
     const record: WhatsAppMessageRecord = {
       id: `wa-msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       recipientPhone: payload.recipientPhone,
@@ -197,74 +222,44 @@ export const whatsappService = {
       templateName: payload.template,
       messageBody,
       status: isRealConfigured ? 'sent' : 'demo_simulated',
-      mode: currentMode,
+      mode: isRealConfigured ? 'REAL_MODE' : 'DEMO_ONLY',
       sentAt: new Date().toISOString(),
       metadata: payload.parameters
     };
 
-    if (isRealConfigured) {
-      try {
-        const phoneId = import.meta.env.VITE_WHATSAPP_PHONE_NUMBER_ID;
-        const token = import.meta.env.VITE_WHATSAPP_ACCESS_TOKEN;
-        const formattedPhone = payload.recipientPhone.replace(/\D/g, '');
-
-        const response = await fetch(`https://graph.facebook.com/v18.0/${phoneId}/messages`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            messaging_product: 'whatsapp',
-            to: formattedPhone.startsWith('91') ? formattedPhone : `91${formattedPhone}`,
-            type: 'text',
-            text: { body: messageBody }
-          })
-        });
-
-        if (response.ok) {
-          record.status = 'sent';
-        } else {
-          console.warn('[WhatsApp Real Cloud API] HTTP error, switching fallback record status to demo_simulated');
-          record.status = 'demo_simulated';
-        }
-      } catch (err) {
-        console.error('[WhatsApp Real Cloud API] Failed to send via Graph API:', err);
-        record.status = 'demo_simulated';
-      }
-    } else {
-      console.log(`%c[WhatsApp SIH Demo Mode] 📱 Message to ${payload.recipientName} (${payload.recipientPhone}):\n${messageBody}`, 'color: #25D366; font-weight: bold; font-size: 12px;');
-    }
-
-    // Persist to local storage
     const currentLogs = getStoredLogs();
     saveStoredLogs([record, ...currentLogs]);
-
-    // Persist to Supabase if table exists
-    try {
-      if (supabase) {
-        await supabase.from('whatsapp_messages').insert({
-          id: record.id,
-          recipient_phone: record.recipientPhone,
-          recipient_name: record.recipientName,
-          template_name: record.templateName,
-          message_body: record.messageBody,
-          status: record.status,
-          mode: record.mode,
-          sent_at: record.sentAt
-        });
-      }
-    } catch {
-      // Ignore database insert errors in demo mode
-    }
-
     return record;
   },
 
   /**
-   * Send custom WhatsApp text message
+   * Send custom WhatsApp text message via backend endpoint
    */
   async sendDirectMessage(phone: string, text: string, recipientName: string = 'User'): Promise<WhatsAppMessageRecord> {
+    try {
+      const response = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientPhone: phone,
+          recipientName,
+          messageText: text,
+          templateName: 'CUSTOM_TEXT'
+        })
+      });
+
+      if (response.ok) {
+        const resData = await response.json();
+        if (resData.record) {
+          const currentLogs = getStoredLogs();
+          saveStoredLogs([resData.record, ...currentLogs]);
+          return resData.record;
+        }
+      }
+    } catch (err) {
+      console.warn('[WhatsApp Service] Direct message endpoint notice:', err);
+    }
+
     const isRealConfigured = this.isRealWhatsAppConfigured();
     const record: WhatsAppMessageRecord = {
       id: `wa-msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,

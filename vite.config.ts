@@ -1,11 +1,23 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import express from 'express';
 import { defineConfig } from 'vite';
+import { whatsappWebhookRouter } from './server/whatsappWebhookRouter.js';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(), 
+      tailwindcss(),
+      {
+        name: 'whatsapp-webhook-middleware',
+        configureServer(server) {
+          server.middlewares.use(express.json());
+          server.middlewares.use('/api/whatsapp', whatsappWebhookRouter);
+        }
+      }
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
