@@ -1,4 +1,6 @@
 export type WhatsAppTemplateType = 
+  | 'CUSTOMER_WORKER_ASSIGNED'
+  | 'WORKER_NEW_JOB'
   | 'BOOKING_CONFIRMED'
   | 'WORKER_ASSIGNED'
   | 'WORKER_ON_THE_WAY'
@@ -14,13 +16,20 @@ export interface WhatsAppNotificationPayload {
   recipientName: string;
   recipientRole?: 'customer' | 'worker' | 'organization' | 'cooperative';
   language?: 'en' | 'ta' | 'hi' | 'kn' | 'te';
+  idempotencyKey?: string;
   parameters: {
+    bookingId?: string;
     bookingCode?: string;
     serviceName?: string;
     customerName?: string;
     customerAddress?: string;
+    customerInstructions?: string;
+    bookingDate?: string;
+    bookingTime?: string;
     workerName?: string;
     workerPhone?: string;
+    workerExperience?: string;
+    workerRating?: number | string;
     etaMinutes?: number;
     totalAmount?: number;
     invoiceNumber?: string;
@@ -30,120 +39,192 @@ export interface WhatsAppNotificationPayload {
 }
 
 /**
-  * Render multi-language WhatsApp notification template texts for client preview/debug if needed
+  * Render multi-language WhatsApp notification template texts
   */
 export function renderWhatsAppTemplate(payload: WhatsAppNotificationPayload): string {
   const { template, recipientName, language = 'en', parameters: p } = payload;
+  const bookingRef = p.bookingCode || p.bookingId || 'BK-100';
 
   if (language === 'ta') {
     switch (template) {
-      case 'BOOKING_CONFIRMED':
-        return `🤝 வணக்கம் ${recipientName}! பார்ட்னர் பிளஸ் (PartnerPlus) மூலம் உங்கள் சேவை பதிவு செய்யப்பட்டுள்ளது.
-📌 பதிவு எண்: #${p.bookingCode}
-🛠️ சேவை: ${p.serviceName}
-📍 முகவரி: ${p.customerAddress || 'உங்கள் முகவரி'}
-வேலையாள் ஒதுக்கப்பட்டவுடன் உங்களுக்கு அறிவிக்கப்படும். 🤝`;
+      case 'WORKER_NEW_JOB':
+        return `PARTNER PLUS
+புதிய சேவை பணி ஒதுக்கப்பட்டுள்ளது
 
-      case 'WORKER_ASSIGNED':
-        return `🎉 வணக்கம் ${recipientName}! உங்கள் சேவைக்கு தொழிலாளி உறுதி செய்யப்பட்டுள்ளார்.
-👤 தொழிலாளி: ${p.workerName}
-📞 தொலைபேசி: ${p.workerPhone}
-📌 பதிவு எண்: #${p.bookingCode}
-அவர் விரைவில் உங்களை தொடர்புகொள்வார்.`;
+வாடிக்கையாளர்: ${p.customerName || 'வாடிக்கையாளர்'}
+சேவை: ${p.serviceName || 'சேவை'}
+தேதி: ${p.bookingDate || 'இன்று'}
+நேரம்: ${p.bookingTime || 'உடனடியாக'}
+பதிவு எண் (Booking ID): ${bookingRef}
 
-      case 'WORKER_ON_THE_WAY':
-        return `🚨 ${recipientName}, உங்கள் தொழிலாளி ${p.workerName} புறப்பட்டுவிட்டார்!
-⏱️ வரக்கூடும் நேரம்: ${p.etaMinutes || 20} நிமிடங்கள்
-📌 பதிவு எண்: #${p.bookingCode}`;
+இருப்பிடம்:
+${p.customerAddress || 'சேவை முகவரி'}
 
-      case 'JOB_COMPLETED':
-        return `✅ ${recipientName}, உங்கள் சேவை வெற்றிகரமாக நிறைவுற்றது!
-📌 பதிவு எண்: #${p.bookingCode}
-💰 மொத்த தொகை: ₹${p.totalAmount}`;
+கூடுதல் குறிப்புகள்:
+${p.customerInstructions || 'எதுவுமில்லை'}
 
-      case 'INVOICE_CREATED':
-        return `📄 வணக்கம் ${recipientName}, உங்கள் பார்ட்னர் பிளஸ் ரசீது தயார்.
-🧾 ரசீது எண்: ${p.invoiceNumber}
-💰 தொகை: ₹${p.totalAmount}`;
+முழு விவரங்களையும் பார்க்க பார்ட்னர் பிளஸ் செயலியை திறக்கவும்.`;
+
+      case 'CUSTOMER_WORKER_ASSIGNED':
+        return `PARTNER PLUS
+தொழிலாளி ஒதுக்கப்பட்டார்
+
+உங்கள் சேவைக்கான தொழிலாளி உறுதி செய்யப்பட்டுள்ளார்.
+
+தொழிலாளி: ${p.workerName || 'சான்றளிக்கப்பட்ட தொழிலாளி'}
+சேவை: ${p.serviceName || 'சேவை'}
+அனுபவம்: ${p.workerExperience || '5+ ஆண்டுகள் சான்றளிக்கப்பட்ட தொழிலாளி'}
+மதிப்பீடு: ${p.workerRating || 4.9} ★
+
+தேதி: ${p.bookingDate || 'இன்று'}
+நேரம்: ${p.bookingTime || 'உடனடியாக'}
+பதிவு எண் (Booking ID): ${bookingRef}
+
+முழு தொழிலாளி விவரங்களையும் பார்க்க பார்ட்னர் பிளஸ் செயலியை திறக்கவும்.`;
     }
   }
 
   if (language === 'hi') {
     switch (template) {
-      case 'BOOKING_CONFIRMED':
-        return `🤝 नमस्ते ${recipientName}! पार्टनरप्लस (PartnerPlus) में आपकी बुकिंग स्वीकार कर ली गई है।
-📌 बुकिंग कोड: #${p.bookingCode}
-🛠️ सेवा: ${p.serviceName}
-📍 पता: ${p.customerAddress || 'आपका पता'}`;
+      case 'WORKER_NEW_JOB':
+        return `PARTNER PLUS
+नया कार्य आवंटित
 
-      case 'WORKER_ASSIGNED':
-        return `🎉 नमस्ते ${recipientName}! आपकी सेवा के लिए कार्यकर्ता आवंटित किया गया है।
-👤 कार्यकर्ता: ${p.workerName}
-📞 फोन: ${p.workerPhone}
-📌 बुकिंग कोड: #${p.bookingCode}`;
+ग्राहक: ${p.customerName || 'ग्राहक'}
+सेवा: ${p.serviceName || 'सेवा'}
+दिनांक: ${p.bookingDate || 'आज'}
+समय: ${p.bookingTime || 'तुरंत'}
+बुकिंग आईडी (Booking ID): ${bookingRef}
 
-      case 'WORKER_ON_THE_WAY':
-        return `🚨 ${recipientName}, आपके कार्यकर्ता ${p.workerName} रास्ते में हैं!
-⏱️ अनुमानित समय: ${p.etaMinutes || 20} मिनट
-📌 बुकिंग कोड: #${p.bookingCode}`;
+स्थान:
+${p.customerAddress || 'सेवा पता'}
 
-      case 'JOB_COMPLETED':
-        return `✅ ${recipientName}, आपकी सेवा सफलतापूर्वक पूरी हो गई है!
-📌 बुकिंग कोड: #${p.bookingCode}
-💰 कुल राशि: ₹${p.totalAmount}`;
+अतिरिक्त निर्देश:
+${p.customerInstructions || 'कोई नहीं'}
 
-      case 'INVOICE_CREATED':
-        return `📄 नमस्ते ${recipientName}, आपका पार्टनरप्लस बिल तैयार है।
-🧾 बिल संख्या: ${p.invoiceNumber}
-💰 राशि: ₹${p.totalAmount}`;
+पूरा विवरण देखने के लिए कृपया पार्टनरप्लस ऐप खोलें।`;
+
+      case 'CUSTOMER_WORKER_ASSIGNED':
+        return `PARTNER PLUS
+कार्यकर्ता आवंटित
+
+आपका कार्यकर्ता आवंटित कर दिया गया है।
+
+कार्यकर्ता: ${p.workerName || 'प्रमाणित कार्यकर्ता'}
+सेवा: ${p.serviceName || 'सेवा'}
+अनुभव: ${p.workerExperience || '5+ वर्ष अनुभवी'}
+रेटिंग: ${p.workerRating || 4.9} ★
+
+दिनांक: ${p.bookingDate || 'आज'}
+समय: ${p.bookingTime || 'तुरंत'}
+बुकिंग आईडी (Booking ID): ${bookingRef}
+
+पूरा विवरण देखने के लिए कृपया पार्टनरप्लस ऐप खोलें।`;
     }
   }
 
   // Default English Templates
   switch (template) {
+    case 'WORKER_NEW_JOB':
+      return `PARTNER PLUS
+New Job Assigned
+
+Customer: ${p.customerName || 'Valued Customer'}
+Service: ${p.serviceName || 'Cooperative Service'}
+Date: ${p.bookingDate || 'Today'}
+Time: ${p.bookingTime || 'Immediate'}
+Booking ID: ${bookingRef}
+
+Location:
+${p.customerAddress || 'Customer Address'}
+
+Additional instructions:
+${p.customerInstructions || 'Standard service request'}
+
+Please open PartnerPlus to view complete job details.`;
+
+    case 'CUSTOMER_WORKER_ASSIGNED':
+      return `PARTNER PLUS
+Worker Assigned
+
+Your worker has been assigned.
+
+Worker: ${p.workerName || 'Certified Worker'}
+Service: ${p.serviceName || 'Service'}
+Experience: ${p.workerExperience || '5+ yrs verified artisan'}
+Rating: ${p.workerRating || 4.9} ★
+
+Date: ${p.bookingDate || 'Today'}
+Time: ${p.bookingTime || 'Immediate'}
+Booking ID: ${bookingRef}
+
+Please open PartnerPlus to view complete worker details.`;
+
     case 'BOOKING_CONFIRMED':
-      return `🤝 Hello ${recipientName}! Your service booking on PartnerPlus has been received.
-📌 Booking Reference: #${p.bookingCode}
-🛠️ Service Required: ${p.serviceName}
-📍 Address: ${p.customerAddress || 'Customer Location'}
+      return `PARTNER PLUS
+Booking Confirmed
+
+Your service booking has been confirmed.
+
+Service: ${p.serviceName}
+Date: ${p.bookingDate || 'Today'}
+Time: ${p.bookingTime || 'Immediate'}
+Booking ID: ${bookingRef}
+
 We are matching certified nearby cooperative workers for you.`;
 
     case 'WORKER_ASSIGNED':
-      return `🎉 Great news ${recipientName}! A certified worker has been assigned to your request.
-👤 Worker Name: ${p.workerName}
-📞 Contact: ${p.workerPhone}
-📌 Booking Code: #${p.bookingCode}
-The worker will contact you shortly before arrival.`;
+      return `PARTNER PLUS
+Worker Assigned
+
+Worker: ${p.workerName}
+Service: ${p.serviceName}
+Booking ID: ${bookingRef}
+
+Please open PartnerPlus to view complete worker details.`;
 
     case 'WORKER_ON_THE_WAY':
-      return `🚨 Update for ${recipientName}: Worker ${p.workerName} is en-route to your location!
-⏱️ Estimated ETA: ~${p.etaMinutes || 20} mins
-📌 Booking Reference: #${p.bookingCode}`;
+      return `PARTNER PLUS
+Worker On The Way
+
+Worker ${p.workerName} is en-route to your location.
+ETA: ~${p.etaMinutes || 15} mins
+Booking ID: ${bookingRef}`;
 
     case 'JOB_COMPLETED':
-      return `✅ Service Completed! Thank you ${recipientName} for choosing PartnerPlus.
-📌 Booking Code: #${p.bookingCode}
-💰 Total Service Bill: ₹${p.totalAmount}`;
+      return `PARTNER PLUS
+Service Completed
+
+Service for Booking ID ${bookingRef} completed successfully.
+Total Amount: ₹${p.totalAmount}`;
 
     case 'INVOICE_CREATED':
-      return `📄 PartnerPlus Official GST Invoice.
-🧾 Invoice #: ${p.invoiceNumber}
-👤 Customer: ${recipientName}
-💰 Total Payable: ₹${p.totalAmount}`;
+      return `PARTNER PLUS
+Invoice Issued
+
+Invoice #: ${p.invoiceNumber}
+Booking ID: ${bookingRef}
+Total Payable: ₹${p.totalAmount}`;
 
     case 'PAYMENT_SUCCESSFUL':
-      return `💳 Payment Successful! Thank you ${recipientName}.
-📌 Booking Reference: #${p.bookingCode}
-💰 Amount Received: ₹${p.totalAmount}`;
+      return `PARTNER PLUS
+Payment Successful
+
+Payment of ₹${p.totalAmount} verified for Booking ID: ${bookingRef}.`;
 
     case 'NEW_JOB_WORKER':
-      return `🚨 New PartnerPlus Job Alert for ${recipientName}!
-🛠️ Service: ${p.serviceName}
-📍 Area: ${p.customerAddress || 'Nearby area'}
-Please check your Worker Portal to view & accept this job.`;
+      return `PARTNER PLUS
+New Job Alert
+
+Service: ${p.serviceName}
+Location: ${p.customerAddress || 'Nearby Area'}
+Booking ID: ${bookingRef}`;
 
     case 'JOB_CANCELLED':
-      return `ℹ️ Booking #${p.bookingCode} update: The service booking has been cancelled.`;
+      return `PARTNER PLUS
+Booking Cancelled
+
+Booking ID #${bookingRef} has been cancelled.`;
   }
 }
 
@@ -188,7 +269,9 @@ export const whatsappService = {
     */
   async sendTemplateNotification(payload: WhatsAppNotificationPayload): Promise<{ success: boolean; notificationId?: string }> {
     const messageBody = renderWhatsAppTemplate(payload);
-    
+    const bookingIdRef = payload.parameters?.bookingCode || payload.parameters?.bookingId || 'global';
+    const idempotencyKey = payload.idempotencyKey || `${payload.template}_${bookingIdRef}_${this.formatPhoneNumber(payload.recipientPhone)}`;
+
     try {
       const response = await fetch('/api/notifications/dispatch', {
         method: 'POST',
@@ -198,7 +281,8 @@ export const whatsappService = {
           recipientPhone: payload.recipientPhone,
           recipientName: payload.recipientName,
           recipientRole: payload.recipientRole || 'customer',
-          bookingId: payload.parameters?.bookingCode,
+          bookingId: bookingIdRef,
+          idempotencyKey,
           messageText: messageBody,
           templateName: payload.template,
           parameters: payload.parameters
@@ -207,7 +291,7 @@ export const whatsappService = {
 
       if (response.ok) {
         const data = await response.json();
-        return { success: true, notificationId: data.notificationId };
+        return { success: true, notificationId: data.notification?.id };
       }
     } catch (err) {
       console.warn('[WhatsApp Service] Backend dispatch error notice:', err);

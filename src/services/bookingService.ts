@@ -189,34 +189,24 @@ export const bookingService = {
     };
     db.insertInvoice(invoiceRecord);
 
-    // 7. Dispatch Transactional Event Notifications across channels
-    notificationService.dispatchNotification({
-      event: 'WORKER_ASSIGNED',
-      recipientId: newBooking.customerId,
-      recipientType: 'customer',
-      recipientName: newBooking.customerName,
-      recipientPhone: newBooking.customerPhone,
+    // 7. Dispatch Two-Way Transactional WhatsApp Notifications (Worker + Customer) AFTER database persistence
+    notificationService.dispatchTwoWayBookingNotifications({
       bookingId: newBooking.id,
       bookingCode: newBooking.bookingCode,
       serviceName: newBooking.serviceName,
-      customerAddress: newBooking.address.street,
+      customerName: newBooking.customerName,
+      customerPhone: newBooking.customerPhone,
+      customerAddress: `${newBooking.address.street}, ${newBooking.address.area}`,
+      customerInstructions: newBooking.problemDescription,
+      bookingDate: newBooking.scheduledDate,
+      bookingTime: newBooking.scheduledTimeSlot,
+      workerId: matchedWorker.id,
       workerName: matchedWorker.name,
       workerPhone: matchedWorker.phone,
+      workerExperience: `${matchedWorker.experienceYears || 5}+ yrs verified artisan (${matchedWorker.cooperativeName})`,
+      workerRating: matchedWorker.rating || 4.9,
       totalAmount: pricing.totalCustomerAmount
-    }).catch(err => console.warn('Notification dispatch exception:', err));
-
-    notificationService.dispatchNotification({
-      event: 'NEW_JOB_WORKER',
-      recipientId: matchedWorker.id,
-      recipientType: 'worker',
-      recipientName: matchedWorker.name,
-      recipientPhone: matchedWorker.phone,
-      bookingId: newBooking.id,
-      bookingCode: newBooking.bookingCode,
-      serviceName: newBooking.serviceName,
-      customerAddress: newBooking.address.street,
-      totalAmount: pricing.workerEarnings
-    }).catch(err => console.warn('Worker notification dispatch exception:', err));
+    }).catch(err => console.warn('Two-way WhatsApp dispatch notice:', err));
 
     return { booking: newBooking, match, invoice: invoiceRecord };
   },

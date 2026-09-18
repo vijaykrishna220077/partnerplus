@@ -3,6 +3,8 @@ import { db, realtimeHub } from './db';
 import { whatsappService, WhatsAppTemplateType } from './whatsappService';
 
 export type SystemEventType = 
+  | 'CUSTOMER_WORKER_ASSIGNED'
+  | 'WORKER_NEW_JOB'
   | 'BOOKING_CREATED'
   | 'BOOKING_CONFIRMED'
   | 'WORKER_ASSIGNED'
@@ -29,12 +31,19 @@ export interface SystemNotificationEventPayload {
   bookingId?: string;
   bookingCode?: string;
   serviceName?: string;
+  customerName?: string;
   customerAddress?: string;
+  customerInstructions?: string;
+  bookingDate?: string;
+  bookingTime?: string;
   workerName?: string;
   workerPhone?: string;
+  workerExperience?: string;
+  workerRating?: number | string;
   etaMinutes?: number;
   totalAmount?: number;
   invoiceNumber?: string;
+  idempotencyKey?: string;
   channels?: ('in_app' | 'whatsapp' | 'sms' | 'push')[];
 }
 
@@ -51,6 +60,7 @@ export const notificationService = {
       recipientPhone, 
       language = 'en', 
       bookingId,
+      bookingCode,
       channels = ['in_app', 'whatsapp']
     } = payload;
 
@@ -76,6 +86,9 @@ export const notificationService = {
 
     // 3. Dispatch Transactional WhatsApp Notification via Backend Endpoint
     if (channels.includes('whatsapp') && recipientPhone && whatsappTemplate) {
+      const bookingRef = bookingCode || bookingId || 'BK-100';
+      const defaultIdempotencyKey = payload.idempotencyKey || `${whatsappTemplate.toLowerCase()}_${bookingRef}`;
+
       try {
         await whatsappService.sendTemplateNotification({
           template: whatsappTemplate,
@@ -83,13 +96,20 @@ export const notificationService = {
           recipientName,
           recipientRole: recipientType,
           language,
+          idempotencyKey: defaultIdempotencyKey,
           parameters: {
-            bookingCode: payload.bookingCode || bookingId || 'BK-100',
+            bookingId: bookingRef,
+            bookingCode: bookingRef,
             serviceName: payload.serviceName || 'Service',
-            customerName: recipientType === 'customer' ? recipientName : 'Customer',
+            customerName: payload.recipientType === 'customer' ? recipientName : (payload.recipientName || 'Customer'),
             customerAddress: payload.customerAddress,
+            customerInstructions: payload.customerInstructions,
+            bookingDate: payload.bookingDate || 'Today',
+            bookingTime: payload.bookingTime || 'Immediate',
             workerName: payload.workerName,
             workerPhone: payload.workerPhone,
+            workerExperience: payload.workerExperience || '5+ yrs verified artisan',
+            workerRating: payload.workerRating || 4.9,
             etaMinutes: payload.etaMinutes,
             totalAmount: payload.totalAmount,
             invoiceNumber: payload.invoiceNumber
@@ -107,45 +127,137 @@ export const notificationService = {
   },
 
   /**
+    * Trigger two-way WhatsApp notifications (Worker + Customer) after DB booking transaction succeeds
+    */
+  async dispatchTwoWayBookingNotifications(params: {
+    bookingId: string;
+    bookingCode: string;
+    serviceName: string;
+    customerName: string;
+    customerPhone: string;
+    customerAddress: string;
+    customerInstructions?: string;
+    bookingDate?: string;
+    bookingTime?: string;
+    workerId: string;
+    workerName: string;
+    workerPhone: string;
+    workerExperience?: string;
+    workerRating?: number | string;
+    totalAmount?: number;
+  }): Promise<void> {
+    const {
+      bookingId,
+      bookingCode,
+      serviceName,
+      customerName,
+      customerPhone,
+      customerAddress,
+      customerInstructions,
+      bookingDate = 'Today',
+      bookingTime = 'Immediate',
+      workerId,
+      workerName,
+      workerPhone,
+      workerExperience = '5+ yrs verified artisan',
+      workerRating = 4.9,
+      totalAmount
+    } = params;
+
+    const bookingRef = bookingCode || bookingId;
+
+    // 1. Send Worker Transactional Notification (`worker_new_job_${bookingRef}`)
+    if (workerPhone) {
+      await this.dispatchNotification({
+        event: 'WORKER_NEW_JOB',
+        recipientId: workerId,
+        recipientType: 'worker',
+        recipientName: workerName,
+        recipientPhone: workerPhone,
+        bookingId,
+        bookingCode: bookingRef,
+        serviceName,
+        customerName,
+        customerAddress,
+        customerInstructions: customerInstructions || 'Standard service request',
+        bookingDate,
+        bookingTime,
+        idempotencyKey: `worker_new_job_${bookingRef}`,
+        totalAmount
+      }).catch(err => console.warn('Worker WhatsApp dispatch notice:', err));
+    }
+
+    // 2. Send Customer Transactional Notification (`customer_worker_assigned_${bookingRef}`)
+    if (customerPhone) {
+      await this.dispatchNotification({
+        event: 'CUSTOMER_WORKER_ASSIGNED',
+        recipientId: `cust-${bookingRef}`,
+        recipientType: 'customer',
+        recipientName: customerName,
+        recipientPhone: customerPhone,
+        bookingId,
+        bookingCode: bookingRef,
+        serviceName,
+        workerName,
+        workerPhone,
+        workerExperience,
+        workerRating,
+        bookingDate,
+        bookingTime,
+        idempotencyKey: `customer_worker_assigned_${bookingRef}`,
+        totalAmount
+      }).catch(err => console.warn('Customer WhatsApp dispatch notice:', err));
+    }
+  },
+
+  /**
     * Format notification title, message, and select appropriate WhatsApp template
     */
   formatEventMessage(payload: SystemNotificationEventPayload): { title: string; message: string; whatsappTemplate?: WhatsAppTemplateType } {
     const { event, bookingCode, serviceName, workerName, etaMinutes, totalAmount, invoiceNumber } = payload;
 
     switch (event) {
+      case 'WORKER_NEW_JOB':
+        return {
+          title: 'New Job Assigned',
+          message: `New job assigned: ${serviceName} for ${payload.customerName}. Booking ID: ${bookingCode || payload.bookingId}`,
+          whatsappTemplate: 'WORKER_NEW_JOB'
+        };
+
+      case 'CUSTOMER_WORKER_ASSIGNED':
+      case 'WORKER_ASSIGNED':
+        return {
+          title: 'Worker Assigned',
+          message: `Worker ${workerName || 'Artisan'} has been assigned to your booking #${bookingCode || ''}.`,
+          whatsappTemplate: 'CUSTOMER_WORKER_ASSIGNED'
+        };
+
       case 'BOOKING_CREATED':
       case 'BOOKING_CONFIRMED':
         return {
           title: 'Booking Request Received',
-          message: `Your booking #${bookingCode || 'BK-100'} for ${serviceName || 'service'} has been registered. Matching nearby certified technicians...`,
+          message: `Your booking #${bookingCode || ''} for ${serviceName || 'service'} has been registered. Matching certified technicians...`,
           whatsappTemplate: 'BOOKING_CONFIRMED'
-        };
-
-      case 'WORKER_ASSIGNED':
-        return {
-          title: 'Technician Assigned',
-          message: `Worker ${workerName || 'Artisan'} has been assigned to your booking #${bookingCode || 'BK-100'}.`,
-          whatsappTemplate: 'WORKER_ASSIGNED'
         };
 
       case 'WORKER_ACCEPTED':
         return {
           title: 'Worker Accepted Job',
-          message: `Technician ${workerName || 'Artisan'} accepted booking #${bookingCode || 'BK-100'} and is preparing to travel.`,
-          whatsappTemplate: 'WORKER_ASSIGNED'
+          message: `Technician ${workerName || 'Artisan'} accepted booking #${bookingCode || ''} and is preparing to travel.`,
+          whatsappTemplate: 'CUSTOMER_WORKER_ASSIGNED'
         };
 
       case 'WORKER_EN_ROUTE':
         return {
           title: 'Technician En-Route',
-          message: `${workerName || 'Worker'} is on the way to your location. ETA ~${etaMinutes || 20} mins.`,
+          message: `${workerName || 'Worker'} is on the way to your location. ETA ~${etaMinutes || 15} mins.`,
           whatsappTemplate: 'WORKER_ON_THE_WAY'
         };
 
       case 'JOB_COMPLETED':
         return {
           title: 'Service Completed',
-          message: `Service for booking #${bookingCode || 'BK-100'} is completed. Total Amount: ₹${totalAmount || 0}.`,
+          message: `Service for booking #${bookingCode || ''} is completed. Total Amount: ₹${totalAmount || 0}.`,
           whatsappTemplate: 'JOB_COMPLETED'
         };
 
@@ -167,7 +279,7 @@ export const notificationService = {
         return {
           title: 'New Service Job Available',
           message: `New job alert: ${serviceName || 'Service'} in your operational zone. Open app to accept!`,
-          whatsappTemplate: 'NEW_JOB_WORKER'
+          whatsappTemplate: 'WORKER_NEW_JOB'
         };
 
       case 'JOB_CANCELLED':
@@ -182,20 +294,6 @@ export const notificationService = {
           title: '🚨 Emergency SOS Dispatch',
           message: `Emergency response unit dispatched for ${serviceName || 'Emergency Support'}. Technician ${workerName || ''} arriving urgently!`,
           whatsappTemplate: 'WORKER_ON_THE_WAY'
-        };
-
-      case 'ORGANIZATION_JOB_CREATED':
-        return {
-          title: 'Enterprise Shift Posted',
-          message: `Enterprise service shift for ${serviceName || 'Project'} posted successfully.`,
-          whatsappTemplate: 'BOOKING_CONFIRMED'
-        };
-
-      case 'WORKFORCE_ALERT':
-        return {
-          title: 'Cooperative Workforce Alert',
-          message: `Workforce alert issued for ${serviceName || 'Demand Area'}.`,
-          whatsappTemplate: 'NEW_JOB_WORKER'
         };
 
       default:
